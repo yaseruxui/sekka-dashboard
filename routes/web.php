@@ -59,7 +59,11 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('permission:inbox')->group(function () {
         Route::get('inbox', [InboxController::class, 'index'])->name('inbox.index');
         Route::get('inbox/export', [InboxController::class, 'export'])->name('inbox.export');
-        Route::patch('inbox/{message}/read', [InboxController::class, 'markRead'])->name('inbox.read');
+        Route::patch('inbox/status', [InboxController::class, 'bulkStatus'])->name('inbox.bulk-status');
+        Route::patch('inbox/{message}/status', [InboxController::class, 'status'])->name('inbox.status');
+        Route::post('inbox/{message}/notes', [InboxController::class, 'note'])->name('inbox.notes');
+        Route::patch('inbox/notes/{note}', [InboxController::class, 'updateNote'])->name('inbox.notes.update');
+        Route::delete('inbox/notes/{note}', [InboxController::class, 'destroyNote'])->name('inbox.notes.destroy');
         Route::delete('inbox/{message}', [InboxController::class, 'destroy'])->name('inbox.destroy');
     });
 });

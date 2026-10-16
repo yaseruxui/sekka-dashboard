@@ -22,7 +22,7 @@ const navGroups: NavGroup[] = [
         items: [
             { title: 'الرئيسية', url: '/dashboard', icon: LayoutDashboard },
             { title: 'المشاريع', url: '/projects', icon: FolderKanban, permission: 'projects' },
-            { title: 'صندوق الوارد', url: '/inbox', icon: Inbox, permission: 'inbox' },
+            { title: 'طلبات التواصل', url: '/inbox', icon: Inbox, permission: 'inbox' },
             { title: 'المستخدمون', url: '/users', icon: Users, permission: 'users' },
         ],
     },

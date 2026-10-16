@@ -20,10 +20,10 @@ class DashboardController extends Controller
             'stats' => [
                 'published' => Project::where('published', true)->count(),
                 'drafts' => Project::where(fn ($q) => $q->where('published', false)->orWhereNotNull('draft'))->count(),
-                'unread' => ContactMessage::whereNull('read_at')->count(),
+                'unread' => ContactMessage::where('status', 'new')->count(),
             ],
             'recentMessages' => ! $inbox ? [] : ContactMessage::latest('id')->limit(5)
-                ->get(['id', 'name', 'company', 'message', 'estimated_budget', 'read_at', 'created_at']),
+                ->get(['id', 'name', 'company', 'message', 'estimated_budget', 'status', 'created_at']),
             'site' => [
                 'url' => config('sekka.site_url'),
                 'connected' => SiteClient::configured(),

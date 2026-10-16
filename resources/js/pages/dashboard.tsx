@@ -24,7 +24,7 @@ type Message = {
     company: string;
     message: string | null;
     estimated_budget: string | null;
-    read_at: string | null;
+    status: string;
     created_at: string;
 };
 
@@ -186,7 +186,7 @@ export default function Dashboard({ stats, recentMessages, site }: Props) {
                                         </span>
                                         <span className="min-w-0 flex-1">
                                             <span className="flex items-center gap-2 font-semibold">
-                                                {!m.read_at && (
+                                                {m.status === 'new' && (
                                                     <span className="bg-brand ring-brand/30 size-2 rounded-full ring-2" aria-label="جديدة" />
                                                 )}
                                                 {m.name}

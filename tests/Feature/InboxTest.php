@@ -3,8 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\ContactMessage;
+use App\Models\ContactMessageNote;
 use App\Models\User;
+use App\Notifications\NewEnquiry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class InboxTest extends TestCase
@@ -48,7 +51,7 @@ class InboxTest extends TestCase
         $this->assertSame('sara@example.com', $m->email);
         $this->assertSame('50k-100k', $m->estimated_budget);
         $this->assertSame('2026-10-16 09:00:00', $m->submitted_at->utc()->format('Y-m-d H:i:s'));
-        $this->assertNull($m->read_at);
+        $this->assertSame('new', $m->status);
     }
 
     public function test_contact_webhook_validates(): void
@@ -58,30 +61,119 @@ class InboxTest extends TestCase
             ->assertJsonValidationErrors(['email', 'name']);
     }
 
-    public function test_inbox_lists_marks_and_deletes_messages(): void
+    public function test_inbox_lists_and_deletes_messages(): void
     {
         $this->withoutVite();
         $user = User::factory()->create();
         $this->postJson('/api/contact?key=test-contact-key', $this->submission());
         $this->postJson('/api/contact?key=test-contact-key', $this->submission(['name' => 'Omar', 'email' => 'omar@example.com']));
-        [$sara, $omar] = ContactMessage::orderBy('id')->get();
+        [, $omar] = ContactMessage::orderBy('id')->get();
 
-        $this->actingAs($user)->get('/inbox?filter=unread')->assertInertia(fn ($page) => $page
+        $this->actingAs($user)->get('/inbox?filter=new')->assertInertia(fn ($page) => $page
             ->component('inbox/index', false)
             ->has('messages.data', 2)
-            ->where('counts.unread', 2)
+            ->where('counts.new', 2)
             ->where('unreadMessages', 2));
-
-        $this->actingAs($user)->patch("/inbox/{$sara->id}/read", ['read' => true]);
-        $this->assertNotNull($sara->fresh()->read_at);
 
         $this->actingAs($user)->get('/inbox?q=omar')->assertInertia(fn ($page) => $page->has('messages.data', 1));
 
-        $this->actingAs($user)->patch("/inbox/{$sara->id}/read", ['read' => false]);
-        $this->assertNull($sara->fresh()->read_at);
-
         $this->actingAs($user)->delete("/inbox/{$omar->id}")->assertSessionHas('success');
         $this->assertModelMissing($omar);
+    }
+
+    public function test_status_changes_only_by_hand(): void
+    {
+        $this->withoutVite();
+        $agent = User::factory()->create(['permissions' => ['inbox']]);
+        $this->postJson('/api/contact?key=test-contact-key', $this->submission());
+        $m = ContactMessage::first();
+
+        // Viewing the list does not touch the status.
+        $this->actingAs($agent)->get('/inbox')->assertOk();
+        $this->assertSame('new', $m->fresh()->status);
+
+        $this->actingAs($agent)->patch("/inbox/{$m->id}/status", ['status' => 'replied'])->assertSessionHas('success');
+        $this->assertSame('replied', $m->fresh()->status);
+
+        $this->actingAs($agent)->post("/inbox/{$m->id}/notes", ['body' => 'اتصلت بهم']);
+
+        $this->actingAs($agent)->patch("/inbox/{$m->id}/status", ['status' => 'spam']);
+        $this->actingAs($agent)->get('/inbox')->assertInertia(fn ($page) => $page->has('messages.data', 0)->where('counts.spam', 1));
+        $this->actingAs($agent)->get('/inbox?filter=spam')->assertInertia(fn ($page) => $page
+            ->has('messages.data', 1)
+            ->has('messages.data.0.notes', 1)
+            ->has('messages.data.0.events', 3)
+            ->where('canDelete', false));
+
+        $this->actingAs($agent)->patch("/inbox/{$m->id}/status", ['status' => 'bogus'])->assertSessionHasErrors('status');
+        $this->actingAs($agent)->delete("/inbox/{$m->id}")->assertForbidden();
+    }
+
+    public function test_new_enquiry_emails_active_inbox_staff(): void
+    {
+        Notification::fake();
+        $admin = User::factory()->create();
+        $agent = User::factory()->create(['permissions' => ['inbox']]);
+        $projects = User::factory()->create(['permissions' => ['projects']]);
+        $invited = User::factory()->create(['permissions' => ['inbox'], 'invited_at' => now()]);
+
+        $this->postJson('/api/contact?key=test-contact-key', $this->submission())->assertCreated();
+
+        Notification::assertSentTo([$admin, $agent], NewEnquiry::class);
+        Notification::assertNotSentTo([$projects, $invited], NewEnquiry::class);
+    }
+
+    public function test_bulk_status_change(): void
+    {
+        $user = User::factory()->create(['permissions' => ['inbox']]);
+        $this->postJson('/api/contact?key=test-contact-key', $this->submission());
+        $this->postJson('/api/contact?key=test-contact-key', $this->submission(['name' => 'Omar']));
+        $this->postJson('/api/contact?key=test-contact-key', $this->submission(['name' => 'Lina']));
+        [$a, $b, $c] = ContactMessage::orderBy('id')->get();
+
+        $this->actingAs($user)->patch('/inbox/status', ['ids' => [$a->id, $b->id], 'status' => 'closed'])->assertSessionHas('success');
+
+        $this->assertSame(['closed', 'closed', 'new'], ContactMessage::orderBy('id')->pluck('status')->all());
+        $this->assertSame(1, $a->events()->count());
+        $this->actingAs($user)->patch('/inbox/status', ['ids' => [$c->id], 'status' => 'nope'])->assertSessionHasErrors('status');
+    }
+
+    public function test_notes_are_edited_and_deleted_by_their_author_or_an_admin(): void
+    {
+        $admin = User::factory()->create();
+        $author = User::factory()->create(['permissions' => ['inbox']]);
+        $other = User::factory()->create(['permissions' => ['inbox']]);
+        $this->postJson('/api/contact?key=test-contact-key', $this->submission());
+        $m = ContactMessage::first();
+        $this->actingAs($author)->post("/inbox/{$m->id}/notes", ['body' => 'أولى']);
+        $note = ContactMessageNote::first();
+
+        $this->actingAs($other)->patch("/inbox/notes/{$note->id}", ['body' => 'x'])->assertForbidden();
+        $this->actingAs($other)->delete("/inbox/notes/{$note->id}")->assertForbidden();
+
+        $this->actingAs($author)->patch("/inbox/notes/{$note->id}", ['body' => 'معدّلة'])->assertSessionHas('success');
+        $this->assertSame('معدّلة', $note->fresh()->body);
+
+        $this->actingAs($admin)->delete("/inbox/notes/{$note->id}")->assertSessionHas('success');
+        $this->assertModelMissing($note);
+    }
+
+    public function test_open_param_loads_a_message_from_another_page(): void
+    {
+        $this->withoutVite();
+        $user = User::factory()->create();
+        $this->postJson('/api/contact?key=test-contact-key', $this->submission(['name' => 'Oldest']));
+        $oldest = ContactMessage::first();
+        for ($i = 0; $i < 25; $i++) {
+            $this->postJson('/api/contact?key=test-contact-key', $this->submission(['name' => "M{$i}"]));
+        }
+
+        $this->actingAs($user)->get("/inbox?open={$oldest->id}")->assertInertia(fn ($page) => $page
+            ->has('messages.data', 25)
+            ->where('opened.id', $oldest->id));
+
+        $newest = ContactMessage::latest('id')->first();
+        $this->actingAs($user)->get("/inbox?open={$newest->id}")->assertInertia(fn ($page) => $page->where('opened', null));
     }
 
     public function test_export_is_an_excel_friendly_csv(): void

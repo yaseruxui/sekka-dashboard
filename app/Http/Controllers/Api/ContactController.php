@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ContactMessage;
+use App\Models\User;
+use App\Notifications\NewEnquiry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
+use Throwable;
 
 /**
  * The site's contact form webhook: sekka-next posts each submission here
@@ -47,6 +51,19 @@ class ContactController extends Controller
             'submitted_at' => isset($data['submittedAt']) ? now()->parse($data['submittedAt']) : now(),
         ]);
 
+        $this->notifyInbox($message);
+
         return response()->json(['ok' => true, 'id' => $message->id], 201);
+    }
+
+    /** Email everyone who handles the inbox (active accounts only). A mail failure never loses the enquiry. */
+    private function notifyInbox(ContactMessage $message): void
+    {
+        try {
+            $staff = User::whereNull('invited_at')->get()->filter(fn (User $u) => $u->hasPermission('inbox'));
+            Notification::send($staff, new NewEnquiry($message));
+        } catch (Throwable $e) {
+            report($e);
+        }
     }
 }

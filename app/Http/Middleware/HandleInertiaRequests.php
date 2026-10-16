@@ -48,7 +48,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
-            'unreadMessages' => fn () => $request->user()?->hasPermission('inbox') ? ContactMessage::whereNull('read_at')->count() : 0,
+            'unreadMessages' => fn () => $request->user()?->hasPermission('inbox') ? ContactMessage::where('status', 'new')->count() : 0,
         ];
     }
 }

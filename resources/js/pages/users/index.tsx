@@ -40,7 +40,7 @@ interface Member {
 const LABELS: Record<Permission, { title: string; hint: string }> = {
     projects: { title: 'المشاريع', hint: 'إضافة المشاريع وتعديلها ونشرها' },
     site: { title: 'صفحات الموقع', hint: 'نصوص وصور أقسام الموقع' },
-    inbox: { title: 'صندوق الوارد', hint: 'رسائل «تواصل معنا» وتصديرها' },
+    inbox: { title: 'طلبات التواصل', hint: 'رسائل «تواصل معنا» وتصديرها' },
     media: { title: 'مكتبة الوسائط', hint: 'تصفّح كل الملفات وحذفها' },
     users: { title: 'المستخدمون', hint: 'دعوة المستخدمين وتحديد صلاحياتهم' },
 };
@@ -224,7 +224,7 @@ function Status({ member: u }: { member: Member }) {
 
 function Actions({ member: u, onEdit, onDelete }: { member: Member; onEdit: (m: Member) => void; onDelete: (m: Member) => void }) {
     return (
-        <div className="flex items-center justify-end gap-1">
+        <div className="flex items-center justify-start gap-1">
             {u.invitedAt && (
                 <Button variant="ghost" size="sm" onClick={() => router.post(route('users.invite', u.id), {}, { preserveScroll: true })}>
                     <Send /> إعادة إرسال
@@ -318,6 +318,7 @@ export default function Users({ users, permissions: all }: { users: Member[]; pe
                         <Table className="min-w-[860px]">
                             <TableHeader className="bg-muted/40">
                                 <TableRow>
+                                    <TableHead className="w-12">#</TableHead>
                                     <TableHead>المستخدم</TableHead>
                                     <TableHead>الصلاحيات</TableHead>
                                     <TableHead>الحالة</TableHead>
@@ -327,8 +328,9 @@ export default function Users({ users, permissions: all }: { users: Member[]; pe
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {users.map((u) => (
+                                {users.map((u, i) => (
                                     <TableRow key={u.id}>
+                                        <TableCell className="text-muted-foreground tabular-nums">{i + 1}</TableCell>
                                         <TableCell>
                                             <Identity member={u} />
                                         </TableCell>
