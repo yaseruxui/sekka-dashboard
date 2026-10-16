@@ -4,21 +4,7 @@ import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import {
-    ArrowLeft,
-    ExternalLink,
-    FilePen,
-    FolderCheck,
-    ImageUp,
-    Inbox,
-    LayoutTemplate,
-    type LucideIcon,
-    Mail,
-    Plus,
-    RefreshCw,
-    Wifi,
-} from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, ExternalLink, FilePen, FolderCheck, ImageUp, Inbox, LayoutTemplate, type LucideIcon, Mail, Plus, Wifi } from 'lucide-react';
 
 type Message = {
     id: number;
@@ -83,7 +69,6 @@ function Stat({
 
 export default function Dashboard({ stats, recentMessages, site }: Props) {
     const { auth } = usePage<SharedData>().props;
-    const [refreshing, setRefreshing] = useState(false);
     const newProject = () => router.post(route('projects.store'));
 
     const actions: { label: string; icon: LucideIcon; href?: string; onClick?: () => void }[] = [
@@ -209,20 +194,6 @@ export default function Dashboard({ stats, recentMessages, site }: Props) {
                                 </button>
                             );
                         })}
-                        <Button
-                            variant="secondary"
-                            className="mt-1 h-11"
-                            disabled={refreshing}
-                            onClick={() =>
-                                router.post(
-                                    route('site.refresh'),
-                                    {},
-                                    { preserveScroll: true, onStart: () => setRefreshing(true), onFinish: () => setRefreshing(false) },
-                                )
-                            }
-                        >
-                            <RefreshCw className={cn(refreshing && 'animate-spin')} /> تحديث الموقع الآن
-                        </Button>
                     </section>
                 </div>
             </div>

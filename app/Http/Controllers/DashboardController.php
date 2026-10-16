@@ -28,16 +28,4 @@ class DashboardController extends Controller
             ],
         ]);
     }
-
-    /** "تحديث الموقع الآن": drops the site's cache without changing anything. */
-    public function refreshSite(): RedirectResponse
-    {
-        if (! SiteClient::configured()) {
-            return back()->with('error', 'ربط الموقع غير مضبوط (SITE_URL و SITE_REVALIDATE_SECRET).');
-        }
-
-        return SiteClient::revalidate()
-            ? back()->with('success', 'تم تحديث الموقع.')
-            : back()->with('error', 'الموقع ما ردّ على طلب التحديث. تأكد إنه شغّال.');
-    }
 }
