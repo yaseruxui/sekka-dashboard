@@ -23,6 +23,7 @@ const navGroups: NavGroup[] = [
             { title: 'الرئيسية', url: '/dashboard', icon: LayoutDashboard },
             { title: 'المشاريع', url: '/projects', icon: FolderKanban, permission: 'projects' },
             { title: 'صندوق الوارد', url: '/inbox', icon: Inbox, permission: 'inbox' },
+            { title: 'المستخدمون', url: '/users', icon: Users, permission: 'users' },
         ],
     },
     {
@@ -38,10 +39,6 @@ const navGroups: NavGroup[] = [
     {
         title: 'الوسائط',
         items: [{ title: 'مكتبة الوسائط', url: '/media', icon: Images, permission: 'media' }],
-    },
-    {
-        title: 'الإدارة',
-        items: [{ title: 'المستخدمون', url: '/users', icon: Users, permission: 'users' }],
     },
 ];
 
