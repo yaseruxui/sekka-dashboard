@@ -96,7 +96,7 @@ export default function Dashboard({ stats, recentMessages, site }: Props) {
     return (
         <AppLayout breadcrumbs={[{ title: 'الرئيسية', href: '/dashboard' }]}>
             <Head title="الرئيسية" />
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-4 md:p-8">
+            <div className="max-w-page mx-auto flex w-full flex-col gap-6 p-4 md:p-8">
                 <PageHeader
                     title={`أهلاً ${auth.user.name.split(' ')[0]}`}
                     description="نظرة سريعة على الموقع والمشاريع والرسائل."

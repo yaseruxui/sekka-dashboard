@@ -52,7 +52,7 @@ export const AppError: Fallback = () => (
 
 /** A page's content, inside the shell (sidebar and header stay usable). */
 export const PageError: Fallback = () => (
-    <div className="mx-auto w-full max-w-6xl p-4 md:p-8">
+    <div className="max-w-page mx-auto w-full p-4 md:p-8">
         <EmptyState
             icon={TriangleAlert}
             title="تعذّر عرض هذه الصفحة"

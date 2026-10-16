@@ -216,7 +216,7 @@ export default function ProjectsIndex({ projects, categories }: { projects: Proj
     return (
         <AppLayout breadcrumbs={[{ title: 'المشاريع', href: '/projects' }]}>
             <Head title="المشاريع" />
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 p-4 md:p-8">
+            <div className="max-w-page mx-auto flex w-full flex-col gap-5 p-4 md:p-8">
                 <PageHeader
                     title="المشاريع"
                     description={filtering ? 'الترتيب بالسحب متاح لما تلغي البحث والفلاتر.' : 'اسحب المشاريع لتغيير ترتيب ظهورها في صفحة أعمالنا.'}
@@ -370,7 +370,7 @@ export default function ProjectsIndex({ projects, categories }: { projects: Proj
                                     </Table>
                                 </div>
                             ) : (
-                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                                     {visible.map((p) => (
                                         <SortableCard key={p.id} p={p} sortable={!filtering}>
                                             <Link href={route('projects.edit', p.id)}>

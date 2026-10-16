@@ -10,6 +10,9 @@
     --font-sans:
         'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
+    /* Widest a page's content gets (max-w-page): fills a 1920px screen, caps ultra-wide ones. */
+    --container-page: 100rem;
+
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);

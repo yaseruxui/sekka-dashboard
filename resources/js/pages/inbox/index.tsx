@@ -91,7 +91,7 @@ export default function Inbox({ messages, filters, counts }: Props) {
     return (
         <AppLayout breadcrumbs={[{ title: 'صندوق الوارد', href: '/inbox' }]}>
             <Head title="صندوق الوارد" />
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 p-4 md:p-8">
+            <div className="max-w-page mx-auto flex w-full flex-col gap-5 p-4 md:p-8">
                 <PageHeader
                     title="صندوق الوارد"
                     description="الرسائل من نموذج «تواصل معنا» في الموقع."

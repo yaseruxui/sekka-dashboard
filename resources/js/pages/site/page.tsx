@@ -52,7 +52,7 @@ export default function SitePage({ page, content, defaults, meta }: Props) {
         >
             <Head title={def.title} />
             <div className="bg-muted/30 flex-1">
-                <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 p-4 md:p-8">
+                <div className="max-w-page mx-auto flex w-full flex-col gap-5 p-4 md:p-8">
                     <div className="bg-card flex flex-wrap items-center justify-between gap-4 rounded-xl border p-4 shadow-xs sm:p-5">
                         <div className="flex items-center gap-3.5">
                             <span className="bg-primary text-primary-foreground flex size-11 items-center justify-center rounded-lg">

@@ -239,7 +239,7 @@ export default function MediaIndex({ media, filters }: { media: Paginated; filte
         <AppLayout breadcrumbs={[{ title: 'مكتبة الوسائط', href: '/media' }]}>
             <Head title="مكتبة الوسائط" />
             <DropZone accept="any" multiple onUploaded={reload} label="أفلت الملفات لرفعها للمكتبة" className="flex-1">
-                <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 p-4 md:p-8">
+                <div className="max-w-page mx-auto flex w-full flex-col gap-5 p-4 md:p-8">
                     <PageHeader
                         title="مكتبة الوسائط"
                         description={`${media.total} ملف. اسحب ملفات من جهازك وأفلتها في أي مكان هنا لرفعها؛ الصور تنضغط تلقائياً.`}
@@ -325,7 +325,7 @@ export default function MediaIndex({ media, filters }: { media: Paginated; filte
                             }
                         />
                     ) : view === 'grid' ? (
-                        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8">
+                        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 2xl:grid-cols-10">
                             {media.data.map((m) => (
                                 <button
                                     key={m.id}
