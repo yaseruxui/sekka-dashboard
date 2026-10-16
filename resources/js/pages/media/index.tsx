@@ -21,6 +21,7 @@ import { useUpload } from '@/hooks/use-upload';
 import AppLayout from '@/layouts/app-layout';
 import { api } from '@/lib/http';
 import { acceptFor, formatBytes, type MediaItem, mediaSrc, mediaUsageSchema } from '@/lib/media';
+import { pageLabel } from '@/lib/pagination';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
@@ -394,13 +395,10 @@ export default function MediaIndex({ media, filters }: { media: Paginated; filte
                                     variant={l.active ? 'default' : 'ghost'}
                                     size="sm"
                                     disabled={!l.url}
+                                    aria-current={l.active ? 'page' : undefined}
                                     onClick={() => l.url && router.get(l.url, {}, { preserveState: true })}
                                 >
-                                    <span
-                                        dangerouslySetInnerHTML={{
-                                            __html: l.label.replace('&laquo; Previous', 'السابق').replace('Next &raquo;', 'التالي'),
-                                        }}
-                                    />
+                                    {pageLabel(l.label)}
                                 </Button>
                             ))}
                         </nav>

@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useIsMobile } from '@/hooks/use-mobile';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
@@ -164,7 +165,10 @@ function SortableCard({ p, sortable, children }: { p: ProjectRow; sortable: bool
 
 export default function ProjectsIndex({ projects, categories }: { projects: ProjectRow[]; categories: string[] }) {
     const { siteUrl } = usePage<SharedData>().props;
-    const [view, setView] = useState<View>('table');
+    const [savedView, setView] = useState<View>('table');
+    // Phones always get cards: the table needs sideways scrolling to reach its switches and menus.
+    const isMobile = useIsMobile();
+    const view: View = isMobile ? 'cards' : savedView;
     const [order, setOrder] = useState(projects);
     const [q, setQ] = useState('');
     const [status, setStatus] = useState<Status>('all');
@@ -271,7 +275,7 @@ export default function ProjectsIndex({ projects, categories }: { projects: Proj
                             ))}
                         </SelectContent>
                     </Select>
-                    <div role="group" aria-label="طريقة العرض" className="ms-auto flex rounded-md border p-0.5">
+                    <div role="group" aria-label="طريقة العرض" className="ms-auto hidden rounded-md border p-0.5 md:flex">
                         <button
                             type="button"
                             aria-pressed={view === 'table'}

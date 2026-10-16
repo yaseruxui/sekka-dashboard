@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+import { pageLabel } from '@/lib/pagination';
 import { cn } from '@/lib/utils';
 import { Head, router } from '@inertiajs/react';
 import { Download, Inbox as InboxIcon, Mail, MailOpen, Search, Trash2 } from 'lucide-react';
@@ -187,13 +188,10 @@ export default function Inbox({ messages, filters, counts }: Props) {
                                 variant={l.active ? 'default' : 'ghost'}
                                 size="sm"
                                 disabled={!l.url}
+                                aria-current={l.active ? 'page' : undefined}
                                 onClick={() => l.url && router.get(l.url, {}, { preserveState: true })}
                             >
-                                <span
-                                    dangerouslySetInnerHTML={{
-                                        __html: l.label.replace('&laquo; Previous', 'السابق').replace('Next &raquo;', 'التالي'),
-                                    }}
-                                />
+                                {pageLabel(l.label)}
                             </Button>
                         ))}
                     </nav>
