@@ -119,25 +119,30 @@
     --sidebar-ring: hsl(92, 45%, 45%);
 }
 
+/*
+  Dark elevation, darkest to lightest: sidebar frame (3%) → page panel
+  (background, 9%) → cards (13%) → popovers (15%). Hover / muted / border
+  sit above the card level so they stay visible on every layer.
+*/
 .dark {
-    --background: hsl(0, 0%, 3.9%);
+    --background: hsl(0, 0%, 9%);
     --foreground: hsl(0, 0%, 98%);
-    --card: hsl(0, 0%, 3.9%);
+    --card: hsl(0, 0%, 13%);
     --card-foreground: hsl(0, 0%, 98%);
-    --popover: hsl(0, 0%, 3.9%);
+    --popover: hsl(0, 0%, 15%);
     --popover-foreground: hsl(0, 0%, 98%);
     --primary: hsl(0, 0%, 98%);
     --primary-foreground: hsl(0, 0%, 9%);
-    --secondary: hsl(0, 0%, 14.9%);
+    --secondary: hsl(0, 0%, 18%);
     --secondary-foreground: hsl(0, 0%, 98%);
-    --muted: hsl(0, 0%, 6.9%);
+    --muted: hsl(0, 0%, 17%);
     --muted-foreground: hsl(0, 0%, 63.9%);
-    --accent: hsl(0, 0%, 14.9%);
+    --accent: hsl(0, 0%, 19%);
     --accent-foreground: hsl(0, 0%, 98%);
     --destructive: hsl(0, 84%, 60%);
     --destructive-foreground: hsl(0, 0%, 98%);
-    --border: hsl(0, 0%, 14.9%);
-    --input: hsl(0, 0%, 14.9%);
+    --border: hsl(0, 0%, 20%);
+    --input: hsl(0, 0%, 22%);
     --ring: hsl(92, 55%, 66%);
     --brand: #a5da79;
     --brand-ink: #b9e594;
@@ -147,13 +152,13 @@
     --chart-3: hsl(30, 80%, 55%);
     --chart-4: hsl(280, 65%, 60%);
     --chart-5: hsl(340, 75%, 55%);
-    --sidebar-background: hsl(0, 0%, 7%);
+    --sidebar-background: hsl(0, 0%, 3%);
     --sidebar-foreground: hsl(0, 0%, 80%);
     --sidebar-primary: hsl(360, 100%, 100%);
     --sidebar-primary-foreground: hsl(0, 0%, 100%);
-    --sidebar-accent: hsl(0, 0%, 15.9%);
+    --sidebar-accent: hsl(0, 0%, 13%);
     --sidebar-accent-foreground: hsl(240, 4.8%, 95.9%);
-    --sidebar-border: hsl(0, 0%, 15.9%);
+    --sidebar-border: hsl(0, 0%, 14%);
     --sidebar-ring: hsl(92, 45%, 45%);
 }
 
