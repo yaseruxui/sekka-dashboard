@@ -6,7 +6,12 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
-const DropdownMenu = DropdownMenuPrimitive.Root;
+/**
+ * Non-modal: a modal menu locks the page (pointer-events: none on body) and,
+ * when one of its items opens a dialog or reloads the page, that lock can
+ * outlive both, leaving nothing clickable.
+ */
+const DropdownMenu = ({ modal = false, ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Root>) => <DropdownMenuPrimitive.Root modal={modal} {...props} />;
 
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
 
