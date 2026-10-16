@@ -41,7 +41,7 @@ BreadcrumbPage.displayName = 'BreadcrumbPage';
 
 const BreadcrumbSeparator = ({ children, className, ...props }: React.ComponentProps<'li'>) => (
     <li role="presentation" aria-hidden="true" className={cn('[&>svg]:h-3.5 [&>svg]:w-3.5', className)} {...props}>
-        {children ?? <ChevronRight />}
+        {children ?? <ChevronRight className="rtl:rotate-180" />}
     </li>
 );
 BreadcrumbSeparator.displayName = 'BreadcrumbSeparator';

@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\ContactMessage;
-use App\Models\Media;
 use App\Models\Project;
 use App\Support\SiteClient;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,17 +15,29 @@ class DashboardController extends Controller
     {
         return Inertia::render('dashboard', [
             'stats' => [
-                'projects' => Project::count(),
                 'published' => Project::where('published', true)->count(),
-                'media' => Media::count(),
+                'drafts' => Project::where(fn ($q) => $q->where('published', false)->orWhereNotNull('draft'))->count(),
                 'unread' => ContactMessage::whereNull('read_at')->count(),
             ],
-            'recentProjects' => Project::latest('updated_at')->limit(5)->get(['id', 'slug', 'title', 'cover', 'published', 'updated_at']),
-            'recentMessages' => ContactMessage::latest('id')->limit(5)->get(['id', 'name', 'email', 'company', 'read_at', 'created_at']),
+            'recentMessages' => ContactMessage::latest('id')->limit(5)
+                ->get(['id', 'name', 'company', 'message', 'estimated_budget', 'read_at', 'created_at']),
             'site' => [
                 'url' => config('sekka.site_url'),
                 'connected' => SiteClient::configured(),
+                'lastRefresh' => cache('sekka.last_revalidate'),
             ],
         ]);
+    }
+
+    /** "تحديث الموقع الآن": drops the site's cache without changing anything. */
+    public function refreshSite(): RedirectResponse
+    {
+        if (! SiteClient::configured()) {
+            return back()->with('error', 'ربط الموقع غير مضبوط (SITE_URL و SITE_REVALIDATE_SECRET).');
+        }
+
+        return SiteClient::revalidate()
+            ? back()->with('success', 'تم تحديث الموقع.')
+            : back()->with('error', 'الموقع ما ردّ على طلب التحديث. تأكد إنه شغّال.');
     }
 }

@@ -12,6 +12,7 @@ Route::redirect('/', '/dashboard')->name('home');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
+    Route::post('site/refresh', [DashboardController::class, 'refreshSite'])->name('site.refresh');
 
     Route::controller(ProjectController::class)->group(function () {
         Route::get('projects', 'index')->name('projects.index');
