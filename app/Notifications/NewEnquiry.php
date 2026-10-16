@@ -16,7 +16,19 @@ class NewEnquiry extends Notification
     /** @return list<string> */
     public function via(User $notifiable): array
     {
-        return ['mail'];
+        return ['database', 'mail'];
+    }
+
+    /** The dashboard's notification bell. */
+    public function toArray(User $notifiable): array
+    {
+        $m = $this->message;
+
+        return [
+            'title' => "طلب تواصل جديد من {$m->name}",
+            'body' => Str::limit((string) $m->message, 120),
+            'url' => route('inbox.index', ['open' => $m->id], false),
+        ];
     }
 
     public function toMail(User $notifiable): MailMessage

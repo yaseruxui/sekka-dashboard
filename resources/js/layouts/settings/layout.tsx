@@ -2,8 +2,8 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
+import { type NavItem, type SharedData } from '@/types';
+import { Link, usePage } from '@inertiajs/react';
 
 const sidebarNavItems: NavItem[] = [
     {
@@ -21,19 +21,27 @@ const sidebarNavItems: NavItem[] = [
         url: '/settings/appearance',
         icon: null,
     },
+    {
+        title: 'البريد الإلكتروني',
+        url: '/settings/mail',
+        icon: null,
+        permission: 'users',
+    },
 ];
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
     const currentPath = window.location.pathname;
+    const { permissions } = usePage<SharedData>().props.auth;
+    const navItems = sidebarNavItems.filter((i) => !i.permission || permissions.includes(i.permission));
 
     return (
         <div className="px-4 py-6">
-            <Heading title="الإعدادات" description="حسابك وكلمة المرور والمظهر" />
+            <Heading title="الإعدادات" description="حسابك وكلمة المرور والمظهر والبريد" />
 
             <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
                 <aside className="w-full max-w-xl lg:w-48">
                     <nav className="flex flex-col gap-1">
-                        {sidebarNavItems.map((item) => (
+                        {navItems.map((item) => (
                             <Button
                                 key={item.url}
                                 size="sm"

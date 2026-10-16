@@ -1,8 +1,8 @@
 <?php
 
+use App\Http\Controllers\Settings\MailController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
-use App\Http\Controllers\Settings\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -18,4 +18,10 @@ Route::middleware('auth')->group(function () {
     Route::get('settings/appearance', function () {
         return Inertia::render('settings/appearance');
     })->name('appearance');
+});
+
+Route::middleware(['auth', 'permission:users'])->group(function () {
+    Route::get('settings/mail', [MailController::class, 'edit'])->name('mail.edit');
+    Route::put('settings/mail', [MailController::class, 'update'])->name('mail.update');
+    Route::post('settings/mail/test', [MailController::class, 'test'])->name('mail.test');
 });

@@ -56,12 +56,18 @@ class ContactController extends Controller
         return response()->json(['ok' => true, 'id' => $message->id], 201);
     }
 
-    /** Email everyone who handles the inbox (active accounts only). A mail failure never loses the enquiry. */
+    /**
+     * Tell everyone who handles the inbox (active accounts only): the
+     * dashboard bell always, email when it can be sent. A mail failure never
+     * loses the enquiry or the bell notification.
+     */
     private function notifyInbox(ContactMessage $message): void
     {
+        $staff = User::whereNull('invited_at')->get()->filter(fn (User $u) => $u->hasPermission('inbox'));
+        $notification = new NewEnquiry($message);
+        Notification::sendNow($staff, $notification, ['database']);
         try {
-            $staff = User::whereNull('invited_at')->get()->filter(fn (User $u) => $u->hasPermission('inbox'));
-            Notification::send($staff, new NewEnquiry($message));
+            Notification::sendNow($staff, $notification, ['mail']);
         } catch (Throwable $e) {
             report($e);
         }

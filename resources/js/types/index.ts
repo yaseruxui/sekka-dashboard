@@ -32,8 +32,17 @@ export interface SharedData {
     siteUrl: string;
     flash?: { success?: string | null; error?: string | null };
     unreadMessages?: number;
+    notifications?: { unread: number; items: AppNotification[] } | null;
     auth: Auth;
     [key: string]: unknown;
+}
+
+export interface AppNotification {
+    id: string;
+    title: string;
+    body: string;
+    read: boolean;
+    created_at: string;
 }
 
 export interface User {

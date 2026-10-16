@@ -49,6 +49,17 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
             ],
             'unreadMessages' => fn () => $request->user()?->hasPermission('inbox') ? ContactMessage::where('status', 'new')->count() : 0,
+            // The bell: unread count and the latest few (the sidebar polls this prop).
+            'notifications' => fn () => ! $request->user() ? null : [
+                'unread' => $request->user()->unreadNotifications()->count(),
+                'items' => $request->user()->notifications()->limit(8)->get()->map(fn ($n) => [
+                    'id' => $n->id,
+                    'title' => $n->data['title'] ?? '',
+                    'body' => $n->data['body'] ?? '',
+                    'read' => $n->read_at !== null,
+                    'created_at' => $n->created_at,
+                ]),
+            ],
         ];
     }
 }
