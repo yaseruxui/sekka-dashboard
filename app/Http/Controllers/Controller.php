@@ -15,7 +15,7 @@ abstract class Controller
     protected function savedAndRevalidated(RedirectResponse $redirect, string $message): RedirectResponse
     {
         if (SiteClient::configured() && ! SiteClient::revalidate()) {
-            return $redirect->with('error', $message.' The site did not confirm the refresh; it will update within 5 minutes.');
+            return $redirect->with('error', $message.' لكن الموقع ما أكّد التحديث، رح يتحدّث خلال 5 دقائق.');
         }
 
         return $redirect->with('success', $message);

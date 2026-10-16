@@ -64,7 +64,7 @@ class MediaController extends Controller
 
         return $request->wantsJson()
             ? response()->json($media, 201)
-            : back()->with('success', 'Uploaded '.$media->name.'.');
+            : back()->with('success', 'تم رفع '.$media->name.'.');
     }
 
     public function update(Request $request, Media $media): JsonResponse|RedirectResponse
@@ -75,19 +75,19 @@ class MediaController extends Controller
             'height' => ['nullable', 'integer', 'min:1'],
         ]));
 
-        return $request->wantsJson() ? response()->json($media) : back()->with('success', 'Saved.');
+        return $request->wantsJson() ? response()->json($media) : back()->with('success', 'تم الحفظ.');
     }
 
     public function destroy(Request $request, Media $media): RedirectResponse
     {
         if (! $request->boolean('force') && $this->inUse($media->url)) {
-            return back()->with('error', "{$media->name} is used by a project or the site content. Replace it there first.");
+            return back()->with('error', "الملف {$media->name} مستخدم في مشروع أو في محتوى الموقع. استبدله هناك أولاً.");
         }
 
         Storage::disk('public')->delete($media->path);
         $media->delete();
 
-        return back()->with('success', 'Deleted '.$media->name.'.');
+        return back()->with('success', 'تم حذف '.$media->name.'.');
     }
 
     private function query(Request $request)

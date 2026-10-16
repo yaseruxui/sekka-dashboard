@@ -58,7 +58,7 @@ class InboxTest extends TestCase
             ->assertJsonValidationErrors(['email', 'name']);
     }
 
-    public function test_inbox_lists_opens_and_marks_messages(): void
+    public function test_inbox_lists_marks_and_deletes_messages(): void
     {
         $this->withoutVite();
         $user = User::factory()->create();
@@ -69,9 +69,10 @@ class InboxTest extends TestCase
         $this->actingAs($user)->get('/inbox?filter=unread')->assertInertia(fn ($page) => $page
             ->component('inbox/index', false)
             ->has('messages.data', 2)
+            ->where('counts.unread', 2)
             ->where('unreadMessages', 2));
 
-        $this->actingAs($user)->get("/inbox/{$sara->id}")->assertOk();
+        $this->actingAs($user)->patch("/inbox/{$sara->id}/read", ['read' => true]);
         $this->assertNotNull($sara->fresh()->read_at);
 
         $this->actingAs($user)->get('/inbox?q=omar')->assertInertia(fn ($page) => $page->has('messages.data', 1));
@@ -79,7 +80,18 @@ class InboxTest extends TestCase
         $this->actingAs($user)->patch("/inbox/{$sara->id}/read", ['read' => false]);
         $this->assertNull($sara->fresh()->read_at);
 
-        $this->actingAs($user)->delete("/inbox/{$omar->id}")->assertRedirect('/inbox');
+        $this->actingAs($user)->delete("/inbox/{$omar->id}")->assertSessionHas('success');
         $this->assertModelMissing($omar);
+    }
+
+    public function test_export_is_an_excel_friendly_csv(): void
+    {
+        $this->postJson('/api/contact?key=test-contact-key', $this->submission());
+
+        $csv = $this->actingAs(User::factory()->create())->get('/inbox/export')->assertOk()->streamedContent();
+
+        $this->assertStringStartsWith("\xEF\xBB\xBF", $csv);
+        $this->assertStringContainsString('سارة', $csv);
+        $this->assertStringContainsString('50k-100k', $csv);
     }
 }

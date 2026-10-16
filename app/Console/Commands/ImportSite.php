@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Category;
 use App\Models\Project;
+use App\Models\Setting;
 use App\Support\Blocks;
 use App\Support\SiteClient;
 use App\Support\SiteContent;
@@ -39,6 +41,10 @@ class ImportSite extends Command
         $force = (bool) $this->option('force');
 
         DB::transaction(function () use ($content, $projects, $force) {
+            // Always kept current: the site's own copy, which empty fields fall back to.
+            Setting::setValue('defaults', array_intersect_key($content, array_flip(SiteContent::SECTIONS)));
+            Category::ensure(array_column(array_filter($projects, 'is_array'), 'category'));
+
             foreach (SiteContent::SECTIONS as $section) {
                 if (! is_array($content[$section] ?? null)) {
                     continue;
@@ -74,6 +80,8 @@ class ImportSite extends Command
                     'blocks' => Blocks::normalizeAll(is_array($p['blocks'] ?? null) ? $p['blocks'] : []),
                     'position' => $existing?->position ?? $start + $i + 1,
                     'published' => $existing?->published ?? true,
+                    'published_at' => $existing?->published_at ?? now(),
+                    'draft' => null,
                 ]);
                 $this->line("  import project {$p['slug']}");
             }

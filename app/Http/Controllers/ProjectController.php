@@ -3,69 +3,176 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProjectRequest;
+use App\Models\Category;
 use App\Models\Project;
+use App\Support\Blocks;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
+/**
+ * Projects. The editor autosaves a draft (never seen by the site); "نشر"
+ * validates it, copies it over the published columns and refreshes the site.
+ */
 class ProjectController extends Controller
 {
     public function index(): Response
     {
         return Inertia::render('projects/index', [
-            'projects' => Project::ordered()
-                ->get(['id', 'slug', 'title', 'category', 'year', 'cover', 'preview', 'aspect', 'position', 'published', 'blocks', 'updated_at'])
-                ->map(fn (Project $p) => [
-                    ...$p->only(['id', 'slug', 'title', 'category', 'year', 'cover', 'preview', 'aspect', 'position', 'published']),
-                    'blocksCount' => count($p->blocks ?? []),
-                    'updatedAt' => $p->updated_at?->toIso8601String(),
-                ]),
+            'projects' => Project::ordered()->get()->map(function (Project $p) {
+                $work = $p->workingCopy();
+
+                return [
+                    'id' => $p->id,
+                    'slug' => $work['slug'],
+                    'title' => $work['title'],
+                    'category' => $work['category'],
+                    'year' => $work['year'],
+                    'cover' => $work['cover'],
+                    'preview' => $work['preview'],
+                    'aspect' => $work['aspect'],
+                    'blocksCount' => count($work['blocks'] ?? []),
+                    'published' => $p->published,
+                    'everPublished' => $p->hasBeenPublished(),
+                    'hasDraft' => $p->draft !== null,
+                    'updatedAt' => ($p->draft_saved_at ?? $p->updated_at)?->toIso8601String(),
+                ];
+            }),
+            'categories' => Category::names(),
         ]);
     }
 
-    public function create(): Response
-    {
-        return Inertia::render('projects/edit', [
-            'project' => null,
-            'aspects' => Project::ASPECTS,
-        ]);
-    }
-
-    public function store(ProjectRequest $request): RedirectResponse
+    /** "مشروع جديد": an empty, unpublished project, straight into the editor. */
+    public function store(): RedirectResponse
     {
         $project = Project::create([
-            ...$request->project(),
+            'slug' => Project::uniqueSlug('new-project'),
+            'title' => 'مشروع جديد',
+            'summary' => '',
+            'aspect' => '4:5',
+            'year' => (string) now()->year,
+            'blocks' => [],
+            'published' => false,
             'position' => (int) Project::max('position') + 1,
         ]);
 
-        return $this->savedAndRevalidated(to_route('projects.edit', $project), 'Project created.');
+        return to_route('projects.edit', $project);
     }
 
     public function edit(Project $project): Response
     {
         return Inertia::render('projects/edit', [
-            'project' => [...$project->toContract(), 'id' => $project->id, 'published' => $project->published],
+            'project' => [
+                ...$project->workingCopy(),
+                'id' => $project->id,
+                'published' => $project->published,
+                'everPublished' => $project->hasBeenPublished(),
+                'hasDraft' => $project->draft !== null,
+                'draftSavedAt' => $project->draft_saved_at?->toIso8601String(),
+                'publishedAt' => $project->published_at?->toIso8601String(),
+            ],
             'aspects' => Project::ASPECTS,
+            'categories' => Category::names(),
         ]);
     }
 
-    public function update(ProjectRequest $request, Project $project): RedirectResponse
+    /**
+     * Autosave from the editor. Loosely checked (it is a draft); the full
+     * contract is enforced on publish.
+     */
+    public function saveDraft(Request $request, Project $project): JsonResponse
     {
-        $project->update($request->project());
+        $data = $request->validate([
+            'slug' => ['nullable', 'string', 'max:120'],
+            'title' => ['nullable', 'string', 'max:200'],
+            'title_en' => ['nullable', 'string', 'max:200'],
+            'summary' => ['nullable', 'string', 'max:2000'],
+            'category' => ['nullable', 'string', 'max:120'],
+            'year' => ['nullable', 'string', 'max:16'],
+            'cover' => ['nullable', 'string', 'max:2048'],
+            'preview' => ['nullable', 'string', 'max:2048'],
+            'aspect' => ['nullable', 'string', 'max:8'],
+            'blocks' => ['nullable', 'array'],
+        ]);
 
-        return $this->savedAndRevalidated(back(), 'Project saved.');
+        $project->update([
+            'draft' => [
+                ...array_map(fn ($v) => $v ?? '', array_intersect_key($data, array_flip(Project::EDITABLE))),
+                'preview' => $data['preview'] ?? null,
+                'blocks' => array_values($request->input('blocks', [])),
+            ],
+            'draft_saved_at' => now(),
+        ]);
+
+        return response()->json(['savedAt' => $project->draft_saved_at->toIso8601String()]);
+    }
+
+    /** "نشر": the working copy becomes what the site shows. */
+    public function publish(ProjectRequest $request, Project $project): RedirectResponse
+    {
+        $project->update([
+            ...$request->project(),
+            'published' => true,
+            'published_at' => now(),
+            'draft' => null,
+            'draft_saved_at' => null,
+        ]);
+
+        return $this->savedAndRevalidated(back(), 'تم نشر المشروع.');
+    }
+
+    /** Drops the draft, back to the published version. */
+    public function discardDraft(Project $project): RedirectResponse
+    {
+        $project->update(['draft' => null, 'draft_saved_at' => null]);
+
+        return back()->with('success', 'تم الرجوع إلى النسخة المنشورة.');
+    }
+
+    /** The switch in the projects table: show or hide a published project. */
+    public function visibility(Request $request, Project $project): RedirectResponse
+    {
+        $visible = $request->validate(['published' => ['required', 'boolean']])['published'];
+        if ($visible && ! $project->hasBeenPublished()) {
+            return back()->with('error', 'افتح المشروع واضغط «نشر» أول مرة قبل إظهاره.');
+        }
+        $project->update(['published' => $visible]);
+
+        return $this->savedAndRevalidated(back(), $visible ? 'المشروع ظاهر على الموقع.' : 'المشروع مخفي عن الموقع.');
+    }
+
+    public function duplicate(Project $project): RedirectResponse
+    {
+        $work = $project->workingCopy();
+        $copy = Project::create([
+            ...$work,
+            'slug' => Project::uniqueSlug($work['slug'].'-copy'),
+            'title' => $work['title'].' (نسخة)',
+            'blocks' => array_map(function (array $b) {
+                $b['id'] = $b['type'].'-'.bin2hex(random_bytes(4));
+
+                return $b;
+            }, Blocks::normalizeAll($work['blocks'] ?? [])),
+            'published' => false,
+            'position' => (int) Project::max('position') + 1,
+        ]);
+
+        return to_route('projects.edit', $copy)->with('success', 'تم نسخ المشروع. عدّله ثم انشره.');
     }
 
     public function destroy(Project $project): RedirectResponse
     {
+        $wasLive = $project->published;
         $project->delete();
+        $redirect = to_route('projects.index');
 
-        return $this->savedAndRevalidated(to_route('projects.index'), 'Project deleted.');
+        return $wasLive ? $this->savedAndRevalidated($redirect, 'تم حذف المشروع.') : $redirect->with('success', 'تم حذف المشروع.');
     }
 
-    /** New order from the sortable table: every project id, first to last. */
+    /** New order from the projects table: every project id, first to last. */
     public function reorder(Request $request): RedirectResponse
     {
         $ids = $request->validate([
@@ -79,13 +186,6 @@ class ProjectController extends Controller
             }
         });
 
-        return $this->savedAndRevalidated(back(), 'Order saved.');
-    }
-
-    public function publish(Request $request, Project $project): RedirectResponse
-    {
-        $project->update(['published' => $request->validate(['published' => ['required', 'boolean']])['published']]);
-
-        return $this->savedAndRevalidated(back(), $project->published ? 'Project published.' : 'Project hidden from the site.');
+        return $this->savedAndRevalidated(back(), 'تم حفظ الترتيب.');
     }
 }

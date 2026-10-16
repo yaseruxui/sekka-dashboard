@@ -2,13 +2,15 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Category;
 use App\Models\Project;
 use App\Support\Blocks;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * The project form, checked against projectSchema (resources/js/contracts/project.ts).
+ * Publishing a project: the whole working copy, checked against projectSchema
+ * (resources/js/contracts/project.ts).
  */
 class ProjectRequest extends FormRequest
 {
@@ -32,13 +34,13 @@ class ProjectRequest extends FormRequest
         return [
             'slug' => ['required', 'string', 'max:120', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', Rule::unique('projects', 'slug')->ignore($project?->id)],
             'title' => ['required', 'string', 'max:200'],
+            'title_en' => ['nullable', 'string', 'max:200'],
             'summary' => ['nullable', 'string', 'max:2000'],
             'category' => ['nullable', 'string', 'max:120'],
             'year' => ['nullable', 'string', 'max:16'],
-            'cover' => ['nullable', 'string', 'max:2048'],
+            'cover' => ['required', 'string', 'max:2048'],
             'preview' => ['nullable', 'string', 'max:2048'],
             'aspect' => ['required', Rule::in(Project::ASPECTS)],
-            'published' => ['boolean'],
             ...Blocks::rules($this->input('blocks', [])),
         ];
     }
@@ -46,7 +48,9 @@ class ProjectRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'slug.regex' => 'Use lowercase letters, digits and dashes (e.g. chaos-campaign).',
+            'slug.regex' => 'استخدم حروفاً إنجليزية صغيرة وأرقاماً وشرطات فقط (مثل chaos-campaign).',
+            'slug.unique' => 'هذا الرابط مستخدم في مشروع آخر.',
+            'cover.required' => 'اختر صورة غلاف قبل النشر.',
         ];
     }
 
@@ -54,17 +58,20 @@ class ProjectRequest extends FormRequest
     public function project(): array
     {
         $data = $this->validated();
+        if (! empty($data['category'])) {
+            Category::ensure([$data['category']]);
+        }
 
         return [
             'slug' => $data['slug'],
             'title' => $data['title'],
+            'title_en' => (string) ($data['title_en'] ?? ''),
             'summary' => (string) ($data['summary'] ?? ''),
             'category' => (string) ($data['category'] ?? ''),
             'year' => (string) ($data['year'] ?? ''),
-            'cover' => (string) ($data['cover'] ?? ''),
+            'cover' => (string) $data['cover'],
             'preview' => ($data['preview'] ?? '') ?: null,
             'aspect' => $data['aspect'],
-            'published' => (bool) ($data['published'] ?? true),
             'blocks' => Blocks::normalizeAll($this->input('blocks', [])),
         ];
     }
