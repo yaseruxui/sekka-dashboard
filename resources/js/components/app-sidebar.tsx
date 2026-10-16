@@ -1,3 +1,4 @@
+import { AppearanceToggle } from '@/components/appearance-toggle';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -95,7 +96,13 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavUser />
+                {/* Collapsed to icons: the theme button stacks above the avatar. */}
+                <div className="flex items-center gap-1 group-data-[collapsible=icon]:flex-col-reverse">
+                    <div className="min-w-0 flex-1 group-data-[collapsible=icon]:flex-none">
+                        <NavUser />
+                    </div>
+                    <AppearanceToggle className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground size-8 shrink-0" />
+                </div>
             </SidebarFooter>
         </Sidebar>
     );

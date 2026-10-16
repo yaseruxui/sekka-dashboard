@@ -10,7 +10,14 @@ import { PanelRightOpen } from 'lucide-react';
 export default function AppLogo({ expandHint = false }: { expandHint?: boolean }) {
     return (
         <>
-            <div className="relative flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-[#0A55FB] text-white shadow-sm">
+            <div
+                className={cn(
+                    'relative flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-[#0A55FB] text-white shadow-sm',
+                    // On hover the tile turns into a plain (gray) sidebar button around the expand icon.
+                    expandHint &&
+                        'group-hover/brand:bg-sidebar-accent group-hover/brand:text-sidebar-accent-foreground transition-colors group-hover/brand:shadow-none',
+                )}
+            >
                 <BrandLogo variant="wordmark" className={cn('h-2.75 transition-opacity', expandHint && 'group-hover/brand:opacity-0')} />
                 {expandHint && <PanelRightOpen aria-hidden className="absolute size-4 opacity-0 transition-opacity group-hover/brand:opacity-100" />}
             </div>

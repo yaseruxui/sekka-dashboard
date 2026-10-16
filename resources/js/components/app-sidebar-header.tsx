@@ -1,16 +1,16 @@
-import { AppearanceToggle } from '@/components/appearance-toggle';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { type BreadcrumbItem as BreadcrumbItemType } from '@/types';
 
+/**
+ * Phones only: the button that opens the sidebar drawer. From md up the
+ * sidebar toggles from its logo row and every page has its own title.
+ */
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
     return (
-        <header className="border-sidebar-border/50 flex h-16 shrink-0 items-center gap-2 border-b px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4">
-            <div className="flex items-center gap-2">
-                <SidebarTrigger className="-ms-1 md:hidden" />
-                <Breadcrumbs breadcrumbs={breadcrumbs} />
-            </div>
-            <AppearanceToggle className="ms-auto -me-1 size-9" />
+        <header className="border-sidebar-border/50 flex h-16 shrink-0 items-center gap-2 border-b px-6 md:hidden">
+            <SidebarTrigger className="-ms-1" />
+            <Breadcrumbs breadcrumbs={breadcrumbs} />
         </header>
     );
 }
