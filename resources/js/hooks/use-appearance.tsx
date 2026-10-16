@@ -8,15 +8,15 @@ export type Appearance = (typeof APPEARANCES)[number];
 const isAppearance = (v: unknown): v is Appearance => APPEARANCES.some((a) => a === v);
 
 /**
- * The saved choice; 'system' when none, unreadable, or not a known value.
+ * The saved choice; dark (the dashboard's default) when none, unreadable, or not a known value.
  * (A plain guard, not zod: this runs in the entry chunk before first paint.)
  */
 const savedAppearance = (): Appearance => {
     try {
         const v = localStorage.getItem('appearance');
-        return isAppearance(v) ? v : 'system';
+        return isAppearance(v) ? v : 'dark';
     } catch {
-        return 'system';
+        return 'dark';
     }
 };
 
@@ -60,7 +60,7 @@ export function initializeTheme() {
 }
 
 export function useAppearance() {
-    const [appearance, setAppearance] = useState<Appearance>('system');
+    const [appearance, setAppearance] = useState<Appearance>('dark');
 
     // The theme is already on the page (initializeTheme); only sync this toggle's state.
     useEffect(() => setAppearance(savedAppearance()), []);

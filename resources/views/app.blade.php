@@ -5,6 +5,16 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="robots" content="noindex, nofollow">
 
+        {{-- Theme before first paint (same rule as hooks/use-appearance): saved choice, else dark. --}}
+        <script>
+            (function () {
+                var a = 'dark';
+                try { a = localStorage.getItem('appearance') || 'dark'; } catch (e) {}
+                var dark = a === 'dark' || (a === 'system' && matchMedia('(prefers-color-scheme: dark)').matches) || (a !== 'light' && a !== 'system');
+                document.documentElement.classList.toggle('dark', dark);
+            })();
+        </script>
+
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
         <link rel="icon" href="/brand-favicon.svg" type="image/svg+xml">
 
