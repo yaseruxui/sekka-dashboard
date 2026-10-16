@@ -36,10 +36,10 @@ export function MediaField({
     const pick = (items: MediaItem[]) => items[0] && onChange(items[0]);
 
     return (
-        <DropZone accept={accept} onUploaded={pick} className={cn('rounded-lg', invalid && 'ring-destructive ring-1')}>
-            <div className={cn('flex items-center gap-3 rounded-lg border p-2', compact && 'p-1.5')}>
+        <DropZone accept={accept} onUploaded={pick} className={cn('min-w-0 rounded-lg', invalid && 'ring-destructive ring-1')}>
+            <div className={cn('flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border p-2', compact && 'p-1.5')}>
                 <MediaThumb src={value} className={cn('shrink-0 rounded-md', compact ? 'h-9 w-14' : 'h-16 w-28')} />
-                <div className="min-w-0 flex-1">
+                <div className="min-w-24 flex-1">
                     <div className={cn('truncate', compact ? 'text-xs' : 'text-sm font-medium')} dir="ltr" style={{ textAlign: 'right' }}>
                         {value ? fileName(value) : <span className="text-muted-foreground">لم يتم الاختيار</span>}
                     </div>

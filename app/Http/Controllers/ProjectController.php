@@ -98,16 +98,28 @@ class ProjectController extends Controller
             'blocks' => ['nullable', 'array'],
         ]);
 
-        $project->update([
-            'draft' => [
-                ...array_map(fn ($v) => $v ?? '', array_intersect_key($data, array_flip(Project::EDITABLE))),
-                'preview' => $data['preview'] ?? null,
-                'blocks' => array_values($request->input('blocks', [])),
-            ],
-            'draft_saved_at' => now(),
-        ]);
+        $draft = [
+            ...array_map(fn ($v) => $v ?? '', array_intersect_key($data, array_flip(Project::EDITABLE))),
+            'preview' => ($data['preview'] ?? null) ?: null,
+            'blocks' => array_values($request->input('blocks', [])),
+        ];
+        // Edited back to what is published (e.g. undo): no draft left.
+        $published = (clone $project)->forceFill(['draft' => null])->workingCopy();
+        $same = $project->hasBeenPublished() && $this->sameContent($draft, $published);
 
-        return response()->json(['savedAt' => $project->draft_saved_at->toIso8601String()]);
+        $project->update(['draft' => $same ? null : $draft, 'draft_saved_at' => $same ? null : now()]);
+
+        return response()->json(['savedAt' => now()->toIso8601String(), 'hasDraft' => ! $same]);
+    }
+
+    private function sameContent(array $a, array $b): bool
+    {
+        $norm = fn (array $p) => json_encode(array_map(
+            fn ($v) => is_array($v) ? Blocks::normalizeAll($v) : (string) $v,
+            array_intersect_key(array_replace(array_fill_keys(Project::EDITABLE, ''), $p), array_flip(Project::EDITABLE)),
+        ));
+
+        return $norm($a) === $norm($b);
     }
 
     /** "نشر": the working copy becomes what the site shows. */

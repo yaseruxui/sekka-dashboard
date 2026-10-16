@@ -224,4 +224,15 @@ class ProjectsTest extends TestCase
             ->has('aspects', 6)
             ->has('categories'));
     }
+
+    public function test_a_draft_edited_back_to_the_published_version_is_dropped(): void
+    {
+        $user = User::factory()->create();
+        $project = $this->newProject($user);
+        $this->actingAs($user)->post("/projects/{$project->id}/publish", $this->payload());
+
+        $this->actingAs($user)->putJson("/projects/{$project->id}/draft", $this->payload(['title' => 'Changed']))->assertJsonPath('hasDraft', true);
+        $this->actingAs($user)->putJson("/projects/{$project->id}/draft", $this->payload())->assertJsonPath('hasDraft', false);
+        $this->assertNull($project->fresh()->draft);
+    }
 }
