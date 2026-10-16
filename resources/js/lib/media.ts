@@ -23,7 +23,9 @@ export const mediaPageSchema = z.object({
 });
 
 /** Where a file is used: /media/{id}/usage. */
-export const mediaUsageSchema = z.array(z.object({ label: z.string(), href: z.string() }));
+/** `live`: the public site shows it now, so it cannot be deleted. */
+export const mediaUsageSchema = z.array(z.object({ label: z.string(), href: z.string(), live: z.boolean() }));
+export type MediaUsage = z.infer<typeof mediaUsageSchema>;
 
 export type MediaItem = z.infer<typeof mediaItemSchema>;
 export type MediaKind = MediaItem['kind'];

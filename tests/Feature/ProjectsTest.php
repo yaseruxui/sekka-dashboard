@@ -138,8 +138,8 @@ class ProjectsTest extends TestCase
 
     public function test_reorder(): void
     {
-        $a = Project::create(['slug' => 'a', 'title' => 'A', 'summary' => '', 'blocks' => [], 'position' => 0]);
-        $b = Project::create(['slug' => 'b', 'title' => 'B', 'summary' => '', 'blocks' => [], 'position' => 1]);
+        $a = Project::create(['slug' => 'a', 'title' => 'A', 'summary' => '', 'blocks' => [], 'position' => 0, 'published' => true]);
+        $b = Project::create(['slug' => 'b', 'title' => 'B', 'summary' => '', 'blocks' => [], 'position' => 1, 'published' => true]);
 
         $this->actingAs(User::factory()->create())->post('/projects/reorder', ['ids' => [$b->id, $a->id]])->assertSessionHasNoErrors();
         $this->getJson('/api/public/projects')->assertJsonPath('0.slug', 'b');

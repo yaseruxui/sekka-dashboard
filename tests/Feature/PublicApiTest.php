@@ -40,7 +40,7 @@ class PublicApiTest extends TestCase
     {
         $this->import();
         Project::create(['slug' => 'draft', 'title' => 'x', 'summary' => '', 'blocks' => [], 'published' => false, 'position' => 0]);
-        Project::create(['slug' => 'first', 'title' => 'x', 'summary' => '', 'blocks' => [], 'position' => 0]);
+        Project::create(['slug' => 'first', 'title' => 'x', 'summary' => '', 'blocks' => [], 'published' => true, 'position' => 0]);
 
         $this->getJson('/api/public/projects')
             ->assertOk()

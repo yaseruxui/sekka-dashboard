@@ -92,8 +92,15 @@ class MediaController extends Controller
 
     public function destroy(Request $request, Media $media): RedirectResponse
     {
-        if (! $request->boolean('force') && $this->inUse($media->url)) {
-            return back()->with('error', "الملف {$media->name} مستخدم في مشروع أو في محتوى الموقع. استبدله هناك أولاً.");
+        $usages = $this->usages($media->url);
+        // On the live site: never, even forced (the page would show a broken image).
+        $live = array_column(array_filter($usages, fn ($u) => $u['live']), 'label');
+        if ($live !== []) {
+            return back()->with('error', "الملف {$media->name} ظاهر على الموقع (".implode('، ', $live).'). استبدله هناك أولاً.');
+        }
+        // Only in unpublished drafts: allowed once confirmed.
+        if (! $request->boolean('force') && $usages !== []) {
+            return back()->with('error', "الملف {$media->name} مستخدم في مسودة مشروع. استبدله هناك أولاً.");
         }
 
         Storage::disk('public')->delete($media->path);
@@ -160,12 +167,12 @@ class MediaController extends Controller
         return response()->json($this->usages($media->url));
     }
 
-    private function inUse(string $url): bool
-    {
-        return $this->usages($url) !== [];
-    }
-
-    /** @return list<array{label: string, href: string}> */
+    /**
+     * Where a file is used. `live`: the public site shows it now (a published
+     * project's published version, or a site section).
+     *
+     * @return list<array{label: string, href: string, live: bool}>
+     */
     private function usages(string $url): array
     {
         // Few rows: decode and search in PHP rather than LIKE over escaped JSON.
@@ -173,15 +180,16 @@ class MediaController extends Controller
         $contains = fn (mixed $value) => $value !== null && str_contains(json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), $needle);
         $out = [];
 
-        foreach (Project::ordered()->get(['id', 'title', 'cover', 'preview', 'blocks', 'draft']) as $p) {
+        foreach (Project::ordered()->get(['id', 'title', 'published', 'cover', 'preview', 'blocks', 'draft']) as $p) {
             if ($contains([$p->cover, $p->preview, $p->blocks, $p->draft])) {
-                $out[] = ['label' => 'مشروع: '.$p->title, 'href' => route('projects.edit', $p)];
+                $live = $p->published && $contains([$p->cover, $p->preview, $p->blocks]);
+                $out[] = ['label' => 'مشروع: '.$p->title, 'href' => route('projects.edit', $p), 'live' => $live];
             }
         }
         $sections = ['home' => ['الصفحة الرئيسية', 'home'], 'contact' => ['تواصل معنا', 'contact']];
         foreach ($sections as $key => [$label, $page]) {
             if ($contains(Setting::getValue($key))) {
-                $out[] = ['label' => $label, 'href' => route('site.show', $page)];
+                $out[] = ['label' => $label, 'href' => route('site.show', $page), 'live' => true];
             }
         }
 

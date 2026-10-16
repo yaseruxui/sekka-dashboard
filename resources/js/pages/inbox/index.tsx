@@ -82,10 +82,12 @@ export default function Inbox({ messages, filters, counts }: Props) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [q]);
 
-    // Opening a message marks it read.
+    // Opening a message marks it read, once per opening: not again after the
+    // reload this triggers, and not right after "mark as unread" on it.
     useEffect(() => {
         if (open && !open.read_at) router.patch(route('inbox.read', open.id), { read: true }, RELOAD);
-    }, [open]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open?.id]);
 
     const exportUrl = route('inbox.export', params());
 

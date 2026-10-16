@@ -20,7 +20,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useUpload } from '@/hooks/use-upload';
 import AppLayout from '@/layouts/app-layout';
 import { api } from '@/lib/http';
-import { acceptFor, formatBytes, type MediaItem, mediaSrc, mediaUsageSchema } from '@/lib/media';
+import { acceptFor, formatBytes, type MediaItem, mediaSrc, type MediaUsage, mediaUsageSchema } from '@/lib/media';
 import { pageLabel } from '@/lib/pagination';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
@@ -44,7 +44,7 @@ const KIND_LABEL = { image: 'صورة', video: 'فيديو', file: 'ملف' };
 function Details({ item, onClose }: { item: MediaItem | null; onClose: () => void }) {
     const { siteUrl } = usePage<SharedData>().props;
     const [alt, setAlt] = useState('');
-    const [usage, setUsage] = useState<{ label: string; href: string }[] | null>(null);
+    const [usage, setUsage] = useState<MediaUsage | null>(null);
     const [copied, setCopied] = useState(false);
     const [confirm, setConfirm] = useState(false);
 
@@ -57,6 +57,9 @@ function Details({ item, onClose }: { item: MediaItem | null; onClose: () => voi
             .then(setUsage)
             .catch(() => setUsage([]));
     }, [item]);
+
+    // Shown on the public site: the server refuses the delete, so it is not offered.
+    const live = !!usage?.some((u) => u.live);
 
     if (!item) return null;
     const url = mediaSrc(item.url, siteUrl);
@@ -160,9 +163,14 @@ function Details({ item, onClose }: { item: MediaItem | null; onClose: () => voi
                     )}
                 </div>
 
-                <Button type="button" variant="outline" className="text-destructive mt-auto" onClick={() => setConfirm(true)}>
-                    <Trash2 /> حذف الملف
-                </Button>
+                <div className="mt-auto flex flex-col gap-2">
+                    {live && (
+                        <p className="text-muted-foreground text-sm">الملف ظاهر على الموقع الآن، فلا يمكن حذفه. استبدله في الأماكن أعلاه أولاً.</p>
+                    )}
+                    <Button type="button" variant="outline" className="text-destructive" disabled={live} onClick={() => setConfirm(true)}>
+                        <Trash2 /> حذف الملف
+                    </Button>
+                </div>
 
                 <AlertDialog open={confirm} onOpenChange={setConfirm}>
                     <AlertDialogContent>
@@ -170,7 +178,7 @@ function Details({ item, onClose }: { item: MediaItem | null; onClose: () => voi
                             <AlertDialogTitle>حذف «{item.name}»؟</AlertDialogTitle>
                             <AlertDialogDescription>
                                 {usage?.length
-                                    ? `الملف مستخدم في ${usage.length === 1 ? 'مكان واحد' : `${usage.length} أماكن`}. لو حذفته سيختفي من هناك أيضاً. الأفضل تستبدله أولاً.`
+                                    ? `الملف مستخدم في ${usage.length === 1 ? 'مسودة واحدة' : `${usage.length} مسودات`} لم تُنشر بعد. لو حذفته سيختفي منها. الأفضل تستبدله أولاً.`
                                     : 'سيُحذف الملف نهائياً من المكتبة.'}
                             </AlertDialogDescription>
                         </AlertDialogHeader>

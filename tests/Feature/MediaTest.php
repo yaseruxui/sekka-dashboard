@@ -77,9 +77,9 @@ class MediaTest extends TestCase
     public function test_media_in_use_is_not_deleted_without_force(): void
     {
         $user = User::factory()->create();
-        $this->actingAs($user)->postJson('/media', ['file' => UploadedFile::fake()->image('a.jpg', 10, 10)]);
+        $this->actingAs($user)->postJson('/media', ['file' => UploadedFile::fake()->createWithContent('a.svg', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"></svg>')]);
         $media = Media::first();
-        Project::create(['slug' => 'p', 'title' => 'P', 'summary' => '', 'blocks' => [
+        Project::create(['slug' => 'p', 'title' => 'P', 'summary' => '', 'published' => false, 'blocks' => [
             ['id' => 'i', 'type' => 'image', 'media' => ['src' => $media->url, 'width' => 10, 'height' => 10]],
         ]]);
 
@@ -89,6 +89,19 @@ class MediaTest extends TestCase
         $this->actingAs($user)->delete("/media/{$media->id}?force=1")->assertSessionHas('success');
         $this->assertModelMissing($media);
         Storage::disk('public')->assertMissing($media->path);
+    }
+
+    public function test_media_on_the_live_site_is_never_deleted(): void
+    {
+        $user = User::factory()->create();
+        $svg = UploadedFile::fake()->createWithContent('a.svg', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"></svg>');
+        $this->actingAs($user)->postJson('/media', ['file' => $svg]);
+        $media = Media::first();
+        Project::create(['slug' => 'p', 'title' => 'P', 'summary' => '', 'published' => true, 'cover' => $media->url, 'blocks' => []]);
+
+        $this->actingAs($user)->getJson("/media/{$media->id}/usage")->assertJsonPath('0.live', true);
+        $this->actingAs($user)->delete("/media/{$media->id}?force=1")->assertSessionHas('error');
+        $this->assertModelExists($media);
     }
 
     public function test_picker_list_filters_by_kind(): void
