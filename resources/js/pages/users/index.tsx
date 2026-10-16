@@ -16,12 +16,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useInitials } from '@/hooks/use-initials';
+import { useIsMobile } from '@/hooks/use-mobile';
 import AppLayout from '@/layouts/app-layout';
+import { cn } from '@/lib/utils';
 import { type Permission } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
-import { LoaderCircle, MailPlus, Send, ShieldCheck, Trash2 } from 'lucide-react';
-import { type FormEventHandler, useState } from 'react';
+import { LayoutGrid, LoaderCircle, MailPlus, Rows3, Send, ShieldCheck, Trash2 } from 'lucide-react';
+import { type FormEventHandler, useEffect, useState } from 'react';
 
 interface Member {
     id: number;
@@ -166,8 +169,108 @@ function PermissionsDialog({ member, onClose, all }: { member: Member | null; on
     );
 }
 
-export default function Users({ users, permissions: all }: { users: Member[]; permissions: Permission[] }) {
+function Identity({ member: u }: { member: Member }) {
     const getInitials = useInitials();
+    return (
+        <div className="flex min-w-0 items-center gap-3">
+            <span className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
+                {getInitials(u.name)}
+            </span>
+            <div className="grid min-w-0">
+                <span className="flex items-center gap-2 font-semibold">
+                    <span className="truncate">{u.name}</span>
+                    {u.isMe && <Badge variant="secondary">أنت</Badge>}
+                </span>
+                <span className="text-muted-foreground truncate text-sm" dir="ltr" style={{ textAlign: 'right' }}>
+                    {u.email}
+                </span>
+            </div>
+        </div>
+    );
+}
+
+function PermissionChips({ member: u }: { member: Member }) {
+    if (u.permissions.length === 0) return <span className="text-muted-foreground text-sm">بدون صلاحيات: يرى الرئيسية فقط</span>;
+    return (
+        <div className="flex flex-wrap gap-1.5">
+            {u.permissions.map((p) => (
+                <span key={p} className="bg-muted rounded-full px-2.5 py-0.5 text-xs">
+                    {LABELS[p].title}
+                </span>
+            ))}
+        </div>
+    );
+}
+
+/** Pending invitation or active, and since when. */
+function Status({ member: u }: { member: Member }) {
+    return (
+        <div className="grid gap-0.5">
+            {u.invitedAt ? (
+                <Badge variant="outline" className="w-fit border-amber-500/40 text-amber-700 dark:text-amber-400">
+                    بانتظار قبول الدعوة
+                </Badge>
+            ) : (
+                <Badge variant="outline" className="w-fit border-emerald-500/40 text-emerald-700 dark:text-emerald-400">
+                    نشط
+                </Badge>
+            )}
+            <span className="text-muted-foreground text-xs">
+                {u.invitedAt ? `دُعي ${timeAgo(u.invitedAt)}` : u.createdAt && `أُضيف ${timeAgo(u.createdAt)}`}
+            </span>
+        </div>
+    );
+}
+
+function Actions({ member: u, onEdit, onDelete }: { member: Member; onEdit: (m: Member) => void; onDelete: (m: Member) => void }) {
+    return (
+        <div className="flex items-center justify-end gap-1">
+            {u.invitedAt && (
+                <Button variant="ghost" size="sm" onClick={() => router.post(route('users.invite', u.id), {}, { preserveScroll: true })}>
+                    <Send /> إعادة إرسال
+                </Button>
+            )}
+            <Button variant="ghost" size="sm" onClick={() => onEdit(u)}>
+                <ShieldCheck /> الصلاحيات
+            </Button>
+            {!u.isMe && (
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive size-8"
+                    aria-label={u.invitedAt ? `إلغاء دعوة ${u.name}` : `حذف ${u.name}`}
+                    onClick={() => onDelete(u)}
+                >
+                    <Trash2 />
+                </Button>
+            )}
+        </div>
+    );
+}
+
+type View = 'table' | 'cards';
+const VIEW_KEY = 'sekka.users.view';
+
+export default function Users({ users, permissions: all }: { users: Member[]; permissions: Permission[] }) {
+    const [savedView, setView] = useState<View>('table');
+    // Phones always get cards, like the projects page.
+    const isMobile = useIsMobile();
+    const view: View = isMobile ? 'cards' : savedView;
+    useEffect(() => {
+        try {
+            if (localStorage.getItem(VIEW_KEY) === 'cards') setView('cards');
+        } catch {
+            /* private mode */
+        }
+    }, []);
+    const changeView = (v: View) => {
+        setView(v);
+        try {
+            localStorage.setItem(VIEW_KEY, v);
+        } catch {
+            /* private mode */
+        }
+    };
     const [inviting, setInviting] = useState(false);
     const [editing, setEditing] = useState<Member | null>(null);
     const [deleting, setDeleting] = useState<Member | null>(null);
@@ -186,70 +289,75 @@ export default function Users({ users, permissions: all }: { users: Member[]; pe
                     }
                 />
 
-                <ul className="bg-card divide-y overflow-hidden rounded-xl border shadow-xs">
-                    {users.map((u) => (
-                        <li key={u.id} className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4">
-                            <span className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
-                                {getInitials(u.name)}
-                            </span>
-                            <div className="grid min-w-0 flex-[1_1_200px]">
-                                <span className="flex items-center gap-2 font-semibold">
-                                    <span className="truncate">{u.name}</span>
-                                    {u.isMe && <Badge variant="secondary">أنت</Badge>}
-                                    {u.invitedAt && (
-                                        <Badge variant="outline" className="border-amber-500/40 text-amber-700 dark:text-amber-400">
-                                            بانتظار قبول الدعوة
-                                        </Badge>
-                                    )}
-                                </span>
-                                <span className="text-muted-foreground truncate text-sm" dir="ltr" style={{ textAlign: 'right' }}>
-                                    {u.email}
-                                </span>
-                            </div>
-
-                            <div className="flex flex-[2_1_260px] flex-wrap gap-1.5">
-                                {u.permissions.length === 0 ? (
-                                    <span className="text-muted-foreground text-sm">بدون صلاحيات: يرى الرئيسية فقط</span>
-                                ) : (
-                                    u.permissions.map((p) => (
-                                        <span key={p} className="bg-muted rounded-full px-2.5 py-0.5 text-xs">
-                                            {LABELS[p].title}
-                                        </span>
-                                    ))
-                                )}
-                            </div>
-
-                            <div className="ms-auto flex items-center gap-1">
-                                <span className="text-muted-foreground hidden text-xs lg:inline">
-                                    {u.invitedAt ? `دُعي ${timeAgo(u.invitedAt)}` : u.createdAt && `أُضيف ${timeAgo(u.createdAt)}`}
-                                </span>
-                                {u.invitedAt && (
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => router.post(route('users.invite', u.id), {}, { preserveScroll: true })}
-                                    >
-                                        <Send /> إعادة إرسال
-                                    </Button>
-                                )}
-                                <Button variant="ghost" size="sm" onClick={() => setEditing(u)}>
-                                    <ShieldCheck /> الصلاحيات
-                                </Button>
-                                {!u.isMe && (
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="text-destructive size-8"
-                                        aria-label={u.invitedAt ? `إلغاء دعوة ${u.name}` : `حذف ${u.name}`}
-                                        onClick={() => setDeleting(u)}
-                                    >
-                                        <Trash2 />
-                                    </Button>
-                                )}
-                            </div>
-                        </li>
+                <div role="group" aria-label="طريقة العرض" className="ms-auto hidden rounded-md border p-0.5 md:flex">
+                    {(
+                        [
+                            ['table', Rows3, 'جدول'],
+                            ['cards', LayoutGrid, 'بطاقات'],
+                        ] as const
+                    ).map(([v, Icon, label]) => (
+                        <button
+                            key={v}
+                            type="button"
+                            aria-pressed={view === v}
+                            onClick={() => changeView(v)}
+                            className={cn(
+                                'flex h-8 items-center gap-1.5 rounded px-3 text-sm',
+                                view === v ? 'bg-muted font-semibold' : 'text-muted-foreground',
+                            )}
+                        >
+                            <Icon className="size-4" /> {label}
+                        </button>
                     ))}
-                </ul>
+                </div>
+
+                {view === 'table' ? (
+                    <div className="bg-card overflow-hidden rounded-xl border shadow-xs">
+                        <Table className="min-w-[860px]">
+                            <TableHeader className="bg-muted/40">
+                                <TableRow>
+                                    <TableHead>المستخدم</TableHead>
+                                    <TableHead>الصلاحيات</TableHead>
+                                    <TableHead>الحالة</TableHead>
+                                    <TableHead>
+                                        <span className="sr-only">إجراءات</span>
+                                    </TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {users.map((u) => (
+                                    <TableRow key={u.id}>
+                                        <TableCell>
+                                            <Identity member={u} />
+                                        </TableCell>
+                                        <TableCell className="max-w-md whitespace-normal">
+                                            <PermissionChips member={u} />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Status member={u} />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Actions member={u} onEdit={setEditing} onDelete={setDeleting} />
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                ) : (
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+                        {users.map((u) => (
+                            <article key={u.id} className="bg-card flex flex-col gap-4 rounded-xl border p-4 shadow-xs">
+                                <Identity member={u} />
+                                <PermissionChips member={u} />
+                                <div className="mt-auto flex items-center justify-between gap-2 border-t pt-3">
+                                    <Status member={u} />
+                                    <Actions member={u} onEdit={setEditing} onDelete={setDeleting} />
+                                </div>
+                            </article>
+                        ))}
+                    </div>
+                )}
             </div>
 
             <InviteDialog open={inviting} onOpenChange={setInviting} all={all} />
