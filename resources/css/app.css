@@ -84,12 +84,12 @@
 }
 
 /*
-  Light elevation, mirroring dark, in cool grays (blue-leaning, like the
-  logo): sidebar frame #F1F3F6 → page panel #F8F9FB → cards and popovers
-  white. Borders, hover and muted text share the same hue.
+  Light: a white page framed by a cool-gray sidebar (#F1F3F6, blue-leaning
+  like the logo); cards are white with borders. Borders, hover and muted
+  text share the same cool hue.
 */
 :root {
-    --background: hsl(220, 23%, 97.6%);
+    --background: hsl(0, 0%, 100%);
     --foreground: hsl(0, 0%, 3.9%);
     --card: hsl(0, 0%, 100%);
     --card-foreground: hsl(0, 0%, 3.9%);
