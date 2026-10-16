@@ -1,2 +1,5 @@
+# Private admin dashboard: keep it out of search engines. Uploaded media stays
+# crawlable because the public site embeds it from /storage/.
 User-agent: *
-Disallow:
+Allow: /storage/
+Disallow: /

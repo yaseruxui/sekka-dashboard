@@ -1,3 +1,5 @@
+import * as z from 'zod/mini';
+
 /**
  * JSON calls to the dashboard outside Inertia visits (autosave, media
  * picker, uploads). Laravel reads the CSRF token from the XSRF-TOKEN cookie.
@@ -22,7 +24,21 @@ export class HttpError extends Error {
     }
 }
 
-export async function api<T>(url: string, options: { method?: string; body?: unknown; signal?: AbortSignal } = {}): Promise<T> {
+/**
+ * A 2xx answer is only trusted once it matches `schema`; anything else is
+ * reported as an HttpError, like a failed request.
+ */
+function checked<S extends z.ZodMiniType>(schema: S, json: unknown, status: number): z.output<S> {
+    const result = schema.safeParse(json);
+    if (result.success) return result.data;
+    console.error(`Unexpected response (${status}):\n${z.prettifyError(result.error)}`);
+    throw new HttpError(status, { message: 'وصل ردّ غير متوقع من السيرفر.' });
+}
+
+export async function api<S extends z.ZodMiniType>(
+    url: string,
+    options: { schema: S; method?: string; body?: unknown; signal?: AbortSignal },
+): Promise<z.output<S>> {
     const res = await fetch(url, {
         method: options.method ?? 'GET',
         headers: {
@@ -37,11 +53,15 @@ export async function api<T>(url: string, options: { method?: string; body?: unk
     });
     const json = res.status === 204 ? null : await res.json().catch(() => null);
     if (!res.ok) throw new HttpError(res.status, json);
-    return json as T;
+    return checked(options.schema, json, res.status);
 }
 
 /** multipart POST with upload progress (0..1). */
-export function postForm<T>(url: string, form: FormData, onProgress?: (p: number) => void): Promise<T> {
+export function postForm<S extends z.ZodMiniType>(
+    url: string,
+    form: FormData,
+    options: { schema: S; onProgress?: (p: number) => void },
+): Promise<z.output<S>> {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open('POST', url);
@@ -49,7 +69,7 @@ export function postForm<T>(url: string, form: FormData, onProgress?: (p: number
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
         xhr.setRequestHeader('X-XSRF-TOKEN', xsrfToken());
         xhr.withCredentials = true;
-        xhr.upload.onprogress = (e) => e.lengthComputable && onProgress?.(e.loaded / e.total);
+        xhr.upload.onprogress = (e) => e.lengthComputable && options.onProgress?.(e.loaded / e.total);
         xhr.onload = () => {
             let json: unknown = null;
             try {
@@ -57,8 +77,12 @@ export function postForm<T>(url: string, form: FormData, onProgress?: (p: number
             } catch {
                 /* not JSON */
             }
-            if (xhr.status >= 200 && xhr.status < 300) resolve(json as T);
-            else reject(new HttpError(xhr.status, json as HttpError['body']));
+            if (xhr.status < 200 || xhr.status >= 300) return reject(new HttpError(xhr.status, json as HttpError['body']));
+            try {
+                resolve(checked(options.schema, json, xhr.status));
+            } catch (e) {
+                reject(e);
+            }
         };
         xhr.onerror = () => reject(new HttpError(0, { message: 'تعذّر الاتصال بالسيرفر.' }));
         xhr.send(form);

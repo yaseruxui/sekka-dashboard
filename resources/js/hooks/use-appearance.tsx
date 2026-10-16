@@ -1,26 +1,39 @@
 import { useEffect, useState } from 'react';
 
-export type Appearance = 'light' | 'dark' | 'system';
+const APPEARANCES = ['light', 'dark', 'system'] as const;
+
+export type Appearance = (typeof APPEARANCES)[number];
+
+const isAppearance = (v: unknown): v is Appearance => APPEARANCES.some((a) => a === v);
+
+/**
+ * The saved choice; 'system' when none, unreadable, or not a known value.
+ * (A plain guard, not zod: this runs in the entry chunk before first paint.)
+ */
+const savedAppearance = (): Appearance => {
+    try {
+        const v = localStorage.getItem('appearance');
+        return isAppearance(v) ? v : 'system';
+    } catch {
+        return 'system';
+    }
+};
 
 const prefersDark = () => window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-const applyTheme = (appearance: Appearance) => {
-    const isDark = appearance === 'dark' || (appearance === 'system' && prefersDark());
+/** Whether `appearance` shows the dark theme right now ('system' follows the OS). */
+export const isDarkAppearance = (appearance: Appearance) => appearance === 'dark' || (appearance === 'system' && prefersDark());
 
-    document.documentElement.classList.toggle('dark', isDark);
+const applyTheme = (appearance: Appearance) => {
+    document.documentElement.classList.toggle('dark', isDarkAppearance(appearance));
 };
 
 const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-const handleSystemThemeChange = () => {
-    const currentAppearance = localStorage.getItem('appearance') as Appearance;
-    applyTheme(currentAppearance || 'system');
-};
+const handleSystemThemeChange = () => applyTheme(savedAppearance());
 
 export function initializeTheme() {
-    const savedAppearance = (localStorage.getItem('appearance') as Appearance) || 'system';
-
-    applyTheme(savedAppearance);
+    applyTheme(savedAppearance());
 
     // Add the event listener for system theme changes...
     mediaQuery.addEventListener('change', handleSystemThemeChange);
@@ -36,8 +49,7 @@ export function useAppearance() {
     };
 
     useEffect(() => {
-        const savedAppearance = localStorage.getItem('appearance') as Appearance | null;
-        updateAppearance(savedAppearance || 'system');
+        updateAppearance(savedAppearance());
 
         return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
     }, []);

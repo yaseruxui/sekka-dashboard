@@ -10,7 +10,11 @@ import { api, HttpError } from '@/lib/http';
 import { cn } from '@/lib/utils';
 import { Link2, Link2Off } from 'lucide-react';
 import { useState } from 'react';
+import * as z from 'zod/mini';
 import { slugify, type WorkingProject } from './model';
+
+/** POST /categories: the added name and the full list after it. */
+const categorySchema = z.object({ name: z.string(), categories: z.array(z.string()) });
 
 const ADD = '__add__';
 
@@ -37,7 +41,7 @@ function CategoryPicker({
         setBusy(true);
         setAddError('');
         try {
-            const res = await api<{ name: string; categories: string[] }>('/categories', { method: 'POST', body: { name } });
+            const res = await api('/categories', { schema: categorySchema, method: 'POST', body: { name } });
             onCategories(res.categories);
             onChange(res.name);
             setAdding(false);

@@ -5,11 +5,13 @@ export function EmptyState({
     icon: Icon,
     title,
     description,
+    action,
     className,
 }: {
     icon: LucideIcon;
     title: React.ReactNode;
     description?: React.ReactNode;
+    action?: React.ReactNode;
     className?: string;
 }) {
     return (
@@ -21,6 +23,7 @@ export function EmptyState({
                 <p className="font-medium">{title}</p>
                 {description && <p className="text-muted-foreground max-w-sm text-sm">{description}</p>}
             </div>
+            {action}
         </div>
     );
 }

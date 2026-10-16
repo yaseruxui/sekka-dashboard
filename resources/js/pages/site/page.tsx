@@ -1,3 +1,4 @@
+import { ErrorBoundary, WidgetError } from '@/components/error-boundary';
 import { Button } from '@/components/ui/button';
 import { SITE_PAGES } from '@/features/site/registry';
 import { type CardStatus, type Messages, SectionCard, type SiteContentProps } from '@/features/site/section-card';
@@ -114,22 +115,23 @@ export default function SitePage({ page, content, defaults, meta }: Props) {
 
                         <div className="flex min-w-0 flex-[999_1_520px] flex-col gap-4">
                             {def.sections.map((s, i) => (
-                                <SectionCard
-                                    key={`${page}-${s.id}`}
-                                    page={page}
-                                    section={s}
-                                    index={i}
-                                    content={content}
-                                    defaults={defaults.messages}
-                                    meta={meta[`${page}.${s.id}`]}
-                                    errors={submitted === s.id ? errors : {}}
-                                    open={open.has(s.id)}
-                                    onOpenChange={(o) =>
-                                        setOpen((prev) => (o ? new Set([...prev, s.id]) : new Set([...prev].filter((x) => x !== s.id))))
-                                    }
-                                    onStatus={onStatus[s.id]}
-                                    onSubmit={() => setSubmitted(s.id)}
-                                />
+                                <ErrorBoundary key={`${page}-${s.id}`} fallback={WidgetError}>
+                                    <SectionCard
+                                        page={page}
+                                        section={s}
+                                        index={i}
+                                        content={content}
+                                        defaults={defaults.messages}
+                                        meta={meta[`${page}.${s.id}`]}
+                                        errors={submitted === s.id ? errors : {}}
+                                        open={open.has(s.id)}
+                                        onOpenChange={(o) =>
+                                            setOpen((prev) => (o ? new Set([...prev, s.id]) : new Set([...prev].filter((x) => x !== s.id))))
+                                        }
+                                        onStatus={onStatus[s.id]}
+                                        onSubmit={() => setSubmitted(s.id)}
+                                    />
+                                </ErrorBoundary>
                             ))}
                         </div>
                     </div>

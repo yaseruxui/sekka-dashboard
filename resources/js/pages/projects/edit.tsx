@@ -1,4 +1,5 @@
 import { DropZone } from '@/components/drop-zone';
+import { ErrorBoundary, WidgetError } from '@/components/error-boundary';
 import { FlashToasts } from '@/components/flash-toasts';
 import { MediaPicker } from '@/components/media-picker';
 import { timeAgo } from '@/components/page-header';
@@ -54,6 +55,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import * as z from 'zod/mini';
 
 interface EditProject extends WorkingProject {
     id: number;
@@ -67,6 +69,9 @@ interface EditProject extends WorkingProject {
 type SaveState = 'saved' | 'dirty' | 'saving' | 'error';
 
 const AUTOSAVE_MS = 1500;
+
+/** PUT projects/{id}/draft */
+const draftSavedSchema = z.object({ savedAt: z.string(), hasDraft: z.boolean() });
 
 function working(p: EditProject): WorkingProject {
     const { slug, title, title_en, summary, category, year, cover, preview, aspect, blocks } = p;
@@ -115,7 +120,7 @@ export default function ProjectEdit({
         const body = JSON.stringify(history.present);
         if (body === lastSaved.current) return;
         setSave('saving');
-        const run = api<{ savedAt: string; hasDraft: boolean }>(route('projects.draft', project.id), { method: 'PUT', body: JSON.parse(body) })
+        const run = api(route('projects.draft', project.id), { schema: draftSavedSchema, method: 'PUT', body: JSON.parse(body) })
             .then((res) => {
                 lastSaved.current = body;
                 setSavedAt(res.savedAt);
@@ -407,15 +412,17 @@ export default function ProjectEdit({
                         )}
                     </div>
                     <div className={cn(device === 'mobile' && 'mx-auto w-full max-w-[390px]')}>
-                        <CasePreview
-                            project={p}
-                            siteUrl={siteUrl}
-                            device={device}
-                            selected={selected}
-                            onSelect={setSelected}
-                            errorBlocks={errorBlocks}
-                            onDropMedia={onDropMedia}
-                        />
+                        <ErrorBoundary fallback={WidgetError} resetKey={p}>
+                            <CasePreview
+                                project={p}
+                                siteUrl={siteUrl}
+                                device={device}
+                                selected={selected}
+                                onSelect={setSelected}
+                                errorBlocks={errorBlocks}
+                                onDropMedia={onDropMedia}
+                            />
+                        </ErrorBoundary>
                     </div>
                     <DropZone
                         accept="any"

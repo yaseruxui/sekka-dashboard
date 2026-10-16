@@ -1,19 +1,32 @@
 import { postForm } from '@/lib/http';
+import * as z from 'zod/mini';
 
-export type MediaKind = 'image' | 'video' | 'file';
+/** A row of the media library, as the Media model serializes it. */
+export const mediaItemSchema = z.object({
+    id: z.number(),
+    url: z.string(),
+    name: z.string(),
+    mime: z.string(),
+    size: z.number(),
+    width: z.nullable(z.number()),
+    height: z.nullable(z.number()),
+    alt: z.string(),
+    kind: z.enum(['image', 'video', 'file']),
+    created_at: z.string(),
+});
 
-export interface MediaItem {
-    id: number;
-    url: string;
-    name: string;
-    mime: string;
-    size: number;
-    width: number | null;
-    height: number | null;
-    alt: string;
-    kind: MediaKind;
-    created_at: string;
-}
+/** One page of /media/list (Laravel paginator). */
+export const mediaPageSchema = z.object({
+    data: z.array(mediaItemSchema),
+    current_page: z.number(),
+    last_page: z.number(),
+});
+
+/** Where a file is used: /media/{id}/usage. */
+export const mediaUsageSchema = z.array(z.object({ label: z.string(), href: z.string() }));
+
+export type MediaItem = z.infer<typeof mediaItemSchema>;
+export type MediaKind = MediaItem['kind'];
 
 /** Clips above this size get a warning before upload. */
 export const LARGE_VIDEO_BYTES = 50 * 1024 * 1024;
@@ -120,7 +133,7 @@ export async function uploadMedia(original: File, onProgress?: (p: number) => vo
         form.append('width', String(size.width));
         form.append('height', String(size.height));
     }
-    const item = await postForm<MediaItem>('/media', form, onProgress);
+    const item = await postForm('/media', form, { schema: mediaItemSchema, onProgress });
     return { item, saved: Math.max(0, original.size - file.size) };
 }
 

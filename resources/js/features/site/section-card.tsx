@@ -15,6 +15,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { router } from '@inertiajs/react';
 import { ChevronDown, GripVertical, Highlighter, LoaderCircle, Plus, RotateCcw, Trash2, WrapText } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import * as z from 'zod/mini';
 import { clone, getPath, leafKeys } from './paths';
 import { type Field, type ItemText, type ListField, type Section, type TextField, usedTextKeys } from './registry';
 import { RichText } from './rich-text';
@@ -34,6 +35,19 @@ interface CardState {
     data: Record<string, unknown>; // "home:path" → value
     policy?: { ar: Policy; en: Policy | null };
 }
+
+const policySchema = z.object({ updated: z.string(), title: z.string(), html: z.string() });
+const recordSchema = z.record(z.string(), z.unknown());
+
+/** Unsaved edits kept in localStorage: only restored if they still look like a CardState. */
+const localDraftSchema = z.object({
+    base: z.string(),
+    state: z.object({
+        texts: z.object({ ar: recordSchema, en: recordSchema }),
+        data: recordSchema,
+        policy: z.optional(z.object({ ar: policySchema, en: z.nullable(policySchema) })),
+    }) satisfies z.ZodMiniType<CardState>,
+});
 
 export type CardStatus = 'saved' | 'dirty' | 'error';
 
@@ -575,9 +589,9 @@ export function SectionCard({
     useEffect(() => {
         let next = base;
         try {
-            const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
-            if (saved && saved.base === JSON.stringify(base) && saved.state) {
-                next = saved.state;
+            const saved = localDraftSchema.safeParse(JSON.parse(localStorage.getItem(storageKey) || 'null'));
+            if (saved.success && saved.data.base === JSON.stringify(base)) {
+                next = saved.data.state;
                 setRestored(true);
                 onOpenChange(true);
             } else localStorage.removeItem(storageKey);

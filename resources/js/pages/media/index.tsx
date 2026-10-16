@@ -20,7 +20,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useUpload } from '@/hooks/use-upload';
 import AppLayout from '@/layouts/app-layout';
 import { api } from '@/lib/http';
-import { acceptFor, formatBytes, type MediaItem, mediaSrc } from '@/lib/media';
+import { acceptFor, formatBytes, type MediaItem, mediaSrc, mediaUsageSchema } from '@/lib/media';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
@@ -52,7 +52,7 @@ function Details({ item, onClose }: { item: MediaItem | null; onClose: () => voi
         setAlt(item.alt);
         setUsage(null);
         setCopied(false);
-        api<{ label: string; href: string }[]>(route('media.usage', item.id))
+        api(route('media.usage', item.id), { schema: mediaUsageSchema })
             .then(setUsage)
             .catch(() => setUsage([]));
     }, [item]);

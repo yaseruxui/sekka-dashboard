@@ -5,12 +5,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input';
 import { useUpload } from '@/hooks/use-upload';
 import { api } from '@/lib/http';
-import { acceptFor, type MediaItem } from '@/lib/media';
+import { acceptFor, mediaPageSchema, type MediaItem } from '@/lib/media';
 import { cn } from '@/lib/utils';
-import { Check, LoaderCircle, Search, Upload } from 'lucide-react';
+import { Check, LoaderCircle, Search, TriangleAlert, Upload } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-
-type Page = { data: MediaItem[]; current_page: number; last_page: number };
 
 /**
  * Pick a file from the media library, or upload one (button or drop). With
@@ -37,6 +35,8 @@ export function MediaPicker({
     const [q, setQ] = useState('');
     const [kind, setKind] = useState<'all' | 'image' | 'video'>(accept === 'any' ? 'all' : accept);
     const [loading, setLoading] = useState(false);
+    const [failed, setFailed] = useState(false);
+    const [attempt, setAttempt] = useState(0);
     const [chosen, setChosen] = useState<MediaItem[]>([]);
     const { upload, busy } = useUpload();
     const fileInput = useRef<HTMLInputElement>(null);
@@ -45,23 +45,28 @@ export function MediaPicker({
         if (!open) return;
         const ctrl = new AbortController();
         setLoading(true);
+        setFailed(false);
         const params = new URLSearchParams({ page: String(page) });
         if (q.trim()) params.set('q', q.trim());
         if (kind !== 'all') params.set('kind', kind);
         const t = setTimeout(() => {
-            api<Page>(`/media/list?${params}`, { signal: ctrl.signal })
+            api(`/media/list?${params}`, { schema: mediaPageSchema, signal: ctrl.signal })
                 .then((res) => {
                     setItems((prev) => (page === 1 ? res.data : [...prev, ...res.data]));
                     setLastPage(res.last_page);
                 })
-                .catch(() => {})
+                .catch(() => {
+                    if (!ctrl.signal.aborted) setFailed(true);
+                })
                 .finally(() => setLoading(false));
         }, 200);
         return () => {
             clearTimeout(t);
             ctrl.abort();
         };
-    }, [open, page, q, kind]);
+    }, [open, page, q, kind, attempt]);
+
+    const retry = () => setAttempt((a) => a + 1);
 
     useEffect(() => {
         if (open) {
@@ -144,7 +149,15 @@ export function MediaPicker({
                 </div>
 
                 <DropZone accept={accept} multiple={multiple} onUploaded={uploaded} className="min-h-64 flex-1 overflow-y-auto rounded-lg">
-                    {items.length === 0 && !loading ? (
+                    {items.length === 0 && !loading && failed ? (
+                        <div className="text-muted-foreground flex h-64 flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-sm">
+                            <TriangleAlert className="size-5" />
+                            تعذّر تحميل الملفات.
+                            <Button type="button" variant="ghost" onClick={retry}>
+                                إعادة المحاولة
+                            </Button>
+                        </div>
+                    ) : items.length === 0 && !loading ? (
                         <div className="text-muted-foreground flex h-64 flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-sm">
                             <Upload className="size-5" />
                             لا توجد ملفات بعد. اسحب ملفاً هنا أو اضغط «رفع من الجهاز».
@@ -179,7 +192,14 @@ export function MediaPicker({
                         </div>
                     )}
                     {loading && <LoaderCircle className="text-muted-foreground mx-auto my-4 animate-spin" />}
-                    {!loading && page < lastPage && (
+                    {!loading && failed && items.length > 0 && (
+                        <div className="flex justify-center py-3">
+                            <Button type="button" variant="ghost" onClick={retry}>
+                                تعذّر التحميل، إعادة المحاولة
+                            </Button>
+                        </div>
+                    )}
+                    {!loading && !failed && page < lastPage && (
                         <div className="flex justify-center py-3">
                             <Button type="button" variant="ghost" onClick={() => setPage((p) => p + 1)}>
                                 تحميل المزيد
