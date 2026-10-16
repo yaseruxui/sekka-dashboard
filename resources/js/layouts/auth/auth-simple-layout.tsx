@@ -1,3 +1,4 @@
+import { AppearanceToggle } from '@/components/appearance-toggle';
 import { BrandLogo } from '@/components/brand-logo';
 import { Link } from '@inertiajs/react';
 
@@ -30,7 +31,8 @@ function BrandShapes() {
 export default function AuthSimpleLayout({ children, title, description }: AuthLayoutProps) {
     return (
         <div className="bg-background grid min-h-svh lg:grid-cols-2">
-            <div className="flex flex-col items-center justify-center p-6 md:p-10">
+            <div className="relative flex flex-col items-center justify-center p-6 md:p-10">
+                <AppearanceToggle className="absolute start-3 top-3 size-9 md:start-5 md:top-5" />
                 <div className="bg-card w-full max-w-sm rounded-2xl border p-6 shadow-sm sm:p-8 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
                     <div className="flex flex-col gap-8">
                         <div className="flex flex-col items-center gap-4 lg:items-start">
