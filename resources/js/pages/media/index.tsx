@@ -1,4 +1,5 @@
 import { DropZone } from '@/components/drop-zone';
+import { EmptyState } from '@/components/empty-state';
 import { MediaThumb } from '@/components/media-thumb';
 import { formatDate, PageHeader } from '@/components/page-header';
 import {
@@ -314,10 +315,15 @@ export default function MediaIndex({ media, filters }: { media: Paginated; filte
                     </div>
 
                     {media.data.length === 0 ? (
-                        <div className="text-muted-foreground flex flex-col items-center gap-2 rounded-xl border border-dashed p-12 text-center">
-                            <Upload className="size-6" />
-                            {filters.q || filters.kind ? 'لا توجد ملفات تطابق البحث.' : 'المكتبة فارغة. اسحب صوراً وفيديوهات من جهازك وأفلتها هنا.'}
-                        </div>
+                        <EmptyState
+                            icon={filters.q || filters.kind ? Search : Upload}
+                            title={filters.q || filters.kind ? 'لا توجد ملفات تطابق البحث' : 'المكتبة فارغة'}
+                            description={
+                                filters.q || filters.kind
+                                    ? 'جرّب كلمة أخرى أو غيّر نوع الملف.'
+                                    : 'اسحب صوراً وفيديوهات من جهازك وأفلتها هنا، أو استخدم زر «رفع ملفات».'
+                            }
+                        />
                     ) : view === 'grid' ? (
                         <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8">
                             {media.data.map((m) => (
@@ -339,7 +345,7 @@ export default function MediaIndex({ media, filters }: { media: Paginated; filte
                             ))}
                         </div>
                     ) : (
-                        <div className="overflow-hidden rounded-xl border">
+                        <div className="bg-card overflow-hidden rounded-xl border shadow-xs">
                             <Table className="min-w-[640px]">
                                 <TableHeader className="bg-muted/40">
                                     <TableRow>

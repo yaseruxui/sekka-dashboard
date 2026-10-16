@@ -381,7 +381,7 @@ export default function ProjectEdit({
             <div className="grid flex-1 items-start gap-4 p-4 xl:grid-cols-[300px_minmax(0,1fr)_320px]">
                 <aside
                     className={cn(
-                        'bg-background min-w-0 rounded-xl border p-4 xl:sticky xl:top-20 xl:max-h-[calc(100svh-6rem)] xl:overflow-y-auto',
+                        'bg-card min-w-0 rounded-xl border p-4 shadow-xs xl:sticky xl:top-20 xl:max-h-[calc(100svh-6rem)] xl:overflow-y-auto',
                         selected === 'details' && 'ring-primary ring-2',
                     )}
                 >
@@ -436,7 +436,7 @@ export default function ProjectEdit({
                     </DropZone>
                 </section>
 
-                <aside className="bg-background min-w-0 rounded-xl border p-4 xl:sticky xl:top-20 xl:max-h-[calc(100svh-6rem)] xl:overflow-y-auto">
+                <aside className="bg-card min-w-0 rounded-xl border p-4 shadow-xs xl:sticky xl:top-20 xl:max-h-[calc(100svh-6rem)] xl:overflow-y-auto">
                     {selectedBlock ? (
                         <BlockSettings
                             key={selectedBlock.id}

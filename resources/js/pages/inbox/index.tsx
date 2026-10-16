@@ -1,3 +1,4 @@
+import { EmptyState } from '@/components/empty-state';
 import { formatDate, PageHeader, timeAgo } from '@/components/page-header';
 import {
     AlertDialog,
@@ -16,7 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { Head, router } from '@inertiajs/react';
-import { Download, Mail, MailOpen, Search, Trash2 } from 'lucide-react';
+import { Download, Inbox as InboxIcon, Mail, MailOpen, Search, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface Message {
@@ -130,11 +131,13 @@ export default function Inbox({ messages, filters, counts }: Props) {
                 </div>
 
                 {messages.data.length === 0 ? (
-                    <div className="text-muted-foreground rounded-xl border border-dashed p-12 text-center">
-                        {counts.all === 0 ? 'لا توجد رسائل بعد.' : 'لا توجد رسائل تطابق البحث.'}
-                    </div>
+                    <EmptyState
+                        icon={counts.all === 0 ? InboxIcon : Search}
+                        title={counts.all === 0 ? 'لا توجد رسائل بعد' : 'لا توجد رسائل تطابق البحث'}
+                        description={counts.all === 0 ? 'ستظهر هنا الرسائل القادمة من نموذج «تواصل معنا».' : 'جرّب كلمة أخرى أو امسح الفلتر.'}
+                    />
                 ) : (
-                    <div className="overflow-hidden rounded-xl border">
+                    <div className="bg-card overflow-hidden rounded-xl border shadow-xs">
                         <Table className="min-w-[760px]">
                             <TableHeader className="bg-muted/40">
                                 <TableRow>

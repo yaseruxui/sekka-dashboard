@@ -52,7 +52,7 @@ export default function SitePage({ page, content, defaults, meta }: Props) {
             <Head title={def.title} />
             <div className="bg-muted/30 flex-1">
                 <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 p-4 md:p-8">
-                    <div className="bg-background flex flex-wrap items-center justify-between gap-4 rounded-xl border p-4 sm:p-5">
+                    <div className="bg-card flex flex-wrap items-center justify-between gap-4 rounded-xl border p-4 shadow-xs sm:p-5">
                         <div className="flex items-center gap-3.5">
                             <span className="bg-primary text-primary-foreground flex size-11 items-center justify-center rounded-lg">
                                 <Icon className="size-5" />
@@ -70,7 +70,10 @@ export default function SitePage({ page, content, defaults, meta }: Props) {
                     </div>
 
                     <div className="flex flex-wrap items-start gap-5">
-                        <nav aria-label="أقسام الصفحة" className="bg-background w-full overflow-hidden rounded-xl border md:sticky md:top-4 md:w-60">
+                        <nav
+                            aria-label="أقسام الصفحة"
+                            className="bg-card w-full overflow-hidden rounded-xl border shadow-xs md:sticky md:top-4 md:w-60"
+                        >
                             <div className="border-b px-4 py-3">
                                 <strong className="text-sm">أقسام الصفحة</strong>
                                 <div className="text-muted-foreground text-xs">{def.sections.length} أقسام بترتيب ظهورها</div>

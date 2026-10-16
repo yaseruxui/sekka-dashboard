@@ -36,7 +36,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     };
 
     return (
-        <AuthLayout title="لوحة تحكم سكة" description="سجّل الدخول بحساب المشرف">
+        <AuthLayout title="أهلاً بعودتك" description="سجّل دخولك لإدارة الموقع.">
             <Head title="تسجيل الدخول" />
 
             <form className="flex flex-col gap-6" onSubmit={submit}>

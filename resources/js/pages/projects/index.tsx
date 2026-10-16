@@ -308,7 +308,7 @@ export default function ProjectsIndex({ projects, categories }: { projects: Proj
                             strategy={view === 'table' ? verticalListSortingStrategy : rectSortingStrategy}
                         >
                             {view === 'table' ? (
-                                <div className="overflow-hidden rounded-xl border">
+                                <div className="bg-card overflow-hidden rounded-xl border shadow-xs">
                                     <Table className="min-w-[860px]">
                                         <TableHeader className="bg-muted/40">
                                             <TableRow>
