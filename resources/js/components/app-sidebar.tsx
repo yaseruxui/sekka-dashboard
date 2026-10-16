@@ -10,6 +10,7 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarSeparator,
     useSidebar,
 } from '@/components/ui/sidebar';
 import { type NavGroup, type SharedData } from '@/types';
@@ -115,7 +116,8 @@ export function AppSidebar() {
                 })}
             </SidebarContent>
 
-            {/* Settings, then the profile with the bell and theme toggle. */}
+            {/* Settings, then the profile with the bell and theme toggle; a line keeps them apart from the nav on short screens. */}
+            <SidebarSeparator className="bg-foreground/15 mx-4 my-1 w-auto group-data-[collapsible=icon]:mx-3" />
             <SidebarFooter>
                 <SidebarMenu>
                     <SidebarMenuItem>

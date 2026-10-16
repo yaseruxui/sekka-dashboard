@@ -11,6 +11,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('settings/avatar', [ProfileController::class, 'updateAvatar'])->name('avatar.update');
+    Route::delete('settings/avatar', [ProfileController::class, 'destroyAvatar'])->name('avatar.destroy');
 
     Route::get('settings/password', [PasswordController::class, 'edit'])->name('password.edit');
     Route::put('settings/password', [PasswordController::class, 'update'])->name('password.update');

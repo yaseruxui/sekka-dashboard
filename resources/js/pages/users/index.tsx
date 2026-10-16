@@ -34,6 +34,7 @@ interface Member {
     /** Set until the invitation is accepted. */
     invitedAt: string | null;
     isMe: boolean;
+    avatar: string | null;
     permissions: Permission[];
 }
 
@@ -173,9 +174,13 @@ function Identity({ member: u }: { member: Member }) {
     const getInitials = useInitials();
     return (
         <div className="flex min-w-0 items-center gap-3">
-            <span className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
-                {getInitials(u.name)}
-            </span>
+            {u.avatar ? (
+                <img src={u.avatar} alt="" className="size-10 shrink-0 rounded-full object-cover" />
+            ) : (
+                <span className="bg-muted flex size-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
+                    {getInitials(u.name)}
+                </span>
+            )}
             <div className="grid min-w-0">
                 <span className="flex items-center gap-2 font-semibold">
                     <span className="truncate">{u.name}</span>

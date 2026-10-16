@@ -1,30 +1,30 @@
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
+import { KeyRound, Mail, Palette, UserRound } from 'lucide-react';
 
 const sidebarNavItems: NavItem[] = [
     {
         title: 'الحساب',
         url: '/settings/profile',
-        icon: null,
+        icon: UserRound,
     },
     {
         title: 'كلمة المرور',
         url: '/settings/password',
-        icon: null,
+        icon: KeyRound,
     },
     {
         title: 'المظهر',
         url: '/settings/appearance',
-        icon: null,
+        icon: Palette,
     },
     {
         title: 'البريد الإلكتروني',
         url: '/settings/mail',
-        icon: null,
+        icon: Mail,
         permission: 'users',
     },
 ];
@@ -39,7 +39,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
             <Heading title="الإعدادات" description="حسابك وكلمة المرور والمظهر والبريد" />
 
             <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
-                <aside className="w-full max-w-xl lg:w-48">
+                <aside className="w-full max-w-xl shrink-0 lg:w-52">
                     <nav className="flex flex-col gap-1">
                         {navItems.map((item) => (
                             <Button
@@ -48,10 +48,11 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                                 variant="ghost"
                                 asChild
                                 className={cn('w-full justify-start', {
-                                    'bg-muted': currentPath === item.url,
+                                    'bg-muted font-semibold': currentPath === item.url,
                                 })}
                             >
                                 <Link href={item.url} prefetch>
+                                    {item.icon && <item.icon />}
                                     {item.title}
                                 </Link>
                             </Button>
@@ -59,10 +60,9 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                     </nav>
                 </aside>
 
-                <Separator className="my-6 md:hidden" />
-
-                <div className="flex-1 md:max-w-2xl">
-                    <section className="max-w-xl space-y-12">{children}</section>
+                {/* The page itself in a card, so it reads apart from the menu; its sections split by lines. */}
+                <div className="bg-card flex-1 rounded-xl border p-6 shadow-xs md:max-w-2xl">
+                    <section className="max-w-xl divide-y [&>*]:py-8 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">{children}</section>
                 </div>
             </div>
         </div>

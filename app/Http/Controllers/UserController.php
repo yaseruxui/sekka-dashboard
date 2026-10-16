@@ -32,6 +32,7 @@ class UserController extends Controller
                     'createdAt' => $u->created_at?->toIso8601String(),
                     'invitedAt' => $u->invited_at?->toIso8601String(),
                     'isMe' => $u->id === $request->user()->id,
+                    'avatar' => $u->avatar,
                     'permissions' => $u->permissionList(),
                 ]),
             'permissions' => User::PERMISSIONS,

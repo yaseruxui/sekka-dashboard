@@ -1,7 +1,11 @@
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { Trash2, Upload } from 'lucide-react';
+import { FormEventHandler, useRef, useState } from 'react';
+
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useInitials } from '@/hooks/use-initials';
 
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
@@ -17,6 +21,67 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/settings/profile',
     },
 ];
+
+/** Profile picture: shown in the sidebar and the users list; initials when none. */
+function AvatarSection() {
+    const { auth } = usePage<SharedData>().props;
+    const getInitials = useInitials();
+    const input = useRef<HTMLInputElement>(null);
+    const [uploading, setUploading] = useState(false);
+    const [error, setError] = useState<string>();
+
+    const upload = (file: File) => {
+        setError(undefined);
+        setUploading(true);
+        router.post(
+            route('avatar.update'),
+            { avatar: file },
+            { forceFormData: true, preserveScroll: true, onError: (e) => setError(e.avatar), onFinish: () => setUploading(false) },
+        );
+    };
+
+    return (
+        <div className="space-y-4">
+            <HeadingSmall title="الصورة الشخصية" description="JPG أو PNG أو WebP، حتى 2 ميغابايت." />
+            <div className="flex items-center gap-4">
+                <Avatar className="size-16 overflow-hidden rounded-full">
+                    <AvatarImage src={auth.user.avatar ?? undefined} alt={auth.user.name} className="object-cover" />
+                    <AvatarFallback className="bg-neutral-200 text-lg text-black dark:bg-neutral-700 dark:text-white">
+                        {getInitials(auth.user.name)}
+                    </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-wrap gap-2">
+                    <input
+                        ref={input}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            if (f) upload(f);
+                            e.target.value = '';
+                        }}
+                    />
+                    <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => input.current?.click()}>
+                        <Upload /> {uploading ? 'جارٍ الرفع…' : auth.user.avatar ? 'تغيير الصورة' : 'رفع صورة'}
+                    </Button>
+                    {auth.user.avatar && (
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => router.delete(route('avatar.destroy'), { preserveScroll: true })}
+                        >
+                            <Trash2 /> حذف
+                        </Button>
+                    )}
+                </div>
+            </div>
+            <InputError message={error} />
+        </div>
+    );
+}
 
 export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
     const { auth } = usePage<SharedData>().props;
@@ -37,6 +102,8 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
             <Head title="الحساب" />
 
             <SettingsLayout>
+                <AvatarSection />
+
                 <div className="space-y-6">
                     <HeadingSmall title="بيانات الحساب" description="الاسم والبريد الإلكتروني" />
 
