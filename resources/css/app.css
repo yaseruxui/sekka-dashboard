@@ -84,9 +84,9 @@
 }
 
 /*
-  Light: a white page framed by a cool-gray sidebar (#F1F3F6, blue-leaning
-  like the logo); cards are white with borders. Borders, hover and muted
-  text share the same cool hue.
+  Light: all white (sidebar, frame, page, cards); layers are told apart by
+  thin cool-gray lines (the page panel has a border, cards too). Borders,
+  hover and muted text share one blue-leaning hue, like the logo.
 */
 :root {
     --background: hsl(0, 0%, 100%);
@@ -117,7 +117,7 @@
     --chart-4: hsl(43, 74%, 66%);
     --chart-5: hsl(27, 87%, 67%);
     --radius: 0.5rem;
-    --sidebar-background: hsl(216, 23%, 95.5%);
+    --sidebar-background: hsl(0, 0%, 100%);
     --sidebar-foreground: hsl(240, 5.3%, 30%);
     --sidebar-primary: hsl(0, 0%, 10%);
     --sidebar-primary-foreground: hsl(0, 0%, 98%);
