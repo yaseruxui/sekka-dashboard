@@ -14,20 +14,7 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavGroup, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import {
-    Briefcase,
-    FolderKanban,
-    Home,
-    Images,
-    Inbox,
-    LayoutDashboard,
-    Mail,
-    Menu,
-    PanelRightClose,
-    Settings,
-    ShieldCheck,
-    Users,
-} from 'lucide-react';
+import { Briefcase, FolderKanban, Home, Images, Inbox, LayoutDashboard, Mail, Menu, PanelRightClose, ShieldCheck, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const navGroups: NavGroup[] = [
@@ -96,7 +83,7 @@ function SidebarBrand() {
 }
 
 export function AppSidebar() {
-    const { url, props } = usePage<SharedData>();
+    const { props } = usePage<SharedData>();
     const { permissions } = props.auth;
 
     return (
@@ -115,24 +102,9 @@ export function AppSidebar() {
                 })}
             </SidebarContent>
 
-            {/* Settings, then the profile with the bell (light/dark is in Settings → Appearance); a line keeps them apart from the nav on short screens. */}
+            {/* The profile (its menu opens Settings) and the bell; a line keeps them apart from the nav. */}
             <SidebarSeparator className="bg-foreground/15 mx-4 my-1 w-auto group-data-[collapsible=icon]:mx-3" />
             <SidebarFooter>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton
-                            asChild
-                            tooltip={{ children: 'الإعدادات', side: 'left' }}
-                            isActive={url.startsWith('/settings')}
-                            className="data-[active=true]:bg-background data-[active=true]:text-foreground data-[active=true]:ring-foreground/10 data-[active=true]:font-semibold data-[active=true]:shadow-xs data-[active=true]:ring-1"
-                        >
-                            <Link href={route('profile.edit')} prefetch>
-                                <Settings />
-                                <span>الإعدادات</span>
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
                 {/* Collapsed to icons: the bell stacks above the avatar. */}
                 <div className="flex items-center gap-1 group-data-[collapsible=icon]:flex-col-reverse">
                     <div className="min-w-0 flex-1 group-data-[collapsible=icon]:flex-none">
