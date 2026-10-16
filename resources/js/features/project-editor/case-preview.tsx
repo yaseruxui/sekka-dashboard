@@ -1,7 +1,7 @@
 import '../../../css/case-preview.css';
 
 import { DropZone } from '@/components/drop-zone';
-import { type MediaItem, kindOf, mediaSrc } from '@/lib/media';
+import { kindOf, type MediaItem, mediaSrc } from '@/lib/media';
 import { cn } from '@/lib/utils';
 import { type CSSProperties, type ReactNode, useLayoutEffect, useRef, useState } from 'react';
 import { type Block, BLOCK_LABELS, embedSrc, isLight, type Media, type WorkingProject } from './model';
@@ -138,7 +138,13 @@ function content(b: Block, siteUrl: string): ReactNode {
             return (
                 <div className="cb-single">
                     <figure className="cb-media" style={{ aspectRatio: '16 / 9' }}>
-                        <iframe src={src} title={b.caption || 'video'} loading="lazy" allow="autoplay; fullscreen; picture-in-picture" allowFullScreen />
+                        <iframe
+                            src={src}
+                            title={b.caption || 'video'}
+                            loading="lazy"
+                            allow="autoplay; fullscreen; picture-in-picture"
+                            allowFullScreen
+                        />
                     </figure>
                     <Caption text={b.caption} />
                 </div>
@@ -197,7 +203,13 @@ export function CasePreview({
                     accept={b.type === 'video' ? 'video' : b.type === 'image' || b.type === 'grid' ? 'image' : 'any'}
                     multiple={b.type === 'grid'}
                     onUploaded={(items) => onDropMedia(b.id, items)}
-                    label={b.type === 'grid' ? 'أفلت لإضافتها للشبكة' : b.type === 'image' || b.type === 'video' ? 'أفلت لاستبدال الملف' : 'أفلت لإضافة بلوك بعد هذا'}
+                    label={
+                        b.type === 'grid'
+                            ? 'أفلت لإضافتها للشبكة'
+                            : b.type === 'image' || b.type === 'video'
+                              ? 'أفلت لاستبدال الملف'
+                              : 'أفلت لإضافة بلوك بعد هذا'
+                    }
                 >
                     <section
                         className={cn(

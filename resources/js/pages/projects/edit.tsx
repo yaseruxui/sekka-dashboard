@@ -18,7 +18,18 @@ import { BlockSettings } from '@/features/project-editor/block-settings';
 import { CasePreview, type Device, type Selection } from '@/features/project-editor/case-preview';
 import { DetailsPanel } from '@/features/project-editor/details-panel';
 import { Layers } from '@/features/project-editor/layers';
-import { type Block, type BlockType, blockForMedia, BLOCK_LABELS, newBlock, newId, slugify, toMedia, withDims, type WorkingProject } from '@/features/project-editor/model';
+import {
+    BLOCK_LABELS,
+    blockForMedia,
+    newBlock,
+    newId,
+    slugify,
+    toMedia,
+    withDims,
+    type Block,
+    type BlockType,
+    type WorkingProject,
+} from '@/features/project-editor/model';
 import { useHistory } from '@/features/project-editor/use-history';
 import { useUnsavedGuard } from '@/hooks/use-unsaved-guard';
 import { api } from '@/lib/http';
@@ -26,7 +37,21 @@ import { kindOf, type MediaItem } from '@/lib/media';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ArrowRight, Check, CloudOff, Copy, ExternalLink, LoaderCircle, Monitor, MoreHorizontal, Redo2, RotateCcw, Smartphone, Trash2, Undo2 } from 'lucide-react';
+import {
+    ArrowRight,
+    Check,
+    CloudOff,
+    Copy,
+    ExternalLink,
+    LoaderCircle,
+    Monitor,
+    MoreHorizontal,
+    Redo2,
+    RotateCcw,
+    Smartphone,
+    Trash2,
+    Undo2,
+} from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -48,7 +73,15 @@ function working(p: EditProject): WorkingProject {
     return { slug, title, title_en: title_en ?? '', summary, category, year, cover, preview, aspect, blocks };
 }
 
-export default function ProjectEdit({ project, aspects, categories: initialCategories }: { project: EditProject; aspects: string[]; categories: string[] }) {
+export default function ProjectEdit({
+    project,
+    aspects,
+    categories: initialCategories,
+}: {
+    project: EditProject;
+    aspects: string[];
+    categories: string[];
+}) {
     const { siteUrl } = usePage<SharedData>().props;
     const history = useHistory<WorkingProject>(working(project));
     const p = history.present;
@@ -56,7 +89,9 @@ export default function ProjectEdit({ project, aspects, categories: initialCateg
     const [device, setDevice] = useState<Device>('desktop');
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [categories, setCategories] = useState(initialCategories);
-    const [slugLinked, setSlugLinked] = useState(() => !project.everPublished && (project.slug.startsWith('new-project') || project.slug === slugify(project.title_en ?? '')));
+    const [slugLinked, setSlugLinked] = useState(
+        () => !project.everPublished && (project.slug.startsWith('new-project') || project.slug === slugify(project.title_en ?? '')),
+    );
     const [save, setSave] = useState<SaveState>('saved');
     const [savedAt, setSavedAt] = useState(project.draftSavedAt ?? project.publishedAt);
     const [hasDraft, setHasDraft] = useState(project.hasDraft);
@@ -126,10 +161,14 @@ export default function ProjectEdit({ project, aspects, categories: initialCateg
     const set = history.set;
     const selectedIndex = p.blocks.findIndex((b) => b.id === selected);
     const selectedBlock = selectedIndex >= 0 ? p.blocks[selectedIndex] : null;
-    const errorBlocks = useMemo(() => new Set(Object.keys(errors).flatMap((k) => (k.match(/^blocks\.(\d+)/) ? [Number(k.split('.')[1])] : []))), [errors]);
+    const errorBlocks = useMemo(
+        () => new Set(Object.keys(errors).flatMap((k) => (k.match(/^blocks\.(\d+)/) ? [Number(k.split('.')[1])] : []))),
+        [errors],
+    );
 
     const setBlocks = (fn: (blocks: Block[]) => Block[], key?: string) => set((x) => ({ ...x, blocks: fn(x.blocks) }), key);
-    const patchBlock = (id: string) => (fn: (b: Block) => Block, key?: string) => setBlocks((bs) => bs.map((b) => (b.id === id ? fn(b) : b)), key && `${id}.${key}`);
+    const patchBlock = (id: string) => (fn: (b: Block) => Block, key?: string) =>
+        setBlocks((bs) => bs.map((b) => (b.id === id ? fn(b) : b)), key && `${id}.${key}`);
 
     const insertAfterSelection = (blocks: Block[]) => {
         setBlocks((bs) => {
@@ -230,7 +269,12 @@ export default function ProjectEdit({ project, aspects, categories: initialCateg
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
                             <strong className="truncate">{p.title || 'مشروع بدون اسم'}</strong>
-                            <span className={cn('shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold', hasDraft || !project.everPublished ? 'bg-amber-100 text-amber-900' : 'bg-green-100 text-green-900')}>
+                            <span
+                                className={cn(
+                                    'shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold',
+                                    hasDraft || !project.everPublished ? 'bg-amber-100 text-amber-900' : 'bg-green-100 text-green-900',
+                                )}
+                            >
                                 {status}
                             </span>
                         </div>
@@ -243,7 +287,7 @@ export default function ProjectEdit({ project, aspects, categories: initialCateg
                             {save === 'dirty' && 'تعديلات لم تُحفظ بعد'}
                             {save === 'saved' && (
                                 <>
-                                    <Check className="size-3" /> {hasDraft ? `المسودة محفوظة ${timeAgo(savedAt)}` : "مطابق للنسخة المنشورة"}
+                                    <Check className="size-3" /> {hasDraft ? `المسودة محفوظة ${timeAgo(savedAt)}` : 'مطابق للنسخة المنشورة'}
                                 </>
                             )}
                             {save === 'error' && (
@@ -257,10 +301,24 @@ export default function ProjectEdit({ project, aspects, categories: initialCateg
 
                 <div className="flex flex-wrap items-center gap-2">
                     <div className="flex">
-                        <Button variant="ghost" size="icon" onClick={history.undo} disabled={!history.canUndo} aria-label="تراجع (Ctrl+Z)" title="تراجع (Ctrl+Z)">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={history.undo}
+                            disabled={!history.canUndo}
+                            aria-label="تراجع (Ctrl+Z)"
+                            title="تراجع (Ctrl+Z)"
+                        >
                             <Undo2 />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={history.redo} disabled={!history.canRedo} aria-label="إعادة (Ctrl+Shift+Z)" title="إعادة (Ctrl+Shift+Z)">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={history.redo}
+                            disabled={!history.canRedo}
+                            aria-label="إعادة (Ctrl+Shift+Z)"
+                            title="إعادة (Ctrl+Shift+Z)"
+                        >
                             <Redo2 />
                         </Button>
                     </div>
@@ -271,7 +329,16 @@ export default function ProjectEdit({ project, aspects, categories: initialCateg
                                 ['mobile', Smartphone, 'جوال'],
                             ] as const
                         ).map(([d, Icon, label]) => (
-                            <button key={d} type="button" aria-pressed={device === d} onClick={() => setDevice(d)} className={cn('flex h-8 items-center gap-1.5 rounded px-2.5 text-sm', device === d ? 'bg-muted font-semibold' : 'text-muted-foreground')}>
+                            <button
+                                key={d}
+                                type="button"
+                                aria-pressed={device === d}
+                                onClick={() => setDevice(d)}
+                                className={cn(
+                                    'flex h-8 items-center gap-1.5 rounded px-2.5 text-sm',
+                                    device === d ? 'bg-muted font-semibold' : 'text-muted-foreground',
+                                )}
+                            >
                                 <Icon className="size-4" /> {label}
                             </button>
                         ))}
@@ -312,7 +379,12 @@ export default function ProjectEdit({ project, aspects, categories: initialCateg
             </header>
 
             <div className="grid flex-1 items-start gap-4 p-4 xl:grid-cols-[300px_minmax(0,1fr)_320px]">
-                <aside className={cn('bg-background rounded-xl border p-4 min-w-0 xl:sticky xl:top-20 xl:max-h-[calc(100svh-6rem)] xl:overflow-y-auto', selected === 'details' && 'ring-primary ring-2')}>
+                <aside
+                    className={cn(
+                        'bg-background min-w-0 rounded-xl border p-4 xl:sticky xl:top-20 xl:max-h-[calc(100svh-6rem)] xl:overflow-y-auto',
+                        selected === 'details' && 'ring-primary ring-2',
+                    )}
+                >
                     <DetailsPanel
                         project={p}
                         set={set}
@@ -335,9 +407,23 @@ export default function ProjectEdit({ project, aspects, categories: initialCateg
                         )}
                     </div>
                     <div className={cn(device === 'mobile' && 'mx-auto w-full max-w-[390px]')}>
-                        <CasePreview project={p} siteUrl={siteUrl} device={device} selected={selected} onSelect={setSelected} errorBlocks={errorBlocks} onDropMedia={onDropMedia} />
+                        <CasePreview
+                            project={p}
+                            siteUrl={siteUrl}
+                            device={device}
+                            selected={selected}
+                            onSelect={setSelected}
+                            errorBlocks={errorBlocks}
+                            onDropMedia={onDropMedia}
+                        />
                     </div>
-                    <DropZone accept="any" multiple onUploaded={async (items) => insertAfterSelection([blockForMedia(await fromItems(items))])} label="أفلت لإضافة بلوك جديد" className="rounded-xl">
+                    <DropZone
+                        accept="any"
+                        multiple
+                        onUploaded={async (items) => insertAfterSelection([blockForMedia(await fromItems(items))])}
+                        label="أفلت لإضافة بلوك جديد"
+                        className="rounded-xl"
+                    >
                         <div className="bg-background flex flex-wrap items-center justify-center gap-2 rounded-xl border border-dashed p-3">
                             <span className="text-muted-foreground text-sm">أضف بلوك{selectedIndex >= 0 ? ' بعد المحدد' : ''}:</span>
                             {(Object.keys(BLOCK_LABELS) as BlockType[]).map((t) => (
@@ -350,7 +436,7 @@ export default function ProjectEdit({ project, aspects, categories: initialCateg
                     </DropZone>
                 </section>
 
-                <aside className="bg-background rounded-xl border p-4 min-w-0 xl:sticky xl:top-20 xl:max-h-[calc(100svh-6rem)] xl:overflow-y-auto">
+                <aside className="bg-background min-w-0 rounded-xl border p-4 xl:sticky xl:top-20 xl:max-h-[calc(100svh-6rem)] xl:overflow-y-auto">
                     {selectedBlock ? (
                         <BlockSettings
                             key={selectedBlock.id}
@@ -382,7 +468,9 @@ export default function ProjectEdit({ project, aspects, categories: initialCateg
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>حذف «{p.title}»؟</AlertDialogTitle>
-                        <AlertDialogDescription>سيُحذف المشروع مع كل بلوكاته{project.published ? ' ويختفي من الموقع' : ''}. لا يمكن التراجع عن هذا.</AlertDialogDescription>
+                        <AlertDialogDescription>
+                            سيُحذف المشروع مع كل بلوكاته{project.published ? ' ويختفي من الموقع' : ''}. لا يمكن التراجع عن هذا.
+                        </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>إلغاء</AlertDialogCancel>
@@ -404,4 +492,3 @@ export default function ProjectEdit({ project, aspects, categories: initialCateg
         </div>
     );
 }
-

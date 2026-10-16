@@ -14,8 +14,8 @@ import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } 
 import { CSS } from '@dnd-kit/utilities';
 import { router } from '@inertiajs/react';
 import { ChevronDown, GripVertical, Highlighter, LoaderCircle, Plus, RotateCcw, Trash2, WrapText } from 'lucide-react';
-import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
-import { clone, getPath, leafKeys, setPath } from './paths';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { clone, getPath, leafKeys } from './paths';
 import { type Field, type ItemText, type ListField, type Section, type TextField, usedTextKeys } from './registry';
 import { RichText } from './rich-text';
 
@@ -63,7 +63,11 @@ function initialState(section: Section, content: SiteContentProps, defaults: Mes
     }
     for (const f of section.fields) {
         if (f.kind === 'list') {
-            if (f.texts) for (const l of LOCALES) texts[l][f.texts.key] = clone((getPath(content.messages[l], f.texts.key) ?? getPath(defaults[l], f.texts.key) ?? []) as unknown[]);
+            if (f.texts)
+                for (const l of LOCALES)
+                    texts[l][f.texts.key] = clone(
+                        (getPath(content.messages[l], f.texts.key) ?? getPath(defaults[l], f.texts.key) ?? []) as unknown[],
+                    );
             if (f.data) data[dataKey(f.data.doc, f.data.path)] = clone((getPath(content[f.data.doc], f.data.path) ?? []) as unknown[]);
         } else if ('doc' in f) {
             data[dataKey(f.doc, f.path)] = getPath(content[f.doc], f.path) ?? '';
@@ -97,7 +101,21 @@ function payload(section: string, state: CardState, base: CardState) {
 
 // --- small field pieces ------------------------------------------------------
 
-function FieldShell({ label, hint, error, counter, children, htmlFor }: { label: string; hint?: string; error?: string; counter?: string; children: React.ReactNode; htmlFor?: string }) {
+function FieldShell({
+    label,
+    hint,
+    error,
+    counter,
+    children,
+    htmlFor,
+}: {
+    label: string;
+    hint?: string;
+    error?: string;
+    counter?: string;
+    children: React.ReactNode;
+    htmlFor?: string;
+}) {
     return (
         <div className="grid grid-cols-1 gap-1.5">
             <div className="flex items-baseline justify-between gap-2">
@@ -112,7 +130,19 @@ function FieldShell({ label, hint, error, counter, children, htmlFor }: { label:
 }
 
 /** Texts with <em> / <br>: buttons to mark the selection and break the line, plus a rendered preview. */
-const HtmlText = forwardRef<HTMLTextAreaElement, { value: string; onChange: (v: string) => void; placeholder?: string; dir: 'rtl' | 'ltr'; id: string }>(function HtmlText({ value, onChange, placeholder, dir, id }, _ref) {
+function HtmlText({
+    value,
+    onChange,
+    placeholder,
+    dir,
+    id,
+}: {
+    value: string;
+    onChange: (v: string) => void;
+    placeholder?: string;
+    dir: 'rtl' | 'ltr';
+    id: string;
+}) {
     const area = useRef<HTMLTextAreaElement>(null);
     const wrap = (before: string, after = '') => {
         const el = area.current;
@@ -129,24 +159,65 @@ const HtmlText = forwardRef<HTMLTextAreaElement, { value: string; onChange: (v: 
     return (
         <div className="grid gap-1.5">
             <div className="flex gap-1">
-                <Button type="button" size="sm" variant="outline" className="h-7 text-xs" onClick={() => wrap('<em>', '</em>')} title="يلوّن الكلمات المحددة بلون سكة المميّز">
+                <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs"
+                    onClick={() => wrap('<em>', '</em>')}
+                    title="يلوّن الكلمات المحددة بلون سكة المميّز"
+                >
                     <Highlighter className="size-3.5" /> تمييز المحدد
                 </Button>
                 <Button type="button" size="sm" variant="outline" className="h-7 text-xs" onClick={() => wrap('<br>')}>
                     <WrapText className="size-3.5" /> سطر جديد
                 </Button>
             </div>
-            <Textarea id={id} ref={area} dir={dir} rows={2} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} className="text-sm leading-7" />
-            <div dir={dir} className="bg-muted/50 rounded-md px-3 py-2 text-sm leading-7 [&_em]:font-semibold [&_em]:text-[#5f9a2f] [&_em]:not-italic" aria-label="معاينة" dangerouslySetInnerHTML={{ __html: preview }} />
+            <Textarea
+                id={id}
+                ref={area}
+                dir={dir}
+                rows={2}
+                value={value}
+                placeholder={placeholder}
+                onChange={(e) => onChange(e.target.value)}
+                className="text-sm leading-7"
+            />
+            <div
+                dir={dir}
+                className="bg-muted/50 rounded-md px-3 py-2 text-sm leading-7 [&_em]:font-semibold [&_em]:text-[#5f9a2f] [&_em]:not-italic"
+                aria-label="معاينة"
+                dangerouslySetInnerHTML={{ __html: preview }}
+            />
         </div>
     );
-});
+}
 
-function TextInput({ f, value, placeholder, onChange, locale, error }: { f: TextField; value: string; placeholder: string; onChange: (v: string) => void; locale: Locale; error?: string }) {
+function TextInput({
+    f,
+    value,
+    placeholder,
+    onChange,
+    locale,
+    error,
+}: {
+    f: TextField;
+    value: string;
+    placeholder: string;
+    onChange: (v: string) => void;
+    locale: Locale;
+    error?: string;
+}) {
     const id = `t-${f.key}`;
     const dir = f.ltr || locale === 'en' ? 'ltr' : 'rtl';
     return (
-        <FieldShell label={f.label} hint={f.hint} error={error} htmlFor={id} counter={f.max ? `${(value || placeholder).length} / ${f.max}` : undefined}>
+        <FieldShell
+            label={f.label}
+            hint={f.hint}
+            error={error}
+            htmlFor={id}
+            counter={f.max ? `${(value || placeholder).length} / ${f.max}` : undefined}
+        >
             {f.html ? (
                 <HtmlText id={id} value={value} onChange={onChange} placeholder={placeholder} dir={dir} />
             ) : f.multiline ? (
@@ -160,16 +231,49 @@ function TextInput({ f, value, placeholder, onChange, locale, error }: { f: Text
 
 // --- lists -----------------------------------------------------------------
 
-function SortableItem({ id, label, thumb, open, onToggle, onRemove, children, invalid }: { id: string; label: string; thumb?: string; open: boolean; onToggle: () => void; onRemove: () => void; children: React.ReactNode; invalid: boolean }) {
+function SortableItem({
+    id,
+    label,
+    thumb,
+    open,
+    onToggle,
+    onRemove,
+    children,
+    invalid,
+}: {
+    id: string;
+    label: string;
+    thumb?: string;
+    open: boolean;
+    onToggle: () => void;
+    onRemove: () => void;
+    children: React.ReactNode;
+    invalid: boolean;
+}) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
     return (
-        <li ref={setNodeRef} style={{ transform: CSS.Translate.toString(transform), transition }} className={cn('bg-background border-b last:border-0', isDragging && 'relative z-10 shadow', invalid && 'bg-red-50')}>
+        <li
+            ref={setNodeRef}
+            style={{ transform: CSS.Translate.toString(transform), transition }}
+            className={cn('bg-background border-b last:border-0', isDragging && 'relative z-10 shadow', invalid && 'bg-red-50')}
+        >
             <div className="flex items-center gap-2 px-2 py-1.5">
-                <button type="button" {...attributes} {...listeners} aria-label={`اسحب لترتيب ${label}`} className="text-muted-foreground flex size-8 cursor-grab items-center justify-center">
+                <button
+                    type="button"
+                    {...attributes}
+                    {...listeners}
+                    aria-label={`اسحب لترتيب ${label}`}
+                    className="text-muted-foreground flex size-8 cursor-grab items-center justify-center"
+                >
                     <GripVertical className="size-4" />
                 </button>
                 {thumb !== undefined && <MediaThumb src={thumb} className="h-8 w-12 shrink-0 rounded" />}
-                <button type="button" onClick={onToggle} aria-expanded={open} className="flex min-w-0 flex-1 items-center justify-between gap-2 py-1 text-start text-sm">
+                <button
+                    type="button"
+                    onClick={onToggle}
+                    aria-expanded={open}
+                    className="flex min-w-0 flex-1 items-center justify-between gap-2 py-1 text-start text-sm"
+                >
                     <span className="truncate">{label}</span>
                     <ChevronDown className={cn('size-4 shrink-0 transition-transform', open && 'rotate-180')} />
                 </button>
@@ -200,7 +304,7 @@ function ListEditor({
     const dk = f.data && dataKey(f.data.doc, f.data.path);
     const dataItems = (dk ? (state.data[dk] as Record<string, unknown>[]) : undefined) ?? [];
     const textItems = (f.texts ? (state.texts[locale][f.texts.key] as unknown[]) : undefined) ?? [];
-    const count = f.data ? dataItems.length : (state.texts.ar[f.texts!.key] as unknown[] | undefined)?.length ?? 0;
+    const count = f.data ? dataItems.length : ((state.texts.ar[f.texts!.key] as unknown[] | undefined)?.length ?? 0);
     // Stable ids for dnd while the list is open (index-based, refreshed on change).
     const ids = Array.from({ length: count }, (_, i) => `${f.label}-${i}`);
 
@@ -226,7 +330,10 @@ function ListEditor({
             return { ...s, texts: { ...s.texts, [locale]: { ...s.texts[locale], [f.texts!.key]: list } } };
         });
     const setItemData = (i: number, name: string, value: unknown) =>
-        setState((s) => ({ ...s, data: { ...s.data, [dk!]: ((s.data[dk!] as Record<string, unknown>[]) ?? []).map((it, j) => (j === i ? { ...it, [name]: value } : it)) } }));
+        setState((s) => ({
+            ...s,
+            data: { ...s.data, [dk!]: ((s.data[dk!] as Record<string, unknown>[]) ?? []).map((it, j) => (j === i ? { ...it, [name]: value } : it)) },
+        }));
 
     const onDragEnd = ({ active, over }: DragEndEvent) => {
         if (!over || active.id === over.id) return;
@@ -245,7 +352,11 @@ function ListEditor({
                     {f.label} <span className="text-muted-foreground font-normal">({count})</span>
                 </Label>
                 {count > 0 && (
-                    <button type="button" className="text-muted-foreground text-xs hover:underline" onClick={() => setOpen((o) => (o.size === count ? new Set() : new Set(ids.map((_, i) => i))))}>
+                    <button
+                        type="button"
+                        className="text-muted-foreground text-xs hover:underline"
+                        onClick={() => setOpen((o) => (o.size === count ? new Set() : new Set(ids.map((_, i) => i))))}
+                    >
                         {open.size === count ? 'طيّ الكل' : 'توسيع الكل'}
                     </button>
                 )}
@@ -275,10 +386,22 @@ function ListEditor({
                                         {f.texts &&
                                             (f.texts.fields === null ? (
                                                 <FieldShell label="النص">
-                                                    <Input dir={locale === 'en' ? 'ltr' : 'rtl'} value={String(text ?? '')} onChange={(e) => setItemText(i, null, e.target.value)} />
+                                                    <Input
+                                                        dir={locale === 'en' ? 'ltr' : 'rtl'}
+                                                        value={String(text ?? '')}
+                                                        onChange={(e) => setItemText(i, null, e.target.value)}
+                                                    />
                                                 </FieldShell>
                                             ) : (
-                                                f.texts.fields.map((tf) => <ItemTextInput key={tf.name} tf={tf} value={(text as Record<string, unknown>)?.[tf.name]} locale={locale} onChange={(v) => setItemText(i, tf.name, v)} />)
+                                                f.texts.fields.map((tf) => (
+                                                    <ItemTextInput
+                                                        key={tf.name}
+                                                        tf={tf}
+                                                        value={(text as Record<string, unknown>)?.[tf.name]}
+                                                        locale={locale}
+                                                        onChange={(v) => setItemText(i, tf.name, v)}
+                                                    />
+                                                ))
                                             ))}
                                         {f.data?.fields.map((df) => {
                                             const v = data?.[df.name];
@@ -286,7 +409,13 @@ function ListEditor({
                                             if (df.kind === 'media')
                                                 return (
                                                     <FieldShell key={df.name} label={df.label} error={err}>
-                                                        <MediaPickerField compact value={String(v ?? '')} accept={df.accept} invalid={!!err} onChange={(item) => item && setItemData(i, df.name, item.url)} />
+                                                        <MediaPickerField
+                                                            compact
+                                                            value={String(v ?? '')}
+                                                            accept={df.accept}
+                                                            invalid={!!err}
+                                                            onChange={(item) => item && setItemData(i, df.name, item.url)}
+                                                        />
                                                     </FieldShell>
                                                 );
                                             if (df.kind === 'select')
@@ -308,14 +437,22 @@ function ListEditor({
                                                 );
                                             if (df.kind === 'switch')
                                                 return (
-                                                    <label key={df.name} className="flex items-center justify-between gap-2 self-end rounded-md border px-3 py-2">
+                                                    <label
+                                                        key={df.name}
+                                                        className="flex items-center justify-between gap-2 self-end rounded-md border px-3 py-2"
+                                                    >
                                                         <span className="text-sm font-medium">{df.label}</span>
                                                         <Switch checked={!!v} onCheckedChange={(nv) => setItemData(i, df.name, nv)} />
                                                     </label>
                                                 );
                                             return (
                                                 <FieldShell key={df.name} label={df.label} hint={df.hint} error={err}>
-                                                    <Input dir={df.ltr ? 'ltr' : undefined} value={String(v ?? '')} onChange={(e) => setItemData(i, df.name, e.target.value)} aria-invalid={!!err} />
+                                                    <Input
+                                                        dir={df.ltr ? 'ltr' : undefined}
+                                                        value={String(v ?? '')}
+                                                        onChange={(e) => setItemData(i, df.name, e.target.value)}
+                                                        aria-invalid={!!err}
+                                                    />
                                                 </FieldShell>
                                             );
                                         })}
@@ -351,14 +488,34 @@ function ItemTextInput({ tf, value, locale, onChange }: { tf: ItemText; value: u
                 {rows.map((row, r) => (
                     <div key={r} className="flex items-center gap-2">
                         {tf.fields.map((sf) => (
-                            <Input key={sf.name} dir={dir} aria-label={sf.label} placeholder={sf.label} value={String(row[sf.name] ?? '')} onChange={(e) => onChange(rows.map((x, j) => (j === r ? { ...x, [sf.name]: e.target.value } : x)))} />
+                            <Input
+                                key={sf.name}
+                                dir={dir}
+                                aria-label={sf.label}
+                                placeholder={sf.label}
+                                value={String(row[sf.name] ?? '')}
+                                onChange={(e) => onChange(rows.map((x, j) => (j === r ? { ...x, [sf.name]: e.target.value } : x)))}
+                            />
                         ))}
-                        <Button type="button" size="icon" variant="ghost" className="text-destructive shrink-0" aria-label="حذف" onClick={() => onChange(rows.filter((_, j) => j !== r))}>
+                        <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            className="text-destructive shrink-0"
+                            aria-label="حذف"
+                            onClick={() => onChange(rows.filter((_, j) => j !== r))}
+                        >
                             <Trash2 className="size-4" />
                         </Button>
                     </div>
                 ))}
-                <Button type="button" size="sm" variant="ghost" className="justify-self-start" onClick={() => onChange([...rows, Object.fromEntries(tf.fields.map((sf) => [sf.name, '']))])}>
+                <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="justify-self-start"
+                    onClick={() => onChange([...rows, Object.fromEntries(tf.fields.map((sf) => [sf.name, '']))])}
+                >
                     <Plus /> {tf.addLabel}
                 </Button>
             </div>
@@ -367,7 +524,11 @@ function ItemTextInput({ tf, value, locale, onChange }: { tf: ItemText; value: u
     const v = String(value ?? '');
     return (
         <FieldShell label={tf.label}>
-            {tf.html ? <HtmlText id={`it-${tf.name}`} value={v} onChange={onChange} dir={dir} /> : <Input dir={dir} value={v} onChange={(e) => onChange(e.target.value)} />}
+            {tf.html ? (
+                <HtmlText id={`it-${tf.name}`} value={v} onChange={onChange} dir={dir} />
+            ) : (
+                <Input dir={dir} value={v} onChange={(e) => onChange(e.target.value)} />
+            )}
         </FieldShell>
     );
 }
@@ -483,19 +644,40 @@ export function SectionCard({
             case 'value':
                 return (
                     <FieldShell key={i} label={f.label} hint={f.hint} error={err(f.doc, f.path)} htmlFor={`v-${f.path}`}>
-                        <Input id={`v-${f.path}`} type={f.type ?? 'text'} dir={f.ltr ? 'ltr' : undefined} value={String(state.data[dataKey(f.doc, f.path)] ?? '')} onChange={(e) => setData(f.doc, f.path, e.target.value)} aria-invalid={!!err(f.doc, f.path)} />
+                        <Input
+                            id={`v-${f.path}`}
+                            type={f.type ?? 'text'}
+                            dir={f.ltr ? 'ltr' : undefined}
+                            value={String(state.data[dataKey(f.doc, f.path)] ?? '')}
+                            onChange={(e) => setData(f.doc, f.path, e.target.value)}
+                            aria-invalid={!!err(f.doc, f.path)}
+                        />
                     </FieldShell>
                 );
             case 'number':
                 return (
                     <FieldShell key={i} label={f.label} hint={f.hint} error={err(f.doc, f.path)}>
-                        <Input type="number" dir="ltr" min={f.min} max={f.max} step={f.step} value={String(state.data[dataKey(f.doc, f.path)] ?? '')} onChange={(e) => setData(f.doc, f.path, e.target.value === '' ? '' : Number(e.target.value))} className="w-32" />
+                        <Input
+                            type="number"
+                            dir="ltr"
+                            min={f.min}
+                            max={f.max}
+                            step={f.step}
+                            value={String(state.data[dataKey(f.doc, f.path)] ?? '')}
+                            onChange={(e) => setData(f.doc, f.path, e.target.value === '' ? '' : Number(e.target.value))}
+                            className="w-32"
+                        />
                     </FieldShell>
                 );
             case 'media':
                 return (
                     <FieldShell key={i} label={f.label} hint={f.hint} error={err(f.doc, f.path)}>
-                        <MediaPickerField value={String(state.data[dataKey(f.doc, f.path)] ?? '')} accept={f.accept} invalid={!!err(f.doc, f.path)} onChange={(item) => item && setData(f.doc, f.path, item.url)} />
+                        <MediaPickerField
+                            value={String(state.data[dataKey(f.doc, f.path)] ?? '')}
+                            accept={f.accept}
+                            invalid={!!err(f.doc, f.path)}
+                            onChange={(item) => item && setData(f.doc, f.path, item.url)}
+                        />
                     </FieldShell>
                 );
             case 'select':
@@ -527,10 +709,14 @@ export function SectionCard({
             case 'policy': {
                 const p = state.policy!;
                 const current = p[locale];
-                const setPolicy = (next: Policy | null) => setState((s) => ({ ...s, policy: { ...s.policy!, [locale]: next } as CardState['policy'] }));
+                const setPolicy = (next: Policy | null) =>
+                    setState((s) => ({ ...s, policy: { ...s.policy!, [locale]: next } as CardState['policy'] }));
                 if (locale === 'en' && !current)
                     return (
-                        <div key={i} className="text-muted-foreground flex flex-col items-center gap-3 rounded-lg border border-dashed p-8 text-center text-sm">
+                        <div
+                            key={i}
+                            className="text-muted-foreground flex flex-col items-center gap-3 rounded-lg border border-dashed p-8 text-center text-sm"
+                        >
                             لا توجد نسخة إنجليزية؛ الموقع يعرض النسخة العربية لزوار /en.
                             <Button type="button" variant="outline" onClick={() => setPolicy({ updated: '', title: 'Privacy Policy', html: '' })}>
                                 إضافة نسخة إنجليزية
@@ -541,14 +727,27 @@ export function SectionCard({
                     <div key={i} className="grid gap-4">
                         <div className="grid gap-4 sm:grid-cols-2">
                             <FieldShell label="العنوان" error={errors[`policy.${locale}.title`]}>
-                                <Input dir={locale === 'en' ? 'ltr' : 'rtl'} value={current!.title} onChange={(e) => setPolicy({ ...current!, title: e.target.value })} />
+                                <Input
+                                    dir={locale === 'en' ? 'ltr' : 'rtl'}
+                                    value={current!.title}
+                                    onChange={(e) => setPolicy({ ...current!, title: e.target.value })}
+                                />
                             </FieldShell>
                             <FieldShell label="تاريخ آخر تحديث" hint="كما يظهر للزائر.">
-                                <Input dir={locale === 'en' ? 'ltr' : 'rtl'} value={current!.updated} onChange={(e) => setPolicy({ ...current!, updated: e.target.value })} />
+                                <Input
+                                    dir={locale === 'en' ? 'ltr' : 'rtl'}
+                                    value={current!.updated}
+                                    onChange={(e) => setPolicy({ ...current!, updated: e.target.value })}
+                                />
                             </FieldShell>
                         </div>
                         <FieldShell label="النص" error={errors[`policy.${locale}.html`]}>
-                            <RichText dir={locale === 'en' ? 'ltr' : 'rtl'} value={current!.html} onChange={(html) => setPolicy({ ...current!, html })} invalid={!!errors[`policy.${locale}.html`]} />
+                            <RichText
+                                dir={locale === 'en' ? 'ltr' : 'rtl'}
+                                value={current!.html}
+                                onChange={(html) => setPolicy({ ...current!, html })}
+                                invalid={!!errors[`policy.${locale}.html`]}
+                            />
                         </FieldShell>
                         {locale === 'en' && (
                             <Button type="button" variant="ghost" className="text-destructive justify-self-start" onClick={() => setPolicy(null)}>
@@ -573,10 +772,19 @@ export function SectionCard({
             />
         ) : f.kind === 'leftovers' ? (
             leftoverFields(f.namespaces, defaults).length === 0 ? (
-                <p key={i} className="text-muted-foreground text-sm">لا توجد نصوص إضافية في هذه الصفحة.</p>
+                <p key={i} className="text-muted-foreground text-sm">
+                    لا توجد نصوص إضافية في هذه الصفحة.
+                </p>
             ) : (
                 leftoverFields(f.namespaces, defaults).map((lf) => (
-                    <TextInput key={`${lf.key}-${locale}`} f={lf} locale={locale} value={String(state.texts[locale][lf.key] ?? '')} placeholder={String(getPath(defaults[locale], lf.key) ?? '')} onChange={(v) => setText(lf.key, v)} />
+                    <TextInput
+                        key={`${lf.key}-${locale}`}
+                        f={lf}
+                        locale={locale}
+                        value={String(state.texts[locale][lf.key] ?? '')}
+                        placeholder={String(getPath(defaults[locale], lf.key) ?? '')}
+                        onChange={(v) => setText(lf.key, v)}
+                    />
                 ))
             )
         ) : (
@@ -588,7 +796,11 @@ export function SectionCard({
         <section
             id={`section-${section.id}`}
             aria-label={section.title}
-            className={cn('bg-background scroll-mt-20 overflow-hidden rounded-xl border', dirty && 'border-orange-600', hasErrors && 'border-destructive')}
+            className={cn(
+                'bg-background scroll-mt-20 overflow-hidden rounded-xl border',
+                dirty && 'border-orange-600',
+                hasErrors && 'border-destructive',
+            )}
             onKeyDown={(e) => {
                 if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
                     e.preventDefault();
@@ -612,13 +824,28 @@ export function SectionCard({
                     {open && bilingual && (
                         <div role="group" aria-label="لغة الحقول" className="flex rounded-md border p-0.5">
                             {LOCALES.map((l) => (
-                                <button key={l} type="button" aria-pressed={locale === l} onClick={() => setLocale(l)} className={cn('h-7 min-w-10 rounded px-2.5 text-sm', locale === l ? 'bg-primary text-primary-foreground font-semibold' : 'text-muted-foreground')}>
+                                <button
+                                    key={l}
+                                    type="button"
+                                    aria-pressed={locale === l}
+                                    onClick={() => setLocale(l)}
+                                    className={cn(
+                                        'h-7 min-w-10 rounded px-2.5 text-sm',
+                                        locale === l ? 'bg-primary text-primary-foreground font-semibold' : 'text-muted-foreground',
+                                    )}
+                                >
                                     {l === 'ar' ? 'ع' : 'EN'}
                                 </button>
                             ))}
                         </div>
                     )}
-                    <Button type="button" variant="ghost" size="icon" onClick={() => onOpenChange(!open)} aria-label={open ? 'طيّ القسم' : 'فتح القسم'}>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onOpenChange(!open)}
+                        aria-label={open ? 'طيّ القسم' : 'فتح القسم'}
+                    >
                         <ChevronDown className={cn('transition-transform', open && 'rotate-180')} />
                     </Button>
                 </div>
@@ -634,10 +861,14 @@ export function SectionCard({
                             </button>
                         </div>
                     )}
-                    {errors['texts.ar'] || errors['texts.en'] ? <p className="text-destructive border-b px-4 py-2 text-sm">{errors['texts.ar'] || errors['texts.en']}</p> : null}
+                    {errors['texts.ar'] || errors['texts.en'] ? (
+                        <p className="text-destructive border-b px-4 py-2 text-sm">{errors['texts.ar'] || errors['texts.en']}</p>
+                    ) : null}
                     <div className="grid grid-cols-1 gap-5 p-4 sm:p-5 [&>*]:min-w-0">{fieldOrder}</div>
                     <div className="bg-muted/40 flex flex-wrap items-center justify-between gap-2 border-t px-4 py-3">
-                        <span className="text-muted-foreground text-xs">{meta ? `آخر تحديث ${timeAgo(meta.at)} · ${meta.by}` : 'لم يُعدَّل من اللوحة بعد'} · Ctrl + S</span>
+                        <span className="text-muted-foreground text-xs">
+                            {meta ? `آخر تحديث ${timeAgo(meta.at)} · ${meta.by}` : 'لم يُعدَّل من اللوحة بعد'} · Ctrl + S
+                        </span>
                         <div className="flex gap-2">
                             <Button type="button" variant="outline" size="sm" onClick={revert} disabled={!dirty}>
                                 <RotateCcw /> تراجع عن التغييرات
@@ -653,4 +884,3 @@ export function SectionCard({
         </section>
     );
 }
-

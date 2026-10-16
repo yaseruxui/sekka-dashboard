@@ -51,7 +51,9 @@ function Details({ item, onClose }: { item: MediaItem | null; onClose: () => voi
         setAlt(item.alt);
         setUsage(null);
         setCopied(false);
-        api<{ label: string; href: string }[]>(route('media.usage', item.id)).then(setUsage).catch(() => setUsage([]));
+        api<{ label: string; href: string }[]>(route('media.usage', item.id))
+            .then(setUsage)
+            .catch(() => setUsage([]));
     }, [item]);
 
     if (!item) return null;
@@ -65,21 +67,32 @@ function Details({ item, onClose }: { item: MediaItem | null; onClose: () => voi
                         {item.name}
                     </SheetTitle>
                     <SheetDescription>
-                        {KIND_LABEL[item.kind]} · <bdi dir="ltr">{item.width && item.height ? `${item.width} × ${item.height}` : "?"}</bdi> · <bdi dir="ltr">{formatBytes(item.size)}</bdi>
+                        {KIND_LABEL[item.kind]} · <bdi dir="ltr">{item.width && item.height ? `${item.width} × ${item.height}` : '?'}</bdi> ·{' '}
+                        <bdi dir="ltr">{formatBytes(item.size)}</bdi>
                     </SheetDescription>
                 </SheetHeader>
 
                 <div className="bg-muted overflow-hidden rounded-lg">
-                    {item.kind === 'video' ? <video src={url} controls className="max-h-72 w-full" /> : <img src={url} alt={item.alt} className="max-h-72 w-full object-contain" />}
+                    {item.kind === 'video' ? (
+                        <video src={url} controls className="max-h-72 w-full" />
+                    ) : (
+                        <img src={url} alt={item.alt} className="max-h-72 w-full object-contain" />
+                    )}
                 </div>
 
                 <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
                     <dt className="text-muted-foreground">النوع</dt>
-                    <dd dir="ltr" style={{ textAlign: 'right' }}>{item.mime}</dd>
+                    <dd dir="ltr" style={{ textAlign: 'right' }}>
+                        {item.mime}
+                    </dd>
                     <dt className="text-muted-foreground">المقاس</dt>
-                    <dd dir="ltr" style={{ textAlign: 'right' }}>{item.width && item.height ? `${item.width} × ${item.height}` : '—'}</dd>
+                    <dd dir="ltr" style={{ textAlign: 'right' }}>
+                        {item.width && item.height ? `${item.width} × ${item.height}` : '—'}
+                    </dd>
                     <dt className="text-muted-foreground">الحجم</dt>
-                    <dd dir="ltr" style={{ textAlign: 'right' }}>{formatBytes(item.size)}</dd>
+                    <dd dir="ltr" style={{ textAlign: 'right' }}>
+                        {formatBytes(item.size)}
+                    </dd>
                     <dt className="text-muted-foreground">تاريخ الرفع</dt>
                     <dd>{formatDate(item.created_at)}</dd>
                 </dl>
@@ -92,7 +105,9 @@ function Details({ item, onClose }: { item: MediaItem | null; onClose: () => voi
                     }}
                 >
                     <Label htmlFor="m-alt">الوصف البديل</Label>
-                    <p className="text-muted-foreground -mt-1 text-xs">وصف قصير يقرأه قارئ الشاشة ومحركات البحث. يُستخدم مبدئياً عند إضافة الملف لبلوك.</p>
+                    <p className="text-muted-foreground -mt-1 text-xs">
+                        وصف قصير يقرأه قارئ الشاشة ومحركات البحث. يُستخدم مبدئياً عند إضافة الملف لبلوك.
+                    </p>
                     <div className="flex gap-2">
                         <Input id="m-alt" value={alt} onChange={(e) => setAlt(e.target.value)} />
                         <Button type="submit" variant="outline" disabled={alt === item.alt}>
@@ -161,7 +176,12 @@ function Details({ item, onClose }: { item: MediaItem | null; onClose: () => voi
                             <AlertDialogCancel>إلغاء</AlertDialogCancel>
                             <AlertDialogAction
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                onClick={() => router.delete(route('media.destroy', { media: item.id, force: usage?.length ? 1 : undefined }), { preserveScroll: true, onSuccess: onClose })}
+                                onClick={() =>
+                                    router.delete(route('media.destroy', { media: item.id, force: usage?.length ? 1 : undefined }), {
+                                        preserveScroll: true,
+                                        onSuccess: onClose,
+                                    })
+                                }
                             >
                                 {usage?.length ? 'احذفه على أي حال' : 'حذف'}
                             </AlertDialogAction>
@@ -191,7 +211,11 @@ export default function MediaIndex({ media, filters }: { media: Paginated; filte
     useEffect(() => setSelected((s) => (s ? (media.data.find((m) => m.id === s.id) ?? null) : s)), [media]);
 
     const visit = (params: Record<string, string | undefined>) =>
-        router.get(route('media.index'), { q: q || undefined, kind: kind === 'all' ? undefined : kind, ...params }, { preserveState: true, preserveScroll: true, replace: true });
+        router.get(
+            route('media.index'),
+            { q: q || undefined, kind: kind === 'all' ? undefined : kind, ...params },
+            { preserveState: true, preserveScroll: true, replace: true },
+        );
 
     useEffect(() => {
         if (q === (filters.q ?? '')) return;
@@ -242,20 +266,48 @@ export default function MediaIndex({ media, filters }: { media: Paginated; filte
                     <div className="flex flex-wrap items-center gap-2">
                         <div className="relative min-w-56 flex-1 sm:max-w-80">
                             <Search className="text-muted-foreground absolute start-3 top-1/2 size-4 -translate-y-1/2" />
-                            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ابحث باسم الملف…" className="ps-9" aria-label="بحث في الملفات" />
+                            <Input
+                                value={q}
+                                onChange={(e) => setQ(e.target.value)}
+                                placeholder="ابحث باسم الملف…"
+                                className="ps-9"
+                                aria-label="بحث في الملفات"
+                            />
                         </div>
                         <div role="group" aria-label="النوع" className="flex rounded-md border p-0.5">
                             {(['all', 'image', 'video'] as const).map((k) => (
-                                <button key={k} type="button" aria-pressed={kind === k} onClick={() => visit({ kind: k === 'all' ? undefined : k, page: undefined })} className={cn('h-8 rounded px-3 text-sm', kind === k ? 'bg-muted font-semibold' : 'text-muted-foreground')}>
+                                <button
+                                    key={k}
+                                    type="button"
+                                    aria-pressed={kind === k}
+                                    onClick={() => visit({ kind: k === 'all' ? undefined : k, page: undefined })}
+                                    className={cn('h-8 rounded px-3 text-sm', kind === k ? 'bg-muted font-semibold' : 'text-muted-foreground')}
+                                >
                                     {{ all: 'الكل', image: 'صور', video: 'فيديو' }[k]}
                                 </button>
                             ))}
                         </div>
                         <div role="group" aria-label="طريقة العرض" className="ms-auto flex rounded-md border p-0.5">
-                            <button type="button" aria-pressed={view === 'grid'} onClick={() => changeView('grid')} className={cn('flex h-8 items-center gap-1.5 rounded px-3 text-sm', view === 'grid' ? 'bg-muted font-semibold' : 'text-muted-foreground')}>
+                            <button
+                                type="button"
+                                aria-pressed={view === 'grid'}
+                                onClick={() => changeView('grid')}
+                                className={cn(
+                                    'flex h-8 items-center gap-1.5 rounded px-3 text-sm',
+                                    view === 'grid' ? 'bg-muted font-semibold' : 'text-muted-foreground',
+                                )}
+                            >
                                 <Grid3x3 className="size-4" /> شبكة
                             </button>
-                            <button type="button" aria-pressed={view === 'list'} onClick={() => changeView('list')} className={cn('flex h-8 items-center gap-1.5 rounded px-3 text-sm', view === 'list' ? 'bg-muted font-semibold' : 'text-muted-foreground')}>
+                            <button
+                                type="button"
+                                aria-pressed={view === 'list'}
+                                onClick={() => changeView('list')}
+                                className={cn(
+                                    'flex h-8 items-center gap-1.5 rounded px-3 text-sm',
+                                    view === 'list' ? 'bg-muted font-semibold' : 'text-muted-foreground',
+                                )}
+                            >
                                 <List className="size-4" /> قائمة
                             </button>
                         </div>
@@ -274,10 +326,15 @@ export default function MediaIndex({ media, filters }: { media: Paginated; filte
                                     type="button"
                                     onClick={() => setSelected(m)}
                                     title={m.name}
-                                    className={cn('group relative overflow-hidden rounded-md border outline-none focus-visible:ring-2 focus-visible:ring-ring', selected?.id === m.id && 'ring-primary ring-2')}
+                                    className={cn(
+                                        'group focus-visible:ring-ring relative overflow-hidden rounded-md border outline-none focus-visible:ring-2',
+                                        selected?.id === m.id && 'ring-primary ring-2',
+                                    )}
                                 >
                                     <MediaThumb src={m.url} className="aspect-square w-full" alt={m.alt} />
-                                    {m.kind === 'video' && <span className="absolute top-1 start-1 rounded bg-black/70 px-1 text-[10px] text-white">فيديو</span>}
+                                    {m.kind === 'video' && (
+                                        <span className="absolute start-1 top-1 rounded bg-black/70 px-1 text-[10px] text-white">فيديو</span>
+                                    )}
                                 </button>
                             ))}
                         </div>
@@ -295,7 +352,11 @@ export default function MediaIndex({ media, filters }: { media: Paginated; filte
                                 </TableHeader>
                                 <TableBody>
                                     {media.data.map((m) => (
-                                        <TableRow key={m.id} onClick={() => setSelected(m)} className={cn('cursor-pointer', selected?.id === m.id && 'bg-muted')}>
+                                        <TableRow
+                                            key={m.id}
+                                            onClick={() => setSelected(m)}
+                                            className={cn('cursor-pointer', selected?.id === m.id && 'bg-muted')}
+                                        >
                                             <TableCell>
                                                 <button type="button" className="flex items-center gap-3 text-start" onClick={() => setSelected(m)}>
                                                     <MediaThumb src={m.url} className="h-9 w-12 shrink-0 rounded" />
@@ -322,8 +383,18 @@ export default function MediaIndex({ media, filters }: { media: Paginated; filte
                     {media.last_page > 1 && (
                         <nav aria-label="الصفحات" className="flex flex-wrap justify-center gap-1">
                             {media.links.map((l, i) => (
-                                <Button key={i} variant={l.active ? 'default' : 'ghost'} size="sm" disabled={!l.url} onClick={() => l.url && router.get(l.url, {}, { preserveState: true })}>
-                                    <span dangerouslySetInnerHTML={{ __html: l.label.replace('&laquo; Previous', 'السابق').replace('Next &raquo;', 'التالي') }} />
+                                <Button
+                                    key={i}
+                                    variant={l.active ? 'default' : 'ghost'}
+                                    size="sm"
+                                    disabled={!l.url}
+                                    onClick={() => l.url && router.get(l.url, {}, { preserveState: true })}
+                                >
+                                    <span
+                                        dangerouslySetInnerHTML={{
+                                            __html: l.label.replace('&laquo; Previous', 'السابق').replace('Next &raquo;', 'التالي'),
+                                        }}
+                                    />
                                 </Button>
                             ))}
                         </nav>

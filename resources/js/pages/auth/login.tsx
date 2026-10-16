@@ -14,7 +14,7 @@ type LoginForm = {
     email: string;
     password: string;
     remember: boolean;
-}
+};
 
 interface LoginProps {
     status?: string;
@@ -36,13 +36,13 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     };
 
     return (
-        <AuthLayout title="Sekka dashboard" description="Sign in with your admin account">
-            <Head title="Log in" />
+        <AuthLayout title="لوحة تحكم سكة" description="سجّل الدخول بحساب المشرف">
+            <Head title="تسجيل الدخول" />
 
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
+                        <Label htmlFor="email">البريد الإلكتروني</Label>
                         <Input
                             id="email"
                             type="email"
@@ -59,10 +59,10 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
                     <div className="grid gap-2">
                         <div className="flex items-center">
-                            <Label htmlFor="password">Password</Label>
+                            <Label htmlFor="password">كلمة المرور</Label>
                             {canResetPassword && (
-                                <TextLink href={route('password.request')} className="ml-auto text-sm" tabIndex={5}>
-                                    Forgot password?
+                                <TextLink href={route('password.request')} className="ms-auto text-sm" tabIndex={5}>
+                                    نسيت كلمة المرور؟
                                 </TextLink>
                             )}
                         </div>
@@ -74,19 +74,25 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                             autoComplete="current-password"
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
-                            placeholder="Password"
+                            placeholder="كلمة المرور"
                         />
                         <InputError message={errors.password} />
                     </div>
 
-                    <div className="flex items-center space-x-3">
-                        <Checkbox id="remember" name="remember" tabIndex={3} checked={data.remember} onCheckedChange={(v) => setData('remember', v === true)} />
-                        <Label htmlFor="remember">Remember me</Label>
+                    <div className="flex items-center gap-3">
+                        <Checkbox
+                            id="remember"
+                            name="remember"
+                            tabIndex={3}
+                            checked={data.remember}
+                            onCheckedChange={(v) => setData('remember', v === true)}
+                        />
+                        <Label htmlFor="remember">تذكّرني</Label>
                     </div>
 
                     <Button type="submit" className="mt-4 w-full" tabIndex={4} disabled={processing}>
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Log in
+                        دخول
                     </Button>
                 </div>
             </form>

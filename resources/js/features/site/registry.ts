@@ -70,9 +70,21 @@ export interface SitePage {
     sections: Section[];
 }
 
-const strip = (html: unknown) => String(html ?? '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;|&mdash;/g, ' ').replace(/\s+/g, ' ').trim();
+const strip = (html: unknown) =>
+    String(html ?? '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;|&mdash;/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
 const t = (key: string, label: string, extra: Partial<TextField> = {}): TextField => ({ kind: 'text', key, label, ...extra });
-const media = (doc: Doc, path: string, label: string, accept: Accept, hint?: string): MediaField => ({ kind: 'media', doc, path, label, accept, hint });
+const media = (doc: Doc, path: string, label: string, accept: Accept, hint?: string): MediaField => ({
+    kind: 'media',
+    doc,
+    path,
+    label,
+    accept,
+    hint,
+});
 
 const galleryColumn = (path: string, label: string): ListField => ({
     kind: 'list',
@@ -168,7 +180,8 @@ export const SITE_PAGES: SitePage[] = [
                     {
                         kind: 'list',
                         label: 'الخدمات',
-                        itemLabel: (i, text) => `${(text as { eyebrow?: string })?.eyebrow ?? String(i + 1).padStart(2, '0')} · ${strip((text as { title?: string })?.title) || 'خدمة جديدة'}`,
+                        itemLabel: (i, text) =>
+                            `${(text as { eyebrow?: string })?.eyebrow ?? String(i + 1).padStart(2, '0')} · ${strip((text as { title?: string })?.title) || 'خدمة جديدة'}`,
                         addLabel: 'إضافة خدمة',
                         thumb: 'video',
                         texts: {
@@ -209,7 +222,16 @@ export const SITE_PAGES: SitePage[] = [
                                 { name: 'kicker', label: 'العنوان الصغير' },
                                 { name: 'h', label: 'العنوان', html: true },
                                 { name: 'line', label: 'السطر' },
-                                { kind: 'list', name: 'facts', label: 'الأرقام', fields: [{ name: 'value', label: 'الرقم' }, { name: 'label', label: 'الوصف' }], addLabel: 'إضافة رقم' },
+                                {
+                                    kind: 'list',
+                                    name: 'facts',
+                                    label: 'الأرقام',
+                                    fields: [
+                                        { name: 'value', label: 'الرقم' },
+                                        { name: 'label', label: 'الوصف' },
+                                    ],
+                                    addLabel: 'إضافة رقم',
+                                },
                             ],
                             blank: { kicker: '', h: '', line: '' },
                         },
@@ -350,7 +372,14 @@ export const SITE_PAGES: SitePage[] = [
                 fields: [
                     { kind: 'value', doc: 'contact', path: 'email', label: 'البريد الإلكتروني', ltr: true, type: 'email' },
                     { kind: 'value', doc: 'contact', path: 'phone', label: 'الهاتف', ltr: true, type: 'tel' },
-                    { kind: 'value', doc: 'contact', path: 'whatsappNumber', label: 'رقم واتساب', ltr: true, hint: 'أرقام فقط مع رمز الدولة، مثل 966537396405.' },
+                    {
+                        kind: 'value',
+                        doc: 'contact',
+                        path: 'whatsappNumber',
+                        label: 'رقم واتساب',
+                        ltr: true,
+                        hint: 'أرقام فقط مع رمز الدولة، مثل 966537396405.',
+                    },
                     { kind: 'value', doc: 'contact', path: 'mapUrl', label: 'رابط الخريطة', ltr: true, type: 'url' },
                     media('contact', 'heroVideo', 'فيديو الخلفية', 'video'),
                 ],
@@ -434,7 +463,11 @@ export const SITE_PAGES: SitePage[] = [
                 id: 'seo',
                 title: 'العنوان ومحركات البحث',
                 description: 'عنوان الصفحة في القائمة ونتائج البحث.',
-                fields: [t('policy.title', 'عنوان الصفحة'), t('policy.metaTitle', 'العنوان في نتائج البحث'), t('policy.metaDescription', 'الوصف', { multiline: true, max: 160 })],
+                fields: [
+                    t('policy.title', 'عنوان الصفحة'),
+                    t('policy.metaTitle', 'العنوان في نتائج البحث'),
+                    t('policy.metaDescription', 'الوصف', { multiline: true, max: 160 }),
+                ],
             },
         ],
     },
@@ -469,7 +502,11 @@ export const SITE_PAGES: SitePage[] = [
                 id: 'footer',
                 title: 'الفوتر',
                 description: 'آخر الصفحة.',
-                fields: [t('footer.text', 'الجملة', { html: true, multiline: true }), t('footer.cta', 'نص الزر'), t('footer.copyright', 'حقوق النشر', { hint: '{year} يُستبدل بالسنة.' })],
+                fields: [
+                    t('footer.text', 'الجملة', { html: true, multiline: true }),
+                    t('footer.cta', 'نص الزر'),
+                    t('footer.copyright', 'حقوق النشر', { hint: '{year} يُستبدل بالسنة.' }),
+                ],
             },
             {
                 id: 'buttons',
@@ -486,7 +523,12 @@ export const SITE_PAGES: SitePage[] = [
                     t('common.cursor.visit', 'المؤشر: زيارة'),
                 ],
             },
-            { id: 'more', title: 'نصوص إضافية', description: 'نصوص أخرى عامة.', fields: [{ kind: 'leftovers', namespaces: ['navigation', 'footer', 'common'] }] },
+            {
+                id: 'more',
+                title: 'نصوص إضافية',
+                description: 'نصوص أخرى عامة.',
+                fields: [{ kind: 'leftovers', namespaces: ['navigation', 'footer', 'common'] }],
+            },
         ],
     },
 ];

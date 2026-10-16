@@ -1,6 +1,16 @@
 import { cn } from '@/lib/utils';
 
-export function PageHeader({ title, description, actions, className }: { title: React.ReactNode; description?: React.ReactNode; actions?: React.ReactNode; className?: string }) {
+export function PageHeader({
+    title,
+    description,
+    actions,
+    className,
+}: {
+    title: React.ReactNode;
+    description?: React.ReactNode;
+    actions?: React.ReactNode;
+    className?: string;
+}) {
     return (
         <div className={cn('flex flex-wrap items-end justify-between gap-4', className)}>
             <div className="min-w-0">
@@ -31,5 +41,7 @@ export function timeAgo(iso: string | null | undefined): string {
 
 export function formatDate(iso: string | null | undefined, withTime = true): string {
     if (!iso) return '';
-    return new Intl.DateTimeFormat('ar', { dateStyle: 'medium', ...(withTime ? { timeStyle: 'short' } : {}), numberingSystem: 'latn' }).format(new Date(iso));
+    return new Intl.DateTimeFormat('ar', { dateStyle: 'medium', ...(withTime ? { timeStyle: 'short' } : {}), numberingSystem: 'latn' }).format(
+        new Date(iso),
+    );
 }

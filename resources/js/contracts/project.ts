@@ -10,19 +10,19 @@ export type Aspect = z.infer<typeof aspectSchema>;
  * everything under the hero is the `blocks` artboard (see ./blocks).
  */
 export const projectSchema = z.object({
-  slug: z.string().min(1),
-  title: z.string(),
-  /** Short description: the card, the hero's lede, and the meta description. */
-  summary: z.string(),
-  category: z.string(),
-  year: z.string(),
-  /** Still image: poster for the clip, social card, next-project banner. */
-  cover: z.string(),
-  /** The card's clip; also the case page's hero. */
-  preview: z.string().nullable(),
-  /** The card's ratio in the work grid. */
-  aspect: aspectSchema,
-  blocks: z.array(blockSchema).default([]),
+    slug: z.string().min(1),
+    title: z.string(),
+    /** Short description: the card, the hero's lede, and the meta description. */
+    summary: z.string(),
+    category: z.string(),
+    year: z.string(),
+    /** Still image: poster for the clip, social card, next-project banner. */
+    cover: z.string(),
+    /** The card's clip; also the case page's hero. */
+    preview: z.string().nullable(),
+    /** The card's ratio in the work grid. */
+    aspect: aspectSchema,
+    blocks: z.array(blockSchema).default([]),
 });
 
 export type Project = z.infer<typeof projectSchema>;

@@ -160,7 +160,7 @@ export function MediaPicker({
                                         onClick={() => toggle(item)}
                                         title={item.name}
                                         className={cn(
-                                            'group relative overflow-hidden rounded-md border text-start outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                                            'group focus-visible:ring-ring relative overflow-hidden rounded-md border text-start outline-none focus-visible:ring-2',
                                             index >= 0 && 'ring-primary ring-2',
                                         )}
                                     >
@@ -169,7 +169,7 @@ export function MediaPicker({
                                             {item.width && item.height ? `${item.width}×${item.height}` : item.name}
                                         </span>
                                         {index >= 0 && (
-                                            <span className="bg-primary text-primary-foreground absolute top-1 start-1 flex size-5 items-center justify-center rounded-full text-[11px]">
+                                            <span className="bg-primary text-primary-foreground absolute start-1 top-1 flex size-5 items-center justify-center rounded-full text-[11px]">
                                                 {multiple ? index + 1 : <Check className="size-3" />}
                                             </span>
                                         )}

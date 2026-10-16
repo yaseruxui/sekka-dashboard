@@ -11,11 +11,25 @@ function Layer({ b, index, error, onSelect }: { b: Block; index: number; error: 
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: b.id });
     const Icon = ICONS[b.type];
     return (
-        <li ref={setNodeRef} style={{ transform: CSS.Translate.toString(transform), transition }} className={cn('bg-background flex items-center gap-1 rounded-md border', isDragging && 'z-10 shadow', error && 'border-destructive')}>
-            <button type="button" {...attributes} {...listeners} aria-label={`اسحب لترتيب البلوك ${index + 1}`} className="text-muted-foreground flex h-10 w-8 cursor-grab items-center justify-center">
+        <li
+            ref={setNodeRef}
+            style={{ transform: CSS.Translate.toString(transform), transition }}
+            className={cn('bg-background flex items-center gap-1 rounded-md border', isDragging && 'z-10 shadow', error && 'border-destructive')}
+        >
+            <button
+                type="button"
+                {...attributes}
+                {...listeners}
+                aria-label={`اسحب لترتيب البلوك ${index + 1}`}
+                className="text-muted-foreground flex h-10 w-8 cursor-grab items-center justify-center"
+            >
                 <GripVertical className="size-4" />
             </button>
-            <button type="button" onClick={onSelect} className={cn('flex min-w-0 flex-1 items-center gap-2 py-2 pe-2 text-start text-sm', b.hidden && 'opacity-50')}>
+            <button
+                type="button"
+                onClick={onSelect}
+                className={cn('flex min-w-0 flex-1 items-center gap-2 py-2 pe-2 text-start text-sm', b.hidden && 'opacity-50')}
+            >
                 <Icon className="size-4 shrink-0" />
                 <span className="shrink-0 font-medium">{BLOCK_LABELS[b.type]}</span>
                 <span className="text-muted-foreground truncate text-xs">{blockSummary(b)}</span>
@@ -26,11 +40,30 @@ function Layer({ b, index, error, onSelect }: { b: Block; index: number; error: 
 }
 
 /** All blocks in order; drag to reorder, click to open a block's settings. */
-export function Layers({ blocks, errorBlocks, onReorder, onSelect }: { blocks: Block[]; errorBlocks: Set<number>; onReorder: (blocks: Block[]) => void; onSelect: (id: string) => void }) {
-    const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
+export function Layers({
+    blocks,
+    errorBlocks,
+    onReorder,
+    onSelect,
+}: {
+    blocks: Block[];
+    errorBlocks: Set<number>;
+    onReorder: (blocks: Block[]) => void;
+    onSelect: (id: string) => void;
+}) {
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    );
     const onDragEnd = ({ active, over }: DragEndEvent) => {
         if (!over || active.id === over.id) return;
-        onReorder(arrayMove(blocks, blocks.findIndex((b) => b.id === active.id), blocks.findIndex((b) => b.id === over.id)));
+        onReorder(
+            arrayMove(
+                blocks,
+                blocks.findIndex((b) => b.id === active.id),
+                blocks.findIndex((b) => b.id === over.id),
+            ),
+        );
     };
 
     return (
@@ -40,7 +73,9 @@ export function Layers({ blocks, errorBlocks, onReorder, onSelect }: { blocks: B
                 <p className="text-muted-foreground text-xs">اسحب لترتيبها، أو اضغط على أي قسم في المعاينة لتعديله.</p>
             </div>
             {blocks.length === 0 ? (
-                <p className="text-muted-foreground rounded-md border border-dashed p-4 text-center text-sm">لا توجد بلوكات بعد. أضف من الشريط تحت المعاينة.</p>
+                <p className="text-muted-foreground rounded-md border border-dashed p-4 text-center text-sm">
+                    لا توجد بلوكات بعد. أضف من الشريط تحت المعاينة.
+                </p>
             ) : (
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
                     <SortableContext items={blocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>

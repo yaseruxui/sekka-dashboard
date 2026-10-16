@@ -14,7 +14,19 @@ import { slugify, type WorkingProject } from './model';
 
 const ADD = '__add__';
 
-function CategoryPicker({ value, categories, onChange, onCategories, error }: { value: string; categories: string[]; onChange: (v: string) => void; onCategories: (list: string[]) => void; error?: string }) {
+function CategoryPicker({
+    value,
+    categories,
+    onChange,
+    onCategories,
+    error,
+}: {
+    value: string;
+    categories: string[];
+    onChange: (v: string) => void;
+    onCategories: (list: string[]) => void;
+    error?: string;
+}) {
     const [adding, setAdding] = useState(false);
     const [name, setName] = useState('');
     const [busy, setBusy] = useState(false);
@@ -98,7 +110,10 @@ export function DetailsPanel({
     slugLinked: boolean;
     onSlugLinked: (linked: boolean) => void;
 }) {
-    const field = <K extends keyof WorkingProject>(k: K) => (v: WorkingProject[K]) => set((x) => ({ ...x, [k]: v }), k);
+    const field =
+        <K extends keyof WorkingProject>(k: K) =>
+        (v: WorkingProject[K]) =>
+            set((x) => ({ ...x, [k]: v }), k);
 
     return (
         <div className="grid grid-cols-1 gap-4">
@@ -128,7 +143,10 @@ export function DetailsPanel({
             <div className="grid grid-cols-1 gap-1.5">
                 <Label htmlFor="p-slug">الرابط</Label>
                 <div className="flex items-center gap-1">
-                    <div className={cn('border-input flex h-10 min-w-0 flex-1 items-center rounded-md border', errors.slug && 'border-destructive')} dir="ltr">
+                    <div
+                        className={cn('border-input flex h-10 min-w-0 flex-1 items-center rounded-md border', errors.slug && 'border-destructive')}
+                        dir="ltr"
+                    >
                         <span className="text-muted-foreground ps-3 text-sm">/work/</span>
                         <input
                             id="p-slug"
@@ -169,7 +187,13 @@ export function DetailsPanel({
             <div className="grid grid-cols-2 gap-3">
                 <div className="grid grid-cols-1 gap-1.5">
                     <Label>المجال</Label>
-                    <CategoryPicker value={p.category} categories={categories} onChange={(v) => field('category')(v)} onCategories={onCategories} error={errors.category} />
+                    <CategoryPicker
+                        value={p.category}
+                        categories={categories}
+                        onChange={(v) => field('category')(v)}
+                        onCategories={onCategories}
+                        error={errors.category}
+                    />
                 </div>
                 <div className="grid grid-cols-1 gap-1.5">
                     <Label htmlFor="p-year">السنة</Label>
@@ -186,7 +210,10 @@ export function DetailsPanel({
                             type="button"
                             aria-pressed={p.aspect === a}
                             onClick={() => set((x) => ({ ...x, aspect: a }))}
-                            className={cn('h-9 rounded-md border text-xs', p.aspect === a ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted')}
+                            className={cn(
+                                'h-9 rounded-md border text-xs',
+                                p.aspect === a ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted',
+                            )}
                         >
                             {a}
                         </button>
@@ -197,7 +224,12 @@ export function DetailsPanel({
             <div className="grid grid-cols-1 gap-1.5">
                 <Label>صورة الغلاف</Label>
                 <p className="text-muted-foreground -mt-1 text-xs">للبطاقة، ومشاركة الرابط، وبانر «المشروع التالي».</p>
-                <MediaField value={p.cover} accept="image" invalid={!!errors.cover} onChange={(item) => item && set((x) => ({ ...x, cover: item.url }))} />
+                <MediaField
+                    value={p.cover}
+                    accept="image"
+                    invalid={!!errors.cover}
+                    onChange={(item) => item && set((x) => ({ ...x, cover: item.url }))}
+                />
                 <InputError message={errors.cover} />
             </div>
 

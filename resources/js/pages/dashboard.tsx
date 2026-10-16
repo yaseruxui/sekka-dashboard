@@ -7,7 +7,15 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, ExternalLink, Plus, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 
-type Message = { id: number; name: string; company: string; message: string | null; estimated_budget: string | null; read_at: string | null; created_at: string };
+type Message = {
+    id: number;
+    name: string;
+    company: string;
+    message: string | null;
+    estimated_budget: string | null;
+    read_at: string | null;
+    created_at: string;
+};
 
 interface Props {
     stats: { published: number; drafts: number; unread: number };
@@ -80,7 +88,9 @@ export default function Dashboard({ stats, recentMessages, site }: Props) {
                                     href={route('inbox.index', { open: m.id })}
                                     className="hover:bg-muted/50 flex items-center gap-3 border-b px-4 py-3 last:border-0"
                                 >
-                                    <span className="bg-muted flex size-9 shrink-0 items-center justify-center rounded-full font-semibold">{m.name.trim()[0]}</span>
+                                    <span className="bg-muted flex size-9 shrink-0 items-center justify-center rounded-full font-semibold">
+                                        {m.name.trim()[0]}
+                                    </span>
                                     <span className="min-w-0 flex-1">
                                         <span className="flex items-center gap-2 font-semibold">
                                             {!m.read_at && <span className="bg-primary size-2 rounded-full" aria-label="جديدة" />}
@@ -89,7 +99,9 @@ export default function Dashboard({ stats, recentMessages, site }: Props) {
                                         </span>
                                         <span className="text-muted-foreground block truncate text-sm">{m.message || '—'}</span>
                                     </span>
-                                    {m.estimated_budget && <span className="bg-muted hidden rounded-full px-2.5 py-0.5 text-xs sm:inline">{m.estimated_budget}</span>}
+                                    {m.estimated_budget && (
+                                        <span className="bg-muted hidden rounded-full px-2.5 py-0.5 text-xs sm:inline">{m.estimated_budget}</span>
+                                    )}
                                     <span className="text-muted-foreground shrink-0 text-xs">{timeAgo(m.created_at)}</span>
                                 </Link>
                             ))
@@ -104,11 +116,20 @@ export default function Dashboard({ stats, recentMessages, site }: Props) {
                             { label: 'رفع صور أو فيديو', href: '/media' },
                         ].map((a) =>
                             a.href ? (
-                                <Link key={a.label} href={a.href} className="hover:bg-muted/50 flex items-center justify-between rounded-lg border px-3.5 py-3">
+                                <Link
+                                    key={a.label}
+                                    href={a.href}
+                                    className="hover:bg-muted/50 flex items-center justify-between rounded-lg border px-3.5 py-3"
+                                >
                                     {a.label} <ArrowLeft className="size-4" />
                                 </Link>
                             ) : (
-                                <button key={a.label} type="button" onClick={a.onClick} className="hover:bg-muted/50 flex items-center justify-between rounded-lg border px-3.5 py-3 text-start">
+                                <button
+                                    key={a.label}
+                                    type="button"
+                                    onClick={a.onClick}
+                                    className="hover:bg-muted/50 flex items-center justify-between rounded-lg border px-3.5 py-3 text-start"
+                                >
                                     {a.label} <ArrowLeft className="size-4" />
                                 </button>
                             ),
@@ -117,7 +138,13 @@ export default function Dashboard({ stats, recentMessages, site }: Props) {
                             variant="secondary"
                             className="mt-1 h-11"
                             disabled={refreshing}
-                            onClick={() => router.post(route('site.refresh'), {}, { preserveScroll: true, onStart: () => setRefreshing(true), onFinish: () => setRefreshing(false) })}
+                            onClick={() =>
+                                router.post(
+                                    route('site.refresh'),
+                                    {},
+                                    { preserveScroll: true, onStart: () => setRefreshing(true), onFinish: () => setRefreshing(false) },
+                                )
+                            }
                         >
                             <RefreshCw className={cn(refreshing && 'animate-spin')} /> تحديث الموقع الآن
                         </Button>

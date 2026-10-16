@@ -7,7 +7,17 @@ import { useEffect, useRef } from 'react';
  * A small editor for the privacy policy: paragraphs, headings, bold / italic,
  * lists and links (what the site allows; the server cleans the rest out).
  */
-export function RichText({ value, onChange, dir = 'rtl', invalid }: { value: string; onChange: (html: string) => void; dir?: 'rtl' | 'ltr'; invalid?: boolean }) {
+export function RichText({
+    value,
+    onChange,
+    dir = 'rtl',
+    invalid,
+}: {
+    value: string;
+    onChange: (html: string) => void;
+    dir?: 'rtl' | 'ltr';
+    invalid?: boolean;
+}) {
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -41,11 +51,28 @@ export function RichText({ value, onChange, dir = 'rtl', invalid }: { value: str
         <div className={cn('rounded-md border', invalid && 'border-destructive')}>
             <div className="bg-muted/40 flex flex-wrap gap-0.5 border-b p-1">
                 {tools.map(([Icon, label, run]) => (
-                    <Button key={label} type="button" size="icon" variant="ghost" className="size-8" title={label} aria-label={label} onMouseDown={(e) => e.preventDefault()} onClick={run}>
+                    <Button
+                        key={label}
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="size-8"
+                        title={label}
+                        aria-label={label}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={run}
+                    >
                         <Icon className="size-4" />
                     </Button>
                 ))}
-                <Button type="button" variant="ghost" size="sm" className="h-8" onMouseDown={(e) => e.preventDefault()} onClick={() => exec('formatBlock', 'p')}>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-8"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => exec('formatBlock', 'p')}
+                >
                     فقرة
                 </Button>
             </div>

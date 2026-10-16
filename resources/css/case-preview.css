@@ -112,14 +112,30 @@
 .cb.--light {
     color: #000;
 }
-.cb.--pt-none { padding-top: 0; }
-.cb.--pt-sm { padding-top: clamp(16px, calc(2.5 * var(--cp-vh)), 28px); }
-.cb.--pt-md { padding-top: clamp(48px, calc(8 * var(--cp-vh)), 96px); }
-.cb.--pt-lg { padding-top: clamp(80px, calc(14 * var(--cp-vh)), 160px); }
-.cb.--pb-none { padding-bottom: 0; }
-.cb.--pb-sm { padding-bottom: clamp(16px, calc(2.5 * var(--cp-vh)), 28px); }
-.cb.--pb-md { padding-bottom: clamp(48px, calc(8 * var(--cp-vh)), 96px); }
-.cb.--pb-lg { padding-bottom: clamp(80px, calc(14 * var(--cp-vh)), 160px); }
+.cb.--pt-none {
+    padding-top: 0;
+}
+.cb.--pt-sm {
+    padding-top: clamp(16px, calc(2.5 * var(--cp-vh)), 28px);
+}
+.cb.--pt-md {
+    padding-top: clamp(48px, calc(8 * var(--cp-vh)), 96px);
+}
+.cb.--pt-lg {
+    padding-top: clamp(80px, calc(14 * var(--cp-vh)), 160px);
+}
+.cb.--pb-none {
+    padding-bottom: 0;
+}
+.cb.--pb-sm {
+    padding-bottom: clamp(16px, calc(2.5 * var(--cp-vh)), 28px);
+}
+.cb.--pb-md {
+    padding-bottom: clamp(48px, calc(8 * var(--cp-vh)), 96px);
+}
+.cb.--pb-lg {
+    padding-bottom: clamp(80px, calc(14 * var(--cp-vh)), 160px);
+}
 .cb__inner {
     padding-inline: var(--cb-pad);
 }

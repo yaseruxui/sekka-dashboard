@@ -30,7 +30,10 @@ export default function SitePage({ page, content, defaults, meta }: Props) {
     useUnsavedGuard(anyDirty);
 
     const onStatus = useMemo(
-        () => Object.fromEntries(def.sections.map((s) => [s.id, (st: CardStatus) => setStatus((prev) => (prev[s.id] === st ? prev : { ...prev, [s.id]: st }))])),
+        () =>
+            Object.fromEntries(
+                def.sections.map((s) => [s.id, (st: CardStatus) => setStatus((prev) => (prev[s.id] === st ? prev : { ...prev, [s.id]: st }))]),
+            ),
         [def.sections],
     );
 
@@ -40,7 +43,12 @@ export default function SitePage({ page, content, defaults, meta }: Props) {
     }, []);
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'التحكم بالموقع', href: '/site/home' }, { title: def.title, href: `/site/${page}` }]}>
+        <AppLayout
+            breadcrumbs={[
+                { title: 'التحكم بالموقع', href: '/site/home' },
+                { title: def.title, href: `/site/${page}` },
+            ]}
+        >
             <Head title={def.title} />
             <div className="bg-muted/30 flex-1">
                 <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 p-4 md:p-8">
@@ -72,10 +80,20 @@ export default function SitePage({ page, content, defaults, meta }: Props) {
                                     const st = submitted === s.id && Object.keys(errors).length ? 'error' : (status[s.id] ?? 'saved');
                                     return (
                                         <li key={s.id}>
-                                            <button type="button" onClick={() => go(s.id)} className={cn('hover:bg-muted/60 flex w-full items-center gap-2.5 border-b px-4 py-2.5 text-start text-sm last:border-0', open.has(s.id) && 'font-semibold')}>
+                                            <button
+                                                type="button"
+                                                onClick={() => go(s.id)}
+                                                className={cn(
+                                                    'hover:bg-muted/60 flex w-full items-center gap-2.5 border-b px-4 py-2.5 text-start text-sm last:border-0',
+                                                    open.has(s.id) && 'font-semibold',
+                                                )}
+                                            >
                                                 <span className="text-muted-foreground w-4 text-xs">{i + 1}</span>
                                                 <span className="flex-1">{s.title}</span>
-                                                <span className={cn('size-2 rounded-full', DOT[st])} aria-label={{ saved: 'محفوظ', dirty: 'غير محفوظ', error: 'به أخطاء' }[st]} />
+                                                <span
+                                                    className={cn('size-2 rounded-full', DOT[st])}
+                                                    aria-label={{ saved: 'محفوظ', dirty: 'غير محفوظ', error: 'به أخطاء' }[st]}
+                                                />
                                             </button>
                                         </li>
                                     );
@@ -103,7 +121,9 @@ export default function SitePage({ page, content, defaults, meta }: Props) {
                                     meta={meta[`${page}.${s.id}`]}
                                     errors={submitted === s.id ? errors : {}}
                                     open={open.has(s.id)}
-                                    onOpenChange={(o) => setOpen((prev) => (o ? new Set([...prev, s.id]) : new Set([...prev].filter((x) => x !== s.id))))}
+                                    onOpenChange={(o) =>
+                                        setOpen((prev) => (o ? new Set([...prev, s.id]) : new Set([...prev].filter((x) => x !== s.id))))
+                                    }
                                     onStatus={onStatus[s.id]}
                                     onSubmit={() => setSubmitted(s.id)}
                                 />

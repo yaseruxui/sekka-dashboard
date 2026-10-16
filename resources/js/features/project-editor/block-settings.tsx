@@ -35,7 +35,17 @@ function Field({ label, hint, error, children }: { label: string; hint?: string;
     );
 }
 
-function Segmented<T extends string>({ value, options, onChange, label }: { value: T; options: [T, string][]; onChange: (v: T) => void; label: string }) {
+function Segmented<T extends string>({
+    value,
+    options,
+    onChange,
+    label,
+}: {
+    value: T;
+    options: [T, string][];
+    onChange: (v: T) => void;
+    label: string;
+}) {
     return (
         <div role="group" aria-label={label} className="grid gap-1" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
             {options.map(([v, text]) => (
@@ -44,7 +54,10 @@ function Segmented<T extends string>({ value, options, onChange, label }: { valu
                     type="button"
                     aria-pressed={value === v}
                     onClick={() => onChange(v)}
-                    className={cn('h-9 rounded-md border text-sm', value === v ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted')}
+                    className={cn(
+                        'h-9 rounded-md border text-sm',
+                        value === v ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted',
+                    )}
                 >
                     {text}
                 </button>
@@ -56,14 +69,29 @@ function Segmented<T extends string>({ value, options, onChange, label }: { valu
 function GridItem({ m, index, onRemove, onAlt }: { m: Media; index: number; onRemove: () => void; onAlt: (alt: string) => void }) {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: `${index}:${m.src}` });
     return (
-        <div ref={setNodeRef} style={{ transform: CSS.Translate.toString(transform), transition }} className="bg-background group relative overflow-hidden rounded-md border">
+        <div
+            ref={setNodeRef}
+            style={{ transform: CSS.Translate.toString(transform), transition }}
+            className="bg-background group relative overflow-hidden rounded-md border"
+        >
             <div {...attributes} {...listeners} className="cursor-grab" aria-label={`اسحب لترتيب العنصر ${index + 1}`}>
                 <MediaThumb src={m.src} className="aspect-square w-full" />
             </div>
-            <button type="button" onClick={onRemove} aria-label="إزالة من الشبكة" className="bg-background/90 absolute top-1 start-1 flex size-6 items-center justify-center rounded border opacity-0 group-hover:opacity-100 focus:opacity-100">
+            <button
+                type="button"
+                onClick={onRemove}
+                aria-label="إزالة من الشبكة"
+                className="bg-background/90 absolute start-1 top-1 flex size-6 items-center justify-center rounded border opacity-0 group-hover:opacity-100 focus:opacity-100"
+            >
                 <X className="size-3.5" />
             </button>
-            <input value={m.alt} onChange={(e) => onAlt(e.target.value)} placeholder="وصف بديل" aria-label={`الوصف البديل للعنصر ${index + 1}`} className="w-full border-t px-1.5 py-1 text-[11px] outline-none" />
+            <input
+                value={m.alt}
+                onChange={(e) => onAlt(e.target.value)}
+                placeholder="وصف بديل"
+                aria-label={`الوصف البديل للعنصر ${index + 1}`}
+                className="w-full border-t px-1.5 py-1 text-[11px] outline-none"
+            />
         </div>
     );
 }
@@ -90,10 +118,19 @@ function GridItems({ items, onChange }: { items: Media[]; onChange: (items: Medi
                                 m={m}
                                 index={i}
                                 onRemove={() => onChange(items.filter((_, j) => j !== i))}
-                                onAlt={(alt) => onChange(items.map((x, j) => (j === i ? { ...x, alt } : x)), `grid-alt-${i}`)}
+                                onAlt={(alt) =>
+                                    onChange(
+                                        items.map((x, j) => (j === i ? { ...x, alt } : x)),
+                                        `grid-alt-${i}`,
+                                    )
+                                }
                             />
                         ))}
-                        <button type="button" onClick={() => setPicking(true)} className="text-muted-foreground hover:bg-muted flex aspect-square flex-col items-center justify-center gap-1 rounded-md border border-dashed text-xs">
+                        <button
+                            type="button"
+                            onClick={() => setPicking(true)}
+                            className="text-muted-foreground hover:bg-muted flex aspect-square flex-col items-center justify-center gap-1 rounded-md border border-dashed text-xs"
+                        >
                             <Plus className="size-4" /> إضافة
                         </button>
                     </div>
@@ -120,13 +157,25 @@ function ContentFields({ block: b, patch, errors, prefix }: { block: Block; patc
             return (
                 <>
                     <Field label="العنوان" error={err('title')}>
-                        <Input value={b.title} onChange={(e) => patch((x) => ({ ...x, title: e.target.value }) as Block, 'title')} placeholder="مثل: التحدي" />
+                        <Input
+                            value={b.title}
+                            onChange={(e) => patch((x) => ({ ...x, title: e.target.value }) as Block, 'title')}
+                            placeholder="مثل: التحدي"
+                        />
                     </Field>
                     <Field label="النص" hint="سطر فاضي يبدأ فقرة جديدة." error={err('body')}>
                         <Textarea rows={8} value={b.body} onChange={(e) => patch((x) => ({ ...x, body: e.target.value }) as Block, 'body')} />
                     </Field>
                     <Field label="المحاذاة">
-                        <Segmented label="المحاذاة" value={b.align} options={[['start', 'بداية'], ['center', 'وسط']]} onChange={(v) => patch((x) => ({ ...x, align: v }) as Block)} />
+                        <Segmented
+                            label="المحاذاة"
+                            value={b.align}
+                            options={[
+                                ['start', 'بداية'],
+                                ['center', 'وسط'],
+                            ]}
+                            onChange={(v) => patch((x) => ({ ...x, align: v }) as Block)}
+                        />
                     </Field>
                 </>
             );
@@ -134,10 +183,19 @@ function ContentFields({ block: b, patch, errors, prefix }: { block: Block; patc
             return (
                 <>
                     <Field label="الصورة" error={err('media.src') || err('media.width') || err('media')}>
-                        <MediaField value={b.media?.src} accept="image" onChange={setMedia} dims={b.media ? `${b.media.width} × ${b.media.height}` : null} invalid={!!err('media')} />
+                        <MediaField
+                            value={b.media?.src}
+                            accept="image"
+                            onChange={setMedia}
+                            dims={b.media ? `${b.media.width} × ${b.media.height}` : null}
+                            invalid={!!err('media')}
+                        />
                     </Field>
                     <Field label="الوصف البديل" hint="يقرأه قارئ الشاشة ومحركات البحث.">
-                        <Input value={b.media?.alt ?? ''} onChange={(e) => patch((x) => ({ ...x, media: { ...(x as typeof b).media, alt: e.target.value } }) as Block, 'alt')} />
+                        <Input
+                            value={b.media?.alt ?? ''}
+                            onChange={(e) => patch((x) => ({ ...x, media: { ...(x as typeof b).media, alt: e.target.value } }) as Block, 'alt')}
+                        />
                     </Field>
                     <Field label="تعليق تحت الصورة">
                         <Input value={b.caption} onChange={(e) => patch((x) => ({ ...x, caption: e.target.value }) as Block, 'caption')} />
@@ -148,19 +206,34 @@ function ContentFields({ block: b, patch, errors, prefix }: { block: Block; patc
             return (
                 <>
                     <Field label="الفيديو" error={err('media.src') || err('media.width') || err('media')}>
-                        <MediaField value={b.media?.src} accept="video" onChange={setMedia} dims={b.media ? `${b.media.width} × ${b.media.height}` : null} invalid={!!err('media')} />
+                        <MediaField
+                            value={b.media?.src}
+                            accept="video"
+                            onChange={setMedia}
+                            dims={b.media ? `${b.media.width} × ${b.media.height}` : null}
+                            invalid={!!err('media')}
+                        />
                     </Field>
                     <Field label="طريقة التشغيل">
                         <Segmented
                             label="طريقة التشغيل"
                             value={b.mode}
-                            options={[['loop', 'متكرر بدون صوت'], ['player', 'مشغّل بأزرار']]}
+                            options={[
+                                ['loop', 'متكرر بدون صوت'],
+                                ['player', 'مشغّل بأزرار'],
+                            ]}
                             onChange={(v) => patch((x) => ({ ...x, mode: v }) as Block)}
                         />
                     </Field>
                     {b.mode === 'player' && (
                         <Field label="صورة قبل التشغيل" hint="اختياري.">
-                            <MediaField value={b.poster} accept="image" clearable compact onChange={(item) => patch((x) => ({ ...x, poster: item?.url ?? null }) as Block)} />
+                            <MediaField
+                                value={b.poster}
+                                accept="image"
+                                clearable
+                                compact
+                                onChange={(item) => patch((x) => ({ ...x, poster: item?.url ?? null }) as Block)}
+                            />
                         </Field>
                     )}
                     <Field label="تعليق تحت الفيديو">
@@ -175,10 +248,28 @@ function ContentFields({ block: b, patch, errors, prefix }: { block: Block; patc
                         <GridItems items={b.items} onChange={(items, key) => patch((x) => ({ ...x, items }) as Block, key)} />
                     </Field>
                     <Field label="عدد العناصر في الصف" error={err('perRow')}>
-                        <Segmented label="عدد العناصر في الصف" value={String(b.perRow) as '1' | '2' | '3' | '4'} options={[['1', '1'], ['2', '2'], ['3', '3'], ['4', '4']]} onChange={(v) => patch((x) => ({ ...x, perRow: Number(v) }) as Block)} />
+                        <Segmented
+                            label="عدد العناصر في الصف"
+                            value={String(b.perRow) as '1' | '2' | '3' | '4'}
+                            options={[
+                                ['1', '1'],
+                                ['2', '2'],
+                                ['3', '3'],
+                                ['4', '4'],
+                            ]}
+                            onChange={(v) => patch((x) => ({ ...x, perRow: Number(v) }) as Block)}
+                        />
                     </Field>
                     <Field label={`المسافة بين الصور: ${b.gap}px`} error={err('gap')}>
-                        <input type="range" min={0} max={64} step={4} value={b.gap} onChange={(e) => patch((x) => ({ ...x, gap: Number(e.target.value) }) as Block, 'gap')} className="accent-primary w-full" />
+                        <input
+                            type="range"
+                            min={0}
+                            max={64}
+                            step={4}
+                            value={b.gap}
+                            onChange={(e) => patch((x) => ({ ...x, gap: Number(e.target.value) }) as Block, 'gap')}
+                            className="accent-primary w-full"
+                        />
                     </Field>
                 </>
             );
@@ -186,8 +277,17 @@ function ContentFields({ block: b, patch, errors, prefix }: { block: Block; patc
             const ok = !!embedSrc(b.url);
             return (
                 <>
-                    <Field label="رابط الفيديو" hint="رابط صفحة الفيديو على يوتيوب أو فيميو." error={err('url') || (b.url && !ok ? 'هذا ليس رابط يوتيوب أو فيميو.' : undefined)}>
-                        <Input dir="ltr" value={b.url} onChange={(e) => patch((x) => ({ ...x, url: e.target.value.trim() }) as Block, 'url')} placeholder="https://www.youtube.com/watch?v=…" />
+                    <Field
+                        label="رابط الفيديو"
+                        hint="رابط صفحة الفيديو على يوتيوب أو فيميو."
+                        error={err('url') || (b.url && !ok ? 'هذا ليس رابط يوتيوب أو فيميو.' : undefined)}
+                    >
+                        <Input
+                            dir="ltr"
+                            value={b.url}
+                            onChange={(e) => patch((x) => ({ ...x, url: e.target.value.trim() }) as Block, 'url')}
+                            placeholder="https://www.youtube.com/watch?v=…"
+                        />
                     </Field>
                     <Field label="تعليق تحت الفيديو">
                         <Input value={b.caption} onChange={(e) => patch((x) => ({ ...x, caption: e.target.value }) as Block, 'caption')} />
@@ -212,7 +312,15 @@ function FormatFields({ block: b, patch }: { block: Block; patch: Patch }) {
             </CollapsibleTrigger>
             <CollapsibleContent className="grid gap-4 border-t p-3">
                 <Field label="العرض">
-                    <Segmented label="العرض" value={b.width} options={[['contained', 'بهوامش'], ['full', 'كامل العرض']]} onChange={(v) => patch((x) => ({ ...x, width: v }))} />
+                    <Segmented
+                        label="العرض"
+                        value={b.width}
+                        options={[
+                            ['contained', 'بهوامش'],
+                            ['full', 'كامل العرض'],
+                        ]}
+                        onChange={(v) => patch((x) => ({ ...x, width: v }))}
+                    />
                 </Field>
                 <div className="grid grid-cols-2 gap-3">
                     {(['spacingTop', 'spacingBottom'] as const).map((k) => (
@@ -241,9 +349,20 @@ function FormatFields({ block: b, patch }: { block: Block; patch: Patch }) {
                             aria-label="اختيار اللون"
                             className="h-9 w-12 cursor-pointer rounded-md border bg-transparent p-1"
                         />
-                        <Input dir="ltr" value={b.background ?? ''} placeholder="أسود الصفحة" onChange={(e) => patch((x) => ({ ...x, background: e.target.value || null }), 'bg')} />
+                        <Input
+                            dir="ltr"
+                            value={b.background ?? ''}
+                            placeholder="أسود الصفحة"
+                            onChange={(e) => patch((x) => ({ ...x, background: e.target.value || null }), 'bg')}
+                        />
                         {b.background && (
-                            <Button type="button" size="icon" variant="ghost" onClick={() => patch((x) => ({ ...x, background: null }))} aria-label="إرجاع لأسود الصفحة">
+                            <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => patch((x) => ({ ...x, background: null }))}
+                                aria-label="إرجاع لأسود الصفحة"
+                            >
                                 <X />
                             </Button>
                         )}
@@ -281,7 +400,10 @@ export function BlockSettings({
         <div className="grid grid-cols-1 gap-4">
             <div className="flex items-center justify-between gap-2">
                 <h2 className="font-semibold">
-                    {BLOCK_LABELS[block.type]} <span className="text-muted-foreground font-normal">· {index + 1} من {count}</span>
+                    {BLOCK_LABELS[block.type]}{' '}
+                    <span className="text-muted-foreground font-normal">
+                        · {index + 1} من {count}
+                    </span>
                 </h2>
                 <div className="flex">
                     <Button size="icon" variant="ghost" onClick={() => onMove(-1)} disabled={index === 0} aria-label="تحريك لفوق">
@@ -290,7 +412,12 @@ export function BlockSettings({
                     <Button size="icon" variant="ghost" onClick={() => onMove(1)} disabled={index === count - 1} aria-label="تحريك لتحت">
                         <ArrowDown />
                     </Button>
-                    <Button size="icon" variant="ghost" onClick={() => patch((x) => ({ ...x, hidden: !x.hidden }))} aria-label={block.hidden ? 'إظهار' : 'إخفاء'}>
+                    <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => patch((x) => ({ ...x, hidden: !x.hidden }))}
+                        aria-label={block.hidden ? 'إظهار' : 'إخفاء'}
+                    >
                         {block.hidden ? <EyeOff /> : <Eye />}
                     </Button>
                     <Button size="icon" variant="ghost" onClick={onDuplicate} aria-label="نسخ البلوك">
@@ -301,7 +428,9 @@ export function BlockSettings({
                     </Button>
                 </div>
             </div>
-            {block.hidden && <p className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-900">هذا البلوك مخفي: محفوظ في المشروع لكن لا يظهر على الموقع.</p>}
+            {block.hidden && (
+                <p className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-900">هذا البلوك مخفي: محفوظ في المشروع لكن لا يظهر على الموقع.</p>
+            )}
             <ContentFields block={block} patch={patch} errors={errors} prefix={`blocks.${index}`} />
             <FormatFields block={block} patch={patch} />
         </div>

@@ -20,7 +20,14 @@ import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { closestCenter, DndContext, type DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, rectSortingStrategy, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import {
+    arrayMove,
+    rectSortingStrategy,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Copy, ExternalLink, GripVertical, LayoutGrid, MoreHorizontal, Pencil, Plus, Rows3, Search, Trash2 } from 'lucide-react';
@@ -109,7 +116,11 @@ function RowMenu({ p, siteUrl, onDelete }: { p: ProjectRow; siteUrl: string; onD
 function SortableRow({ p, sortable, children }: { p: ProjectRow; sortable: boolean; children: React.ReactNode }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: p.id, disabled: !sortable });
     return (
-        <TableRow ref={setNodeRef} style={{ transform: CSS.Translate.toString(transform), transition }} className={cn(isDragging && 'bg-muted relative z-10 shadow')}>
+        <TableRow
+            ref={setNodeRef}
+            style={{ transform: CSS.Translate.toString(transform), transition }}
+            className={cn(isDragging && 'bg-muted relative z-10 shadow')}
+        >
             <TableCell className="w-10 pe-0">
                 <button
                     type="button"
@@ -130,14 +141,18 @@ function SortableRow({ p, sortable, children }: { p: ProjectRow; sortable: boole
 function SortableCard({ p, sortable, children }: { p: ProjectRow; sortable: boolean; children: React.ReactNode }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: p.id, disabled: !sortable });
     return (
-        <div ref={setNodeRef} style={{ transform: CSS.Translate.toString(transform), transition }} className={cn('group relative flex flex-col overflow-hidden rounded-xl border bg-card', isDragging && 'z-10 shadow-lg')}>
+        <div
+            ref={setNodeRef}
+            style={{ transform: CSS.Translate.toString(transform), transition }}
+            className={cn('group bg-card relative flex flex-col overflow-hidden rounded-xl border', isDragging && 'z-10 shadow-lg')}
+        >
             {sortable && (
                 <button
                     type="button"
                     {...attributes}
                     {...listeners}
                     aria-label={`اسحب لترتيب ${p.title}`}
-                    className="bg-background/90 absolute top-2 start-2 z-10 flex size-8 cursor-grab items-center justify-center rounded-md border opacity-0 transition group-hover:opacity-100 focus:opacity-100"
+                    className="bg-background/90 absolute start-2 top-2 z-10 flex size-8 cursor-grab items-center justify-center rounded-md border opacity-0 transition group-hover:opacity-100 focus:opacity-100"
                 >
                     <GripVertical className="size-4" />
                 </button>
@@ -181,10 +196,17 @@ export default function ProjectsIndex({ projects, categories }: { projects: Proj
         [order, q, status, category],
     );
 
-    const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }), useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }));
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    );
     const onDragEnd = ({ active, over }: DragEndEvent) => {
         if (!over || active.id === over.id) return;
-        const next = arrayMove(order, order.findIndex((p) => p.id === active.id), order.findIndex((p) => p.id === over.id));
+        const next = arrayMove(
+            order,
+            order.findIndex((p) => p.id === active.id),
+            order.findIndex((p) => p.id === over.id),
+        );
         setOrder(next);
         router.post(route('projects.reorder'), { ids: next.map((p) => p.id) }, { preserveScroll: true, preserveState: true });
     };
@@ -215,7 +237,13 @@ export default function ProjectsIndex({ projects, categories }: { projects: Proj
                 <div className="flex flex-wrap items-center gap-2">
                     <div className="relative min-w-56 flex-1 sm:max-w-80">
                         <Search className="text-muted-foreground absolute start-3 top-1/2 size-4 -translate-y-1/2" />
-                        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ابحث باسم المشروع…" className="ps-9" aria-label="بحث في المشاريع" />
+                        <Input
+                            value={q}
+                            onChange={(e) => setQ(e.target.value)}
+                            placeholder="ابحث باسم المشروع…"
+                            className="ps-9"
+                            aria-label="بحث في المشاريع"
+                        />
                     </div>
                     <div role="group" aria-label="الحالة" className="flex rounded-md border p-0.5">
                         {(['all', 'published', 'draft'] as const).map((s) => (
@@ -244,10 +272,26 @@ export default function ProjectsIndex({ projects, categories }: { projects: Proj
                         </SelectContent>
                     </Select>
                     <div role="group" aria-label="طريقة العرض" className="ms-auto flex rounded-md border p-0.5">
-                        <button type="button" aria-pressed={view === 'table'} onClick={() => changeView('table')} className={cn('flex h-8 items-center gap-1.5 rounded px-3 text-sm', view === 'table' ? 'bg-muted font-semibold' : 'text-muted-foreground')}>
+                        <button
+                            type="button"
+                            aria-pressed={view === 'table'}
+                            onClick={() => changeView('table')}
+                            className={cn(
+                                'flex h-8 items-center gap-1.5 rounded px-3 text-sm',
+                                view === 'table' ? 'bg-muted font-semibold' : 'text-muted-foreground',
+                            )}
+                        >
                             <Rows3 className="size-4" /> جدول
                         </button>
-                        <button type="button" aria-pressed={view === 'cards'} onClick={() => changeView('cards')} className={cn('flex h-8 items-center gap-1.5 rounded px-3 text-sm', view === 'cards' ? 'bg-muted font-semibold' : 'text-muted-foreground')}>
+                        <button
+                            type="button"
+                            aria-pressed={view === 'cards'}
+                            onClick={() => changeView('cards')}
+                            className={cn(
+                                'flex h-8 items-center gap-1.5 rounded px-3 text-sm',
+                                view === 'cards' ? 'bg-muted font-semibold' : 'text-muted-foreground',
+                            )}
+                        >
                             <LayoutGrid className="size-4" /> بطاقات
                         </button>
                     </div>
@@ -259,7 +303,10 @@ export default function ProjectsIndex({ projects, categories }: { projects: Proj
                     </div>
                 ) : (
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-                        <SortableContext items={visible.map((p) => p.id)} strategy={view === 'table' ? verticalListSortingStrategy : rectSortingStrategy}>
+                        <SortableContext
+                            items={visible.map((p) => p.id)}
+                            strategy={view === 'table' ? verticalListSortingStrategy : rectSortingStrategy}
+                        >
                             {view === 'table' ? (
                                 <div className="overflow-hidden rounded-xl border">
                                     <Table className="min-w-[860px]">
@@ -288,13 +335,21 @@ export default function ProjectsIndex({ projects, categories }: { projects: Proj
                                                             <MediaThumb src={p.cover} className="h-10 w-14 shrink-0 rounded-md" />
                                                             <span className="min-w-0">
                                                                 <strong className="block truncate">{p.title}</strong>
-                                                                <span className="text-muted-foreground block text-xs" dir="ltr" style={{ textAlign: 'right' }}>
+                                                                <span
+                                                                    className="text-muted-foreground block text-xs"
+                                                                    dir="ltr"
+                                                                    style={{ textAlign: 'right' }}
+                                                                >
                                                                     /work/{p.slug}
                                                                 </span>
                                                             </span>
                                                         </Link>
                                                     </TableCell>
-                                                    <TableCell>{p.category && <span className="rounded-full border px-2.5 py-0.5 text-xs">{p.category}</span>}</TableCell>
+                                                    <TableCell>
+                                                        {p.category && (
+                                                            <span className="rounded-full border px-2.5 py-0.5 text-xs">{p.category}</span>
+                                                        )}
+                                                    </TableCell>
                                                     <TableCell className="text-muted-foreground">{p.year}</TableCell>
                                                     <TableCell className="text-muted-foreground" dir="ltr" style={{ textAlign: 'right' }}>
                                                         {p.aspect}
@@ -353,7 +408,8 @@ export default function ProjectsIndex({ projects, categories }: { projects: Proj
                     <AlertDialogHeader>
                         <AlertDialogTitle>حذف «{deleting?.title}»؟</AlertDialogTitle>
                         <AlertDialogDescription>
-                            سيُحذف المشروع مع كل بلوكاته{deleting?.published ? ' ويختفي من الموقع' : ''}. لا يمكن التراجع عن هذا. الملفات تبقى في مكتبة الوسائط.
+                            سيُحذف المشروع مع كل بلوكاته{deleting?.published ? ' ويختفي من الموقع' : ''}. لا يمكن التراجع عن هذا. الملفات تبقى في
+                            مكتبة الوسائط.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

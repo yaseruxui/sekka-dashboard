@@ -34,7 +34,13 @@ interface Message {
 }
 
 interface Props {
-    messages: { data: Message[]; current_page: number; last_page: number; total: number; links: { url: string | null; label: string; active: boolean }[] };
+    messages: {
+        data: Message[];
+        current_page: number;
+        last_page: number;
+        total: number;
+        links: { url: string | null; label: string; active: boolean }[];
+    };
     filters: { filter?: string; q?: string };
     counts: { all: number; unread: number };
 }
@@ -59,8 +65,13 @@ export default function Inbox({ messages, filters, counts }: Props) {
     const filter = filters.filter === 'unread' ? 'unread' : 'all';
     const open = messages.data.find((m) => m.id === openId) ?? null;
 
-    const params = (extra: Record<string, string | undefined> = {}) => ({ q: q || undefined, filter: filter === 'all' ? undefined : filter, ...extra });
-    const visit = (extra: Record<string, string | undefined>) => router.get(route('inbox.index'), params(extra), { preserveState: true, preserveScroll: true, replace: true });
+    const params = (extra: Record<string, string | undefined> = {}) => ({
+        q: q || undefined,
+        filter: filter === 'all' ? undefined : filter,
+        ...extra,
+    });
+    const visit = (extra: Record<string, string | undefined>) =>
+        router.get(route('inbox.index'), params(extra), { preserveState: true, preserveScroll: true, replace: true });
 
     useEffect(() => {
         if (q === (filters.q ?? '')) return;
@@ -95,11 +106,23 @@ export default function Inbox({ messages, filters, counts }: Props) {
                 <div className="flex flex-wrap items-center gap-2">
                     <div className="relative min-w-56 flex-1 sm:max-w-80">
                         <Search className="text-muted-foreground absolute start-3 top-1/2 size-4 -translate-y-1/2" />
-                        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ابحث بالاسم أو البريد أو الشركة…" className="ps-9" aria-label="بحث في الرسائل" />
+                        <Input
+                            value={q}
+                            onChange={(e) => setQ(e.target.value)}
+                            placeholder="ابحث بالاسم أو البريد أو الشركة…"
+                            className="ps-9"
+                            aria-label="بحث في الرسائل"
+                        />
                     </div>
                     <div role="group" aria-label="الحالة" className="flex rounded-md border p-0.5">
                         {(['all', 'unread'] as const).map((f) => (
-                            <button key={f} type="button" aria-pressed={filter === f} onClick={() => visit({ filter: f === 'all' ? undefined : f, page: undefined })} className={cn('h-8 rounded px-3 text-sm', filter === f ? 'bg-muted font-semibold' : 'text-muted-foreground')}>
+                            <button
+                                key={f}
+                                type="button"
+                                aria-pressed={filter === f}
+                                onClick={() => visit({ filter: f === 'all' ? undefined : f, page: undefined })}
+                                className={cn('h-8 rounded px-3 text-sm', filter === f ? 'bg-muted font-semibold' : 'text-muted-foreground')}
+                            >
                                 {f === 'all' ? `الكل (${counts.all})` : `جديدة (${counts.unread})`}
                             </button>
                         ))}
@@ -107,7 +130,9 @@ export default function Inbox({ messages, filters, counts }: Props) {
                 </div>
 
                 {messages.data.length === 0 ? (
-                    <div className="text-muted-foreground rounded-xl border border-dashed p-12 text-center">{counts.all === 0 ? 'لا توجد رسائل بعد.' : 'لا توجد رسائل تطابق البحث.'}</div>
+                    <div className="text-muted-foreground rounded-xl border border-dashed p-12 text-center">
+                        {counts.all === 0 ? 'لا توجد رسائل بعد.' : 'لا توجد رسائل تطابق البحث.'}
+                    </div>
                 ) : (
                     <div className="overflow-hidden rounded-xl border">
                         <Table className="min-w-[760px]">
@@ -123,7 +148,11 @@ export default function Inbox({ messages, filters, counts }: Props) {
                             </TableHeader>
                             <TableBody>
                                 {messages.data.map((m) => (
-                                    <TableRow key={m.id} onClick={() => setOpenId(m.id)} className={cn('cursor-pointer', !m.read_at && 'font-semibold', openId === m.id && 'bg-muted')}>
+                                    <TableRow
+                                        key={m.id}
+                                        onClick={() => setOpenId(m.id)}
+                                        className={cn('cursor-pointer', !m.read_at && 'font-semibold', openId === m.id && 'bg-muted')}
+                                    >
                                         <TableCell>
                                             <button type="button" onClick={() => setOpenId(m.id)} className="text-start">
                                                 {m.name}
@@ -150,8 +179,18 @@ export default function Inbox({ messages, filters, counts }: Props) {
                 {messages.last_page > 1 && (
                     <nav aria-label="الصفحات" className="flex flex-wrap justify-center gap-1">
                         {messages.links.map((l, i) => (
-                            <Button key={i} variant={l.active ? 'default' : 'ghost'} size="sm" disabled={!l.url} onClick={() => l.url && router.get(l.url, {}, { preserveState: true })}>
-                                <span dangerouslySetInnerHTML={{ __html: l.label.replace('&laquo; Previous', 'السابق').replace('Next &raquo;', 'التالي') }} />
+                            <Button
+                                key={i}
+                                variant={l.active ? 'default' : 'ghost'}
+                                size="sm"
+                                disabled={!l.url}
+                                onClick={() => l.url && router.get(l.url, {}, { preserveState: true })}
+                            >
+                                <span
+                                    dangerouslySetInnerHTML={{
+                                        __html: l.label.replace('&laquo; Previous', 'السابق').replace('Next &raquo;', 'التالي'),
+                                    }}
+                                />
                             </Button>
                         ))}
                     </nav>
@@ -192,7 +231,9 @@ export default function Inbox({ messages, filters, counts }: Props) {
                             )}
                         </dl>
 
-                        <div className="bg-muted/50 rounded-lg p-4 text-sm leading-7 whitespace-pre-wrap">{open.message || <span className="text-muted-foreground">بدون نص رسالة.</span>}</div>
+                        <div className="bg-muted/50 rounded-lg p-4 text-sm leading-7 whitespace-pre-wrap">
+                            {open.message || <span className="text-muted-foreground">بدون نص رسالة.</span>}
+                        </div>
 
                         <div className="mt-auto flex flex-wrap gap-2">
                             <Button asChild>
@@ -200,7 +241,12 @@ export default function Inbox({ messages, filters, counts }: Props) {
                                     <Mail /> رد بالبريد
                                 </a>
                             </Button>
-                            <Button variant="outline" onClick={() => router.patch(route('inbox.read', open.id), { read: false }, { ...RELOAD, onSuccess: () => setOpenId(null) })}>
+                            <Button
+                                variant="outline"
+                                onClick={() =>
+                                    router.patch(route('inbox.read', open.id), { read: false }, { ...RELOAD, onSuccess: () => setOpenId(null) })
+                                }
+                            >
                                 <MailOpen /> تعليم كغير مقروءة
                             </Button>
                             <Button variant="ghost" className="text-destructive ms-auto" onClick={() => setDeleting(open)}>
@@ -221,7 +267,9 @@ export default function Inbox({ messages, filters, counts }: Props) {
                         <AlertDialogCancel>إلغاء</AlertDialogCancel>
                         <AlertDialogAction
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            onClick={() => deleting && router.delete(route('inbox.destroy', deleting.id), { ...RELOAD, onSuccess: () => setOpenId(null) })}
+                            onClick={() =>
+                                deleting && router.delete(route('inbox.destroy', deleting.id), { ...RELOAD, onSuccess: () => setOpenId(null) })
+                            }
                         >
                             حذف
                         </AlertDialogAction>
