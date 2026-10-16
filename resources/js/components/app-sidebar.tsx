@@ -1,4 +1,7 @@
+import { AppearanceToggle } from '@/components/appearance-toggle';
 import { NavMain } from '@/components/nav-main';
+import { NavUser } from '@/components/nav-user';
+import { NotificationBell } from '@/components/notification-bell';
 import {
     Sidebar,
     SidebarContent,
@@ -112,7 +115,7 @@ export function AppSidebar() {
                 })}
             </SidebarContent>
 
-            {/* Profile, notifications and theme live in the top bar; settings close the sidebar. */}
+            {/* Settings, then the profile with the bell and theme toggle. */}
             <SidebarFooter>
                 <SidebarMenu>
                     <SidebarMenuItem>
@@ -129,6 +132,14 @@ export function AppSidebar() {
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
+                {/* Collapsed to icons: the bell and theme button stack above the avatar. */}
+                <div className="flex items-center gap-1 group-data-[collapsible=icon]:flex-col-reverse">
+                    <div className="min-w-0 flex-1 group-data-[collapsible=icon]:flex-none">
+                        <NavUser />
+                    </div>
+                    <NotificationBell className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground size-8 shrink-0" />
+                    <AppearanceToggle className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground size-8 shrink-0" />
+                </div>
             </SidebarFooter>
         </Sidebar>
     );

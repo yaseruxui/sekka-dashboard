@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 const POLL_MS = 30_000;
 
 /**
- * Header bell: unread count, the latest notifications, and a toast when a
+ * Sidebar bell: unread count, the latest notifications, and a toast when a
  * new one arrives (unless turned off in Settings → Appearance). Refreshes the
  * shared `notifications` prop every 30s while the tab is visible.
  */
@@ -53,7 +53,7 @@ export function NotificationBell({ className }: { className?: string }) {
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent side="bottom" align="end" className="w-80 p-0">
+            <PopoverContent side="top" align="end" className="w-80 p-0">
                 <div className="flex items-center justify-between border-b px-4 py-3">
                     <span className="text-sm font-semibold">الإشعارات</span>
                     {unread > 0 && (
