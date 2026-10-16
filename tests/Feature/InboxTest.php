@@ -94,4 +94,13 @@ class InboxTest extends TestCase
         $this->assertStringContainsString('سارة', $csv);
         $this->assertStringContainsString('50k-100k', $csv);
     }
+
+    public function test_export_neutralises_formulas(): void
+    {
+        $this->postJson('/api/contact?key=test-contact-key', $this->submission(['name' => '=HYPERLINK("http://evil.test","x")']));
+
+        $csv = $this->actingAs(User::factory()->create())->get('/inbox/export')->assertOk()->streamedContent();
+
+        $this->assertStringContainsString("'=HYPERLINK", $csv);
+    }
 }

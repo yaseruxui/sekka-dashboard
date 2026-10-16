@@ -46,6 +46,16 @@ class MediaTest extends TestCase
             ->assertJsonPath('height', 40);
     }
 
+    public function test_svg_with_script_is_refused(): void
+    {
+        $svg = UploadedFile::fake()->createWithContent('logo.svg', '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" onload="alert(1)"></svg>');
+
+        $this->actingAs(User::factory()->create())
+            ->postJson('/media', ['file' => $svg])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('file');
+    }
+
     public function test_video_upload_takes_the_size_read_in_the_browser(): void
     {
         $clip = UploadedFile::fake()->create('clip.mp4', 100, 'video/mp4');

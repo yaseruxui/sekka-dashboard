@@ -193,15 +193,16 @@ class ProjectsTest extends TestCase
             && $r->header('x-revalidate-secret') === ['s3cret']);
     }
 
-    public function test_failed_revalidate_still_publishes_and_warns(): void
+    public function test_failed_revalidate_still_publishes_and_flags_the_site_card(): void
     {
         config(['sekka.revalidate_secret' => 's3cret']);
         Http::fake(['site.test/*' => Http::response(['error' => 'unauthorized'], 401)]);
         $user = User::factory()->create();
         $project = $this->newProject($user);
 
-        $this->actingAs($user)->post("/projects/{$project->id}/publish", $this->payload())->assertSessionHas('error');
+        $this->actingAs($user)->post("/projects/{$project->id}/publish", $this->payload())->assertSessionHas('success');
         $this->assertTrue($project->fresh()->published);
+        $this->assertNotNull(cache('sekka.revalidate_failed_at'));
     }
 
     public function test_index_and_edit_pages_render(): void

@@ -52,12 +52,14 @@ class InboxController extends Controller
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF");
             fputcsv($out, ['الاسم', 'الشركة', 'البريد الإلكتروني', 'الميزانية', 'الرسالة', 'اللغة', 'الصفحة', 'التاريخ', 'الحالة']);
+            // Visitors write these fields: a leading = + - @ (or tab / CR) would run as a formula in Excel.
+            $cell = fn ($v) => is_string($v) && preg_match('/^[=+\-@\t\r]/', $v) ? "'".$v : $v;
             foreach ($rows as $m) {
-                fputcsv($out, [
+                fputcsv($out, array_map($cell, [
                     $m->name, $m->company, $m->email, $m->estimated_budget, $m->message, $m->locale, $m->page_uri,
                     ($m->submitted_at ?? $m->created_at)?->format('Y-m-d H:i'),
                     $m->read_at ? 'مقروءة' : 'جديدة',
-                ]);
+                ]));
             }
             fclose($out);
         }, 'sekka-messages-'.now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);

@@ -15,7 +15,8 @@ abstract class Controller
      */
     protected function savedAndRevalidated(RedirectResponse $redirect, string $message): RedirectResponse
     {
-        SiteClient::revalidate();
+        // After the response is sent: a slow or down site no longer holds up the save (up to 5s).
+        dispatch(fn () => SiteClient::revalidate())->afterResponse();
 
         return $redirect->with('success', $message);
     }

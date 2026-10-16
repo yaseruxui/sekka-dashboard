@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,6 +20,12 @@ use Inertia\Response;
  */
 class MediaController extends Controller
 {
+    /** Stored extension per accepted type. */
+    private const EXTENSIONS = [
+        'image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp', 'image/gif' => 'gif',
+        'image/avif' => 'avif', 'image/svg+xml' => 'svg', 'video/mp4' => 'mp4', 'video/webm' => 'webm', 'video/quicktime' => 'mov',
+    ];
+
     public function index(Request $request): Response
     {
         return Inertia::render('media/index', [
@@ -44,8 +51,13 @@ class MediaController extends Controller
         ]);
 
         $file = $request->file('file');
+        $mime = (string) $file->getMimeType();
+        if ($mime === 'image/svg+xml' && ! $this->safeSvg((string) file_get_contents($file->getRealPath()))) {
+            throw ValidationException::withMessages(['file' => 'ملف SVG هذا فيه سكربت أو روابط غير مسموحة. صدّره من جديد كصورة عادية.']);
+        }
         $base = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) ?: 'file';
-        $ext = strtolower($file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'bin');
+        // From the detected type, never the client's file name (a "logo.html" that sniffs as SVG stays .svg).
+        $ext = self::EXTENSIONS[$mime] ?? 'bin';
         $path = $file->storeAs('media/'.now()->format('Y/m'), $base.'-'.Str::lower(Str::random(6)).'.'.$ext, 'public');
 
         [$width, $height] = $this->dimensions(Storage::disk('public')->path($path), $file->getMimeType())
@@ -113,6 +125,19 @@ class MediaController extends Controller
     }
 
     /** @return array{0: int, 1: int}|null */
+    /**
+     * SVGs are served from /storage on the dashboard's own origin, so one that
+     * carries script would run with an admin's session. Plain artwork never
+     * needs scripts, event handlers, embedded HTML, javascript: links or DTDs.
+     */
+    private function safeSvg(string $svg): bool
+    {
+        return ! preg_match(
+            '/<\s*(?:script|foreignObject|iframe|embed|object)\b|\son[a-z]+\s*=|(?:href|src)\s*=\s*["\']?\s*(?:javascript:|data:text\/html)|<!(?:ENTITY|DOCTYPE)/i',
+            $svg,
+        );
+    }
+
     private function svgDimensions(string $file): ?array
     {
         $svg = @simplexml_load_string((string) file_get_contents($file));
