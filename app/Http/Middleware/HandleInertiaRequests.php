@@ -42,11 +42,13 @@ class HandleInertiaRequests extends Middleware
             'siteUrl' => config('sekka.site_url'),
             'auth' => [
                 'user' => $request->user(),
+                'permissions' => $request->user()?->permissionList() ?? [],
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
-            'unreadMessages' => fn () => $request->user() ? ContactMessage::whereNull('read_at')->count() : 0,        ];
+            'unreadMessages' => fn () => $request->user()?->hasPermission('inbox') ? ContactMessage::whereNull('read_at')->count() : 0,
+        ];
     }
 }

@@ -11,9 +11,9 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from '@/components/ui/sidebar';
-import { type NavGroup } from '@/types';
-import { Link } from '@inertiajs/react';
-import { Briefcase, FolderKanban, Home, Images, Inbox, LayoutDashboard, Mail, Menu, PanelRightClose, ShieldCheck } from 'lucide-react';
+import { type NavGroup, type SharedData } from '@/types';
+import { Link, usePage } from '@inertiajs/react';
+import { Briefcase, FolderKanban, Home, Images, Inbox, LayoutDashboard, Mail, Menu, PanelRightClose, ShieldCheck, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const navGroups: NavGroup[] = [
@@ -21,23 +21,27 @@ const navGroups: NavGroup[] = [
         title: 'عام',
         items: [
             { title: 'الرئيسية', url: '/dashboard', icon: LayoutDashboard },
-            { title: 'المشاريع', url: '/projects', icon: FolderKanban },
-            { title: 'صندوق الوارد', url: '/inbox', icon: Inbox },
+            { title: 'المشاريع', url: '/projects', icon: FolderKanban, permission: 'projects' },
+            { title: 'صندوق الوارد', url: '/inbox', icon: Inbox, permission: 'inbox' },
         ],
     },
     {
         title: 'التحكم بالموقع',
         items: [
-            { title: 'الصفحة الرئيسية', url: '/site/home', icon: Home },
-            { title: 'أعمالنا', url: '/site/work', icon: Briefcase },
-            { title: 'تواصل معنا', url: '/site/contact', icon: Mail },
-            { title: 'سياسة الخصوصية', url: '/site/policy', icon: ShieldCheck },
-            { title: 'القائمة والفوتر', url: '/site/menu', icon: Menu },
+            { title: 'الصفحة الرئيسية', url: '/site/home', icon: Home, permission: 'site' },
+            { title: 'أعمالنا', url: '/site/work', icon: Briefcase, permission: 'site' },
+            { title: 'تواصل معنا', url: '/site/contact', icon: Mail, permission: 'site' },
+            { title: 'سياسة الخصوصية', url: '/site/policy', icon: ShieldCheck, permission: 'site' },
+            { title: 'القائمة والفوتر', url: '/site/menu', icon: Menu, permission: 'site' },
         ],
     },
     {
         title: 'الوسائط',
-        items: [{ title: 'مكتبة الوسائط', url: '/media', icon: Images }],
+        items: [{ title: 'مكتبة الوسائط', url: '/media', icon: Images, permission: 'media' }],
+    },
+    {
+        title: 'الإدارة',
+        items: [{ title: 'المستخدمون', url: '/users', icon: Users, permission: 'users' }],
     },
 ];
 
@@ -81,6 +85,8 @@ function SidebarBrand() {
 }
 
 export function AppSidebar() {
+    const { permissions } = usePage<SharedData>().props.auth;
+
     return (
         <Sidebar side="right" collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -90,9 +96,11 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                {navGroups.map((group) => (
-                    <NavMain key={group.title} label={group.title} items={group.items} />
-                ))}
+                {navGroups.map((group) => {
+                    // Only what this user may open; a group with nothing left is dropped.
+                    const items = group.items.filter((i) => !i.permission || permissions.includes(i.permission));
+                    return items.length > 0 && <NavMain key={group.title} label={group.title} items={items} />;
+                })}
             </SidebarContent>
 
             <SidebarFooter>

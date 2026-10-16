@@ -30,9 +30,9 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
         <div className="px-4 py-6">
             <Heading title="الإعدادات" description="حسابك وكلمة المرور والمظهر" />
 
-            <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
+            <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
                 <aside className="w-full max-w-xl lg:w-48">
-                    <nav className="flex flex-col space-y-1 space-x-0">
+                    <nav className="flex flex-col gap-1">
                         {sidebarNavItems.map((item) => (
                             <Button
                                 key={item.url}

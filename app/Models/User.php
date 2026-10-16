@@ -22,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'permissions',
     ];
 
     /**
@@ -44,6 +45,26 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'permissions' => 'array',
+            'invited_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Dashboard sections a user can be given. `users` also means managing
+     * other users and their permissions.
+     */
+    public const PERMISSIONS = ['projects', 'site', 'inbox', 'media', 'users'];
+
+    /** null (e.g. created from the command line): everything. */
+    public function hasPermission(string $permission): bool
+    {
+        return $this->permissions === null || in_array($permission, $this->permissions, true);
+    }
+
+    /** @return list<string> */
+    public function permissionList(): array
+    {
+        return array_values(array_filter(self::PERMISSIONS, fn (string $p) => $this->hasPermission($p)));
     }
 }

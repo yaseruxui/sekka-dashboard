@@ -1,7 +1,11 @@
 import { LucideIcon } from 'lucide-react';
 
+/** A dashboard section a user can be given (User::PERMISSIONS on the server). */
+export type Permission = 'projects' | 'site' | 'inbox' | 'media' | 'users';
+
 export interface Auth {
     user: User;
+    permissions: Permission[];
 }
 
 export interface BreadcrumbItem {
@@ -19,6 +23,8 @@ export interface NavItem {
     url: string;
     icon?: LucideIcon | null;
     isActive?: boolean;
+    /** Shown only to users holding it. */
+    permission?: Permission;
 }
 
 export interface SharedData {

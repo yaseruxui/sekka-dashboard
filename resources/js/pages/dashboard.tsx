@@ -2,7 +2,7 @@ import { PageHeader, timeAgo } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
-import { type SharedData } from '@/types';
+import { type Permission, type SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, ExternalLink, FilePen, FolderCheck, ImageUp, Inbox, LayoutTemplate, type LucideIcon, Mail, Plus, Wifi } from 'lucide-react';
 
@@ -69,15 +69,18 @@ function Stat({
 
 export default function Dashboard({ stats, recentMessages, site }: Props) {
     const { auth } = usePage<SharedData>().props;
+    const can = (p: Permission) => auth.permissions.includes(p);
     const newProject = () => router.post(route('projects.store'));
     // Connected, and the last revalidate the site confirmed (none failed since).
     const synced = site.connected && !site.failedAt;
 
-    const actions: { label: string; icon: LucideIcon; href?: string; onClick?: () => void }[] = [
-        { label: 'إضافة مشروع', icon: Plus, onClick: newProject },
-        { label: 'التحكم بالموقع', icon: LayoutTemplate, href: '/site/home' },
-        { label: 'رفع صور أو فيديو', icon: ImageUp, href: '/media' },
-    ];
+    const actions = (
+        [
+            { label: 'إضافة مشروع', icon: Plus, onClick: newProject, permission: 'projects' },
+            { label: 'التحكم بالموقع', icon: LayoutTemplate, href: '/site/home', permission: 'site' },
+            { label: 'رفع صور أو فيديو', icon: ImageUp, href: '/media', permission: 'media' },
+        ] satisfies { label: string; icon: LucideIcon; href?: string; onClick?: () => void; permission: Permission }[]
+    ).filter((a) => can(a.permission));
     const actionCls = 'group hover:bg-muted/60 flex items-center justify-between rounded-lg border px-3 py-2.5 text-start transition-colors';
 
     return (
@@ -94,9 +97,11 @@ export default function Dashboard({ stats, recentMessages, site }: Props) {
                                     عرض الموقع <ExternalLink />
                                 </a>
                             </Button>
-                            <Button onClick={newProject}>
-                                <Plus /> مشروع جديد
-                            </Button>
+                            {can('projects') && (
+                                <Button onClick={newProject}>
+                                    <Plus /> مشروع جديد
+                                </Button>
+                            )}
                         </>
                     }
                 />
@@ -135,46 +140,53 @@ export default function Dashboard({ stats, recentMessages, site }: Props) {
                 </div>
 
                 <div className="flex flex-wrap items-start gap-4">
-                    <section className="bg-card min-w-0 flex-[2_1_420px] overflow-hidden rounded-xl border shadow-xs">
-                        <div className="flex items-center justify-between border-b px-4 py-3">
-                            <h2 className="font-semibold">آخر الرسائل</h2>
-                            <Link href={route('inbox.index')} className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm">
-                                عرض الكل <ArrowLeft className="size-3.5" />
-                            </Link>
-                        </div>
-                        {recentMessages.length === 0 ? (
-                            <div className="text-muted-foreground flex flex-col items-center gap-2 p-10 text-center text-sm">
-                                <span className="bg-muted flex size-11 items-center justify-center rounded-full">
-                                    <Inbox className="size-5" />
-                                </span>
-                                لا توجد رسائل بعد.
-                            </div>
-                        ) : (
-                            recentMessages.map((m) => (
+                    {can('inbox') && (
+                        <section className="bg-card min-w-0 flex-[2_1_420px] overflow-hidden rounded-xl border shadow-xs">
+                            <div className="flex items-center justify-between border-b px-4 py-3">
+                                <h2 className="font-semibold">آخر الرسائل</h2>
                                 <Link
-                                    key={m.id}
-                                    href={route('inbox.index', { open: m.id })}
-                                    className="hover:bg-muted/60 flex items-center gap-3 border-b px-4 py-3 transition-colors last:border-0"
+                                    href={route('inbox.index')}
+                                    className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"
                                 >
-                                    <span className="bg-primary/5 text-foreground/80 flex size-9 shrink-0 items-center justify-center rounded-full font-semibold ring-1 ring-black/5 dark:ring-white/10">
-                                        {m.name.trim()[0]}
-                                    </span>
-                                    <span className="min-w-0 flex-1">
-                                        <span className="flex items-center gap-2 font-semibold">
-                                            {!m.read_at && <span className="bg-brand ring-brand/30 size-2 rounded-full ring-2" aria-label="جديدة" />}
-                                            {m.name}
-                                            {m.company && <span className="text-muted-foreground font-normal">· {m.company}</span>}
-                                        </span>
-                                        <span className="text-muted-foreground block truncate text-sm">{m.message || '—'}</span>
-                                    </span>
-                                    {m.estimated_budget && (
-                                        <span className="bg-muted hidden rounded-full px-2.5 py-0.5 text-xs sm:inline">{m.estimated_budget}</span>
-                                    )}
-                                    <span className="text-muted-foreground shrink-0 text-xs">{timeAgo(m.created_at)}</span>
+                                    عرض الكل <ArrowLeft className="size-3.5" />
                                 </Link>
-                            ))
-                        )}
-                    </section>
+                            </div>
+                            {recentMessages.length === 0 ? (
+                                <div className="text-muted-foreground flex flex-col items-center gap-2 p-10 text-center text-sm">
+                                    <span className="bg-muted flex size-11 items-center justify-center rounded-full">
+                                        <Inbox className="size-5" />
+                                    </span>
+                                    لا توجد رسائل بعد.
+                                </div>
+                            ) : (
+                                recentMessages.map((m) => (
+                                    <Link
+                                        key={m.id}
+                                        href={route('inbox.index', { open: m.id })}
+                                        className="hover:bg-muted/60 flex items-center gap-3 border-b px-4 py-3 transition-colors last:border-0"
+                                    >
+                                        <span className="bg-primary/5 text-foreground/80 flex size-9 shrink-0 items-center justify-center rounded-full font-semibold ring-1 ring-black/5 dark:ring-white/10">
+                                            {m.name.trim()[0]}
+                                        </span>
+                                        <span className="min-w-0 flex-1">
+                                            <span className="flex items-center gap-2 font-semibold">
+                                                {!m.read_at && (
+                                                    <span className="bg-brand ring-brand/30 size-2 rounded-full ring-2" aria-label="جديدة" />
+                                                )}
+                                                {m.name}
+                                                {m.company && <span className="text-muted-foreground font-normal">· {m.company}</span>}
+                                            </span>
+                                            <span className="text-muted-foreground block truncate text-sm">{m.message || '—'}</span>
+                                        </span>
+                                        {m.estimated_budget && (
+                                            <span className="bg-muted hidden rounded-full px-2.5 py-0.5 text-xs sm:inline">{m.estimated_budget}</span>
+                                        )}
+                                        <span className="text-muted-foreground shrink-0 text-xs">{timeAgo(m.created_at)}</span>
+                                    </Link>
+                                ))
+                            )}
+                        </section>
+                    )}
 
                     <section className="bg-card flex flex-[1_1_260px] flex-col gap-2.5 rounded-xl border p-4 shadow-xs">
                         <h2 className="mb-1 font-semibold">إجراءات سريعة</h2>

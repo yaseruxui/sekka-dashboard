@@ -11,6 +11,8 @@ import AuthLayout from '@/layouts/auth-layout';
 interface ResetPasswordProps {
     token: string;
     email: string;
+    /** Accepting an invitation (InvitationController) rather than resetting a password. */
+    invitation?: boolean;
 }
 
 type ResetPasswordForm = {
@@ -20,7 +22,7 @@ type ResetPasswordForm = {
     password_confirmation: string;
 };
 
-export default function ResetPassword({ token, email }: ResetPasswordProps) {
+export default function ResetPassword({ token, email, invitation = false }: ResetPasswordProps) {
     const { data, setData, post, processing, errors, reset } = useForm<ResetPasswordForm>({
         token: token,
         email: email,
@@ -30,14 +32,17 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(route('password.store'), {
+        post(route(invitation ? 'invitation.accept' : 'password.store'), {
             onFinish: () => reset('password', 'password_confirmation'),
         });
     };
 
     return (
-        <AuthLayout title="تعيين كلمة مرور جديدة" description="اكتب كلمة المرور الجديدة لحسابك.">
-            <Head title="تعيين كلمة المرور" />
+        <AuthLayout
+            title={invitation ? 'أهلاً بك في لوحة سكة' : 'تعيين كلمة مرور جديدة'}
+            description={invitation ? 'اختر كلمة مرور لحسابك لتبدأ.' : 'اكتب كلمة المرور الجديدة لحسابك.'}
+        >
+            <Head title={invitation ? 'قبول الدعوة' : 'تعيين كلمة المرور'} />
 
             <form onSubmit={submit}>
                 <div className="grid gap-6">
@@ -89,7 +94,7 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
 
                     <Button type="submit" className="mt-4 w-full" disabled={processing}>
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        حفظ كلمة المرور
+                        {invitation ? 'تفعيل الحساب' : 'حفظ كلمة المرور'}
                     </Button>
                 </div>
             </form>
