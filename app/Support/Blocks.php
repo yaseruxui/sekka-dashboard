@@ -28,11 +28,36 @@ class Blocks
         'embed' => ['caption' => ''],
     ];
 
-    /** Fills in every default, as the site's Zod schema would. */
+    /** Content keys of each type, besides the frame and `media` / `items`. */
+    private const TYPE_KEYS = [
+        'text' => ['title', 'body', 'align'],
+        'image' => ['media', 'caption'],
+        'video' => ['media', 'poster', 'mode', 'caption'],
+        'grid' => ['items', 'perRow', 'gap'],
+        'embed' => ['url', 'caption'],
+    ];
+
+    /**
+     * Fills in every default, as the site's Zod schema would, and drops keys
+     * the block's type does not have.
+     */
     public static function normalize(array $block): array
     {
         $type = $block['type'] ?? 'text';
-        $block = array_replace(self::FRAME_DEFAULTS, self::TYPE_DEFAULTS[$type] ?? [], $block);
+        $keep = array_flip(['id', 'type', ...array_keys(self::FRAME_DEFAULTS), ...(self::TYPE_KEYS[$type] ?? [])]);
+        $block = array_intersect_key(array_replace(self::FRAME_DEFAULTS, self::TYPE_DEFAULTS[$type] ?? [], $block), $keep);
+        $block['hidden'] = (bool) $block['hidden'];
+        foreach (['perRow', 'gap'] as $int) {
+            if (isset($block[$int])) {
+                $block[$int] = (int) $block[$int];
+            }
+        }
+        if (($block['background'] ?? null) === '') {
+            $block['background'] = null;
+        }
+        if (($block['poster'] ?? null) === '') {
+            $block['poster'] = null;
+        }
         $block['id'] = (string) ($block['id'] ?? '') ?: $type.'-'.bin2hex(random_bytes(4));
 
         foreach (['title', 'body', 'caption'] as $text) {
@@ -52,7 +77,7 @@ class Blocks
 
     private static function media(array $m): array
     {
-        $m = array_replace(['alt' => ''], $m);
+        $m = array_intersect_key($m + ['alt' => ''], array_flip(['src', 'width', 'height', 'alt']));
         $m['alt'] ??= '';
         foreach (['width', 'height'] as $k) {
             if (isset($m[$k])) {

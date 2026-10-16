@@ -29,5 +29,8 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="SITE_URL" value="http://site.test"/>
+        <env name="SITE_REVALIDATE_SECRET" value=""/>
+        <env name="CONTACT_WEBHOOK_KEY" value="test-contact-key"/>
     </php>
 </phpunit>
