@@ -4,7 +4,19 @@ import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { type Permission, type SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, ExternalLink, FilePen, FolderCheck, ImageUp, Inbox, LayoutTemplate, type LucideIcon, Mail, Plus, Wifi } from 'lucide-react';
+import {
+    ArrowLeft,
+    ExternalLink,
+    FilePen,
+    FolderCheck,
+    ImageUp,
+    Inbox,
+    LayoutTemplate,
+    type LucideIcon,
+    Mail,
+    Plus,
+    TriangleAlert,
+} from 'lucide-react';
 
 type Message = {
     id: number;
@@ -106,7 +118,22 @@ export default function Dashboard({ stats, recentMessages, site }: Props) {
                     }
                 />
 
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {/* Only when the site is not getting updates; nothing to say while it is. */}
+                {!synced && (
+                    <div
+                        role="status"
+                        className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-200"
+                    >
+                        <TriangleAlert className="mt-0.5 size-4 shrink-0" />
+                        <p>
+                            {site.connected
+                                ? `آخر تعديل ما وصل للموقع${site.failedAt ? ` (${timeAgo(site.failedAt)})` : ''}. التعديلات محفوظة، وتظهر على الموقع خلال 5 دقائق.`
+                                : 'ربط الموقع غير مضبوط (SITE_URL و SITE_REVALIDATE_SECRET)، فالتعديلات تظهر على الموقع بعد 5 دقائق بدل فوراً.'}
+                        </p>
+                    </div>
+                )}
+
+                <div className={cn('grid gap-4 sm:grid-cols-2', can('inbox') ? 'lg:grid-cols-3' : 'lg:grid-cols-2')}>
                     <Stat
                         label="المشاريع المنشورة"
                         value={stats.published}
@@ -116,27 +143,16 @@ export default function Dashboard({ stats, recentMessages, site }: Props) {
                         href="/projects"
                     />
                     <Stat label="مسودات" value={stats.drafts} hint="مشاريع أو تعديلات لم تُنشر بعد" icon={FilePen} tone="amber" href="/projects" />
-                    <Stat label="رسائل جديدة" value={stats.unread} hint="من نموذج تواصل معنا" icon={Mail} tone="sky" href={route('inbox.index')} />
-                    <Stat
-                        label="حالة الموقع"
-                        icon={Wifi}
-                        tone={synced ? 'green' : 'amber'}
-                        hint={
-                            site.connected && site.failedAt
-                                ? 'التعديلات محفوظة، وتظهر على الموقع خلال 5 دقائق.'
-                                : site.lastRefresh
-                                  ? `آخر تحديث ${timeAgo(site.lastRefresh)}`
-                                  : 'لم يُحدَّث من اللوحة بعد'
-                        }
-                    >
-                        <strong className="flex items-center gap-2 text-lg">
-                            <span className="relative flex size-2.5">
-                                {synced && <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-60" />}
-                                <span className={cn('relative size-2.5 rounded-full', synced ? 'bg-emerald-600' : 'bg-amber-600')} />
-                            </span>
-                            {!site.connected ? 'الربط غير مضبوط' : site.failedAt ? 'آخر تحديث لم يصل' : 'متصل'}
-                        </strong>
-                    </Stat>
+                    {can('inbox') && (
+                        <Stat
+                            label="رسائل جديدة"
+                            value={stats.unread}
+                            hint="من نموذج تواصل معنا"
+                            icon={Mail}
+                            tone="sky"
+                            href={route('inbox.index')}
+                        />
+                    )}
                 </div>
 
                 <div className="flex flex-wrap items-start gap-4">
