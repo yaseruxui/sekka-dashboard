@@ -12,6 +12,13 @@
                 try { a = localStorage.getItem('appearance') || 'dark'; } catch (e) {}
                 var dark = a === 'dark' || (a === 'system' && matchMedia('(prefers-color-scheme: dark)').matches) || (a !== 'light' && a !== 'system');
                 document.documentElement.classList.toggle('dark', dark);
+                // Display prefs (hooks/use-display-prefs): font size and reduced motion.
+                try {
+                    var p = JSON.parse(localStorage.getItem('display-prefs') || '{}');
+                    var sizes = { sm: '15px', md: '16px', lg: '17.5px' };
+                    if (sizes[p.fontSize]) document.documentElement.style.fontSize = sizes[p.fontSize];
+                    if (p.reduceMotion === true) document.documentElement.classList.add('reduce-motion');
+                } catch (e) {}
             })();
         </script>
 

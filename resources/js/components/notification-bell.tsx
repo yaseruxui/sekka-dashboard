@@ -1,6 +1,7 @@
 import { timeAgo } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { readDisplayPrefs } from '@/hooks/use-display-prefs';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
@@ -11,9 +12,9 @@ import { toast } from 'sonner';
 const POLL_MS = 30_000;
 
 /**
- * Sidebar bell: unread count, the latest notifications, and a toast when a
- * new one arrives. Refreshes the shared `notifications` prop every 30s while
- * the tab is visible.
+ * Header bell: unread count, the latest notifications, and a toast when a
+ * new one arrives (unless turned off in Settings → Appearance). Refreshes the
+ * shared `notifications` prop every 30s while the tab is visible.
  */
 export function NotificationBell({ className }: { className?: string }) {
     const { notifications } = usePage<SharedData>().props;
@@ -29,7 +30,8 @@ export function NotificationBell({ className }: { className?: string }) {
     }, []);
 
     useEffect(() => {
-        if (unread > seen.current && items[0] && !items[0].read) toast(items[0].title, { description: items[0].body || undefined });
+        if (unread > seen.current && items[0] && !items[0].read && readDisplayPrefs().notificationToasts)
+            toast(items[0].title, { description: items[0].body || undefined });
         seen.current = unread;
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [unread]);
@@ -51,7 +53,7 @@ export function NotificationBell({ className }: { className?: string }) {
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent side="top" align="end" className="w-80 p-0">
+            <PopoverContent side="bottom" align="end" className="w-80 p-0">
                 <div className="flex items-center justify-between border-b px-4 py-3">
                     <span className="text-sm font-semibold">الإشعارات</span>
                     {unread > 0 && (

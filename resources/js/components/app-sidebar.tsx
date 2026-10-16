@@ -1,7 +1,4 @@
-import { AppearanceToggle } from '@/components/appearance-toggle';
 import { NavMain } from '@/components/nav-main';
-import { NavUser } from '@/components/nav-user';
-import { NotificationBell } from '@/components/notification-bell';
 import {
     Sidebar,
     SidebarContent,
@@ -14,7 +11,20 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavGroup, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { Briefcase, FolderKanban, Home, Images, Inbox, LayoutDashboard, Mail, Menu, PanelRightClose, ShieldCheck, Users } from 'lucide-react';
+import {
+    Briefcase,
+    FolderKanban,
+    Home,
+    Images,
+    Inbox,
+    LayoutDashboard,
+    Mail,
+    Menu,
+    PanelRightClose,
+    Settings,
+    ShieldCheck,
+    Users,
+} from 'lucide-react';
 import AppLogo from './app-logo';
 
 const navGroups: NavGroup[] = [
@@ -83,7 +93,8 @@ function SidebarBrand() {
 }
 
 export function AppSidebar() {
-    const { permissions } = usePage<SharedData>().props.auth;
+    const { url, props } = usePage<SharedData>();
+    const { permissions } = props.auth;
 
     return (
         <Sidebar side="right" collapsible="icon" variant="inset">
@@ -101,15 +112,23 @@ export function AppSidebar() {
                 })}
             </SidebarContent>
 
+            {/* Profile, notifications and theme live in the top bar; settings close the sidebar. */}
             <SidebarFooter>
-                {/* Collapsed to icons: the theme button stacks above the avatar. */}
-                <div className="flex items-center gap-1 group-data-[collapsible=icon]:flex-col-reverse">
-                    <div className="min-w-0 flex-1 group-data-[collapsible=icon]:flex-none">
-                        <NavUser />
-                    </div>
-                    <NotificationBell className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground size-8 shrink-0" />
-                    <AppearanceToggle className="text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground size-8 shrink-0" />
-                </div>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton
+                            asChild
+                            tooltip={{ children: 'الإعدادات', side: 'left' }}
+                            isActive={url.startsWith('/settings')}
+                            className="data-[active=true]:bg-background data-[active=true]:text-foreground data-[active=true]:ring-foreground/10 data-[active=true]:font-semibold data-[active=true]:shadow-xs data-[active=true]:ring-1"
+                        >
+                            <Link href={route('profile.edit')} prefetch>
+                                <Settings />
+                                <span>الإعدادات</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
             </SidebarFooter>
         </Sidebar>
     );
