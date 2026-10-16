@@ -3,28 +3,27 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { KeyRound, Mail, Palette, UserRound } from 'lucide-react';
 
 const sidebarNavItems: NavItem[] = [
     {
         title: 'الحساب',
         url: '/settings/profile',
-        icon: UserRound,
+        icon: null,
     },
     {
         title: 'كلمة المرور',
         url: '/settings/password',
-        icon: KeyRound,
+        icon: null,
     },
     {
         title: 'المظهر',
         url: '/settings/appearance',
-        icon: Palette,
+        icon: null,
     },
     {
         title: 'البريد الإلكتروني',
         url: '/settings/mail',
-        icon: Mail,
+        icon: null,
         permission: 'users',
     },
 ];
@@ -52,7 +51,6 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                                 })}
                             >
                                 <Link href={item.url} prefetch>
-                                    {item.icon && <item.icon />}
                                     {item.title}
                                 </Link>
                             </Button>
