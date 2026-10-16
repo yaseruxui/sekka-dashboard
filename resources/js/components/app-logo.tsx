@@ -8,7 +8,7 @@ export default function AppLogo() {
                 <BrandLogo variant="wordmark" className="h-2.75" />
             </div>
             <div className="ms-1 grid flex-1 text-start text-sm leading-tight">
-                <span className="truncate font-semibold">سكة الإبداعية</span>
+                <span className="truncate font-semibold">وكالة سكة الإبداعية</span>
                 <span className="text-muted-foreground truncate text-xs">لوحة التحكم</span>
             </div>
         </>
