@@ -19,7 +19,7 @@ type Message = {
 interface Props {
     stats: { published: number; drafts: number; unread: number };
     recentMessages: Message[];
-    site: { url: string; connected: boolean; lastRefresh: string | null };
+    site: { url: string; connected: boolean; lastRefresh: string | null; failedAt: string | null };
 }
 
 const tones = {
@@ -70,6 +70,8 @@ function Stat({
 export default function Dashboard({ stats, recentMessages, site }: Props) {
     const { auth } = usePage<SharedData>().props;
     const newProject = () => router.post(route('projects.store'));
+    // Connected, and the last revalidate the site confirmed (none failed since).
+    const synced = site.connected && !site.failedAt;
 
     const actions: { label: string; icon: LucideIcon; href?: string; onClick?: () => void }[] = [
         { label: 'إضافة مشروع', icon: Plus, onClick: newProject },
@@ -113,17 +115,21 @@ export default function Dashboard({ stats, recentMessages, site }: Props) {
                     <Stat
                         label="حالة الموقع"
                         icon={Wifi}
-                        tone={site.connected ? 'green' : 'amber'}
-                        hint={site.lastRefresh ? `آخر تحديث ${timeAgo(site.lastRefresh)}` : 'لم يُحدَّث من اللوحة بعد'}
+                        tone={synced ? 'green' : 'amber'}
+                        hint={
+                            site.connected && site.failedAt
+                                ? 'التعديلات محفوظة، وتظهر على الموقع خلال 5 دقائق.'
+                                : site.lastRefresh
+                                  ? `آخر تحديث ${timeAgo(site.lastRefresh)}`
+                                  : 'لم يُحدَّث من اللوحة بعد'
+                        }
                     >
                         <strong className="flex items-center gap-2 text-lg">
                             <span className="relative flex size-2.5">
-                                {site.connected && (
-                                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-60" />
-                                )}
-                                <span className={cn('relative size-2.5 rounded-full', site.connected ? 'bg-emerald-600' : 'bg-amber-600')} />
+                                {synced && <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-60" />}
+                                <span className={cn('relative size-2.5 rounded-full', synced ? 'bg-emerald-600' : 'bg-amber-600')} />
                             </span>
-                            {site.connected ? 'متصل' : 'الربط غير مضبوط'}
+                            {!site.connected ? 'الربط غير مضبوط' : site.failedAt ? 'آخر تحديث لم يصل' : 'متصل'}
                         </strong>
                     </Stat>
                 </div>

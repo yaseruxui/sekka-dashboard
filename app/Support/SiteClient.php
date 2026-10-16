@@ -39,6 +39,7 @@ class SiteClient
             $res = self::http(5)->post('/api/revalidate');
             if ($res->successful()) {
                 cache()->forever('sekka.last_revalidate', now()->toIso8601String());
+                cache()->forget('sekka.revalidate_failed_at');
 
                 return true;
             }
@@ -46,6 +47,8 @@ class SiteClient
         } catch (Throwable $e) {
             Log::warning('[sekka] site revalidate failed', ['error' => $e->getMessage()]);
         }
+        // Shown on the overview's site card until a later revalidate succeeds.
+        cache()->forever('sekka.revalidate_failed_at', now()->toIso8601String());
 
         return false;
     }

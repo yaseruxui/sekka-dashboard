@@ -25,6 +25,7 @@ class DashboardController extends Controller
                 'url' => config('sekka.site_url'),
                 'connected' => SiteClient::configured(),
                 'lastRefresh' => cache('sekka.last_revalidate'),
+                'failedAt' => cache('sekka.revalidate_failed_at'),
             ],
         ]);
     }
