@@ -7,7 +7,8 @@
         "dev": "vite",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
-        "lint": "eslint . --fix"
+        "lint": "eslint . --fix",
+        "check:api": "esbuild scripts/check-api.ts --bundle --platform=node --format=esm --log-level=warning --outfile=storage/framework/check-api.mjs && node storage/framework/check-api.mjs"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",

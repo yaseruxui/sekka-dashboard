@@ -1,0 +1,16 @@
+{
+  "content": {
+    "contact": { "email": "hello@seka-sa.com", "phone": "+966 50 000 0000", "whatsappNumber": "966500000000", "heroVideo": "/media/contact/hero.mp4", "mapUrl": "https://maps.google.com/?q=Riyadh", "socials": [{ "platform": "instagram", "url": "https://instagram.com/sekka" }] },
+    "policy": { "ar": { "updated": "2026", "title": "سياسة الخصوصية", "html": "<p>نص</p>" }, "en": null }
+  },
+  "projects": [
+    {
+      "slug": "demo", "title": "مشروع", "summary": "ملخص", "category": "حملات", "year": "2026",
+      "cover": "/media/work/a.jpg", "preview": null, "aspect": "4:5",
+      "blocks": [
+        { "id": "t1", "type": "text", "title": "التحدي", "body": "نص" },
+        { "id": "v1", "type": "video", "media": { "src": "/media/a.mp4", "width": 480, "height": 360 }, "width": "full" }
+      ]
+    }
+  ]
+}
