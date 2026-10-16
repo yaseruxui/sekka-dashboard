@@ -11,5 +11,6 @@ export function FlashToasts() {
         if (flash?.success) toast.success(flash.success);
         if (flash?.error) toast.error(flash.error, { duration: 8000 });
     }, [flash]);
-    return <Toaster richColors position="bottom-left" dir="rtl" />;
+    // Top center: in RTL the bottom-left corner covers the rows' actions (switches, ⋯ menus).
+    return <Toaster richColors closeButton position="top-center" dir="rtl" />;
 }
