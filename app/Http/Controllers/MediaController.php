@@ -22,7 +22,7 @@ class MediaController extends Controller
     public function index(Request $request): Response
     {
         return Inertia::render('media/index', [
-            'media' => $this->query($request)->paginate(48)->withQueryString(),
+            'media' => $this->query($request)->paginate(64)->withQueryString(),
             'filters' => $request->only(['q', 'kind']),
         ]);
     }
@@ -129,12 +129,37 @@ class MediaController extends Controller
         return $w > 0 && $h > 0 ? [(int) round($w), (int) round($h)] : null;
     }
 
+    /** Where a file is used, for the details sheet: [{label, href}]. */
+    public function usage(Media $media): JsonResponse
+    {
+        return response()->json($this->usages($media->url));
+    }
+
     private function inUse(string $url): bool
     {
-        // Few rows: decode and search in PHP rather than LIKE over escaped JSON.
-        $contains = fn (mixed $value) => str_contains(json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), json_encode($url, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        return $this->usages($url) !== [];
+    }
 
-        return Project::all(['cover', 'preview', 'blocks'])->contains(fn (Project $p) => $contains([$p->cover, $p->preview, $p->blocks]))
-            || Setting::all(['value'])->contains(fn (Setting $s) => $contains($s->value));
+    /** @return list<array{label: string, href: string}> */
+    private function usages(string $url): array
+    {
+        // Few rows: decode and search in PHP rather than LIKE over escaped JSON.
+        $needle = json_encode($url, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $contains = fn (mixed $value) => $value !== null && str_contains(json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), $needle);
+        $out = [];
+
+        foreach (Project::ordered()->get(['id', 'title', 'cover', 'preview', 'blocks', 'draft']) as $p) {
+            if ($contains([$p->cover, $p->preview, $p->blocks, $p->draft])) {
+                $out[] = ['label' => 'مشروع: '.$p->title, 'href' => route('projects.edit', $p)];
+            }
+        }
+        $sections = ['home' => ['الصفحة الرئيسية', 'home'], 'contact' => ['تواصل معنا', 'contact']];
+        foreach ($sections as $key => [$label, $page]) {
+            if ($contains(Setting::getValue($key))) {
+                $out[] = ['label' => $label, 'href' => route('site.show', $page)];
+            }
+        }
+
+        return $out;
     }
 }

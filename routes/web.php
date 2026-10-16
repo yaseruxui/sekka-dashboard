@@ -29,6 +29,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
 
     Route::get('media/list', [MediaController::class, 'list'])->name('media.list');
+    Route::get('media/{media}/usage', [MediaController::class, 'usage'])->name('media.usage');
     Route::resource('media', MediaController::class)->only(['index', 'store', 'update', 'destroy'])->parameters(['media' => 'media']);
 
     Route::get('site/{page}', [SiteController::class, 'show'])->whereIn('page', SiteController::PAGES)->name('site.show');
