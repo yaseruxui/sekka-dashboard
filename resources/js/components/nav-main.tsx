@@ -15,6 +15,8 @@ export function NavMain({ items = [], label }: { items: NavItem[]; label: string
                         <SidebarMenuButton
                             asChild
                             className="data-[active=true]:bg-background data-[active=true]:text-foreground data-[active=true]:before:bg-brand data-[active=true]:ring-foreground/10 relative group-data-[collapsible=icon]:before:hidden data-[active=true]:font-semibold data-[active=true]:shadow-xs data-[active=true]:ring-1 data-[active=true]:before:absolute data-[active=true]:before:inset-y-1.5 data-[active=true]:before:end-0 data-[active=true]:before:w-[3px] data-[active=true]:before:rounded-full"
+                            // Collapsed to icons: the name on hover, toward the page (the sidebar is on the right).
+                            tooltip={{ children: item.title, side: 'left' }}
                             isActive={page.url === item.url || page.url.startsWith(item.url + '/') || page.url.startsWith(item.url + '?')}
                         >
                             <Link href={item.url} prefetch>
