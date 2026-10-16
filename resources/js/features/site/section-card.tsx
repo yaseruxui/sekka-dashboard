@@ -40,6 +40,20 @@ const policySchema = z.object({ updated: z.string(), title: z.string(), html: z.
 const recordSchema = z.record(z.string(), z.unknown());
 
 /** Unsaved edits kept in localStorage: only restored if they still look like a CardState. */
+/**
+ * A text's highlight markup for the preview: other tags are dropped, and only
+ * bare <em>, <strong> and <br> come back as HTML. One with attributes (e.g.
+ * <em onmouseover=…>) stays visible as text instead of running.
+ */
+function previewHtml(text: string): string {
+    return text
+        .replace(/<(?!\/?(em|br|strong)\b)[^>]*>/gi, '')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/&lt;(\/?)(em|strong)&gt;/gi, '<$1$2>')
+        .replace(/&lt;br\s*\/?&gt;/gi, '<br>');
+}
+
 const localDraftSchema = z.object({
     base: z.string(),
     state: z.object({
@@ -169,7 +183,7 @@ function HtmlText({
             el.setSelectionRange(s + before.length, e + before.length);
         });
     };
-    const preview = (value || placeholder || '').replace(/<(?!\/?(em|br|strong)\b)[^>]*>/gi, '');
+    const preview = previewHtml(value || placeholder || '');
     return (
         <div className="grid gap-1.5">
             <div className="flex gap-1">

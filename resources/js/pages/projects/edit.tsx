@@ -106,18 +106,30 @@ export default function ProjectEdit({
     const lastSaved = useRef(JSON.stringify(working(project)));
     const inFlight = useRef<Promise<void> | null>(null);
 
-    // Fresh data from the server (after publish / discard): start over from it.
+    // Fresh data from the server. Start over from it only when it differs from
+    // what we last saved (e.g. after discarding the draft); a plain reload of
+    // the same data keeps unsaved edits and the undo history.
     useEffect(() => {
-        history.reset(working(project));
-        lastSaved.current = JSON.stringify(working(project));
-        setSave('saved');
         setHasDraft(project.hasDraft);
         setSavedAt(project.draftSavedAt ?? project.publishedAt);
+        const server = JSON.stringify(working(project));
+        if (server === lastSaved.current) return;
+        history.reset(working(project));
+        lastSaved.current = server;
+        setSave('saved');
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [project]);
 
+    // The newest state, for saves that start after waiting on an earlier one.
+    const present = useRef(history.present);
+    useEffect(() => {
+        present.current = history.present;
+    });
+
     const saveDraft = useCallback(async () => {
-        const body = JSON.stringify(history.present);
+        // One request at a time: an older PUT finishing last would overwrite a newer draft.
+        while (inFlight.current) await inFlight.current;
+        const body = JSON.stringify(present.current);
         if (body === lastSaved.current) return;
         setSave('saving');
         const run = api(route('projects.draft', project.id), { schema: draftSavedSchema, method: 'PUT', body: JSON.parse(body) })
@@ -125,13 +137,13 @@ export default function ProjectEdit({
                 lastSaved.current = body;
                 setSavedAt(res.savedAt);
                 setHasDraft(res.hasDraft);
-                setSave(JSON.stringify(history.present) === body ? 'saved' : 'dirty');
+                setSave(JSON.stringify(present.current) === body ? 'saved' : 'dirty');
             })
             .catch(() => setSave('error'));
         inFlight.current = run;
         await run;
         inFlight.current = null;
-    }, [history.present, project.id]);
+    }, [project.id]);
 
     // Autosave a little after the last change.
     useEffect(() => {
