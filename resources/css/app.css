@@ -165,6 +165,13 @@
     --sidebar-ring: hsl(92, 45%, 45%);
 }
 
+/* Light ↔ dark crossfade (document.startViewTransition in use-appearance). */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 300ms;
+    animation-timing-function: ease-in-out;
+}
+
 @layer base {
     * {
         @apply border-border;
