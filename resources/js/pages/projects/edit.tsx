@@ -46,7 +46,7 @@ import {
     ExternalLink,
     LoaderCircle,
     Monitor,
-    MoreHorizontal,
+    MoreVertical,
     Redo2,
     RotateCcw,
     Smartphone,
@@ -363,7 +363,7 @@ export default function ProjectEdit({
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" size="icon" aria-label="خيارات المشروع">
-                                <MoreHorizontal />
+                                <MoreVertical />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">

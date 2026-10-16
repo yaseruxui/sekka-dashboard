@@ -300,13 +300,15 @@ export default function Users({ users, permissions: all }: { users: Member[]; pe
                             key={v}
                             type="button"
                             aria-pressed={view === v}
+                            aria-label={label}
+                            title={label}
                             onClick={() => changeView(v)}
                             className={cn(
                                 'flex h-8 items-center gap-1.5 rounded px-3 text-sm',
                                 view === v ? 'bg-muted font-semibold' : 'text-muted-foreground',
                             )}
                         >
-                            <Icon className="size-4" /> {label}
+                            <Icon className="size-4" />
                         </button>
                     ))}
                 </div>

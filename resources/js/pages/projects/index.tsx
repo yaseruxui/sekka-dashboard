@@ -31,7 +31,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Copy, ExternalLink, GripVertical, LayoutGrid, MoreHorizontal, Pencil, Plus, Rows3, Search, Trash2 } from 'lucide-react';
+import { Copy, ExternalLink, GripVertical, LayoutGrid, MoreVertical, Pencil, Plus, Rows3, Search, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 export interface ProjectRow {
@@ -86,7 +86,7 @@ function RowMenu({ p, siteUrl, onDelete }: { p: ProjectRow; siteUrl: string; onD
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" aria-label={`خيارات ${p.title}`}>
-                    <MoreHorizontal />
+                    <MoreVertical />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -279,24 +279,28 @@ export default function ProjectsIndex({ projects, categories }: { projects: Proj
                         <button
                             type="button"
                             aria-pressed={view === 'table'}
+                            aria-label="جدول"
+                            title="جدول"
                             onClick={() => changeView('table')}
                             className={cn(
                                 'flex h-8 items-center gap-1.5 rounded px-3 text-sm',
                                 view === 'table' ? 'bg-muted font-semibold' : 'text-muted-foreground',
                             )}
                         >
-                            <Rows3 className="size-4" /> جدول
+                            <Rows3 className="size-4" />
                         </button>
                         <button
                             type="button"
                             aria-pressed={view === 'cards'}
+                            aria-label="بطاقات"
+                            title="بطاقات"
                             onClick={() => changeView('cards')}
                             className={cn(
                                 'flex h-8 items-center gap-1.5 rounded px-3 text-sm',
                                 view === 'cards' ? 'bg-muted font-semibold' : 'text-muted-foreground',
                             )}
                         >
-                            <LayoutGrid className="size-4" /> بطاقات
+                            <LayoutGrid className="size-4" />
                         </button>
                     </div>
                 </div>

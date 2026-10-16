@@ -301,24 +301,28 @@ export default function MediaIndex({ media, filters }: { media: Paginated; filte
                             <button
                                 type="button"
                                 aria-pressed={view === 'grid'}
+                                aria-label="شبكة"
+                                title="شبكة"
                                 onClick={() => changeView('grid')}
                                 className={cn(
                                     'flex h-8 items-center gap-1.5 rounded px-3 text-sm',
                                     view === 'grid' ? 'bg-muted font-semibold' : 'text-muted-foreground',
                                 )}
                             >
-                                <Grid3x3 className="size-4" /> شبكة
+                                <Grid3x3 className="size-4" />
                             </button>
                             <button
                                 type="button"
                                 aria-pressed={view === 'list'}
+                                aria-label="قائمة"
+                                title="قائمة"
                                 onClick={() => changeView('list')}
                                 className={cn(
                                     'flex h-8 items-center gap-1.5 rounded px-3 text-sm',
                                     view === 'list' ? 'bg-muted font-semibold' : 'text-muted-foreground',
                                 )}
                             >
-                                <List className="size-4" /> قائمة
+                                <List className="size-4" />
                             </button>
                         </div>
                     </div>

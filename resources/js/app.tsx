@@ -1,6 +1,7 @@
 import '../css/app.css';
 
 import { createInertiaApp, router } from '@inertiajs/react';
+import { DirectionProvider } from '@radix-ui/react-direction';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { route as routeFn } from 'ziggy-js';
@@ -19,10 +20,14 @@ createInertiaApp({
     setup({ el, App, props }) {
         const root = createRoot(el);
 
+        // Radix layers (select, menus, tooltips) render outside the page and
+        // default to LTR; the provider makes them RTL like the rest.
         root.render(
-            <ErrorBoundary fallback={AppError}>
-                <App {...props} />
-            </ErrorBoundary>,
+            <DirectionProvider dir="rtl">
+                <ErrorBoundary fallback={AppError}>
+                    <App {...props} />
+                </ErrorBoundary>
+            </DirectionProvider>,
         );
     },
     progress: {
