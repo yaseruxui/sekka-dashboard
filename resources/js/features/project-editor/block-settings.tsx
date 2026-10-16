@@ -56,7 +56,7 @@ function Segmented<T extends string>({
                     onClick={() => onChange(v)}
                     className={cn(
                         'h-9 rounded-md border text-sm',
-                        value === v ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted',
+                        value === v ? 'border-foreground bg-muted font-semibold' : 'bg-card hover:bg-muted',
                     )}
                 >
                     {text}

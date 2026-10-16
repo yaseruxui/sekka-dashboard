@@ -216,7 +216,7 @@ export function DetailsPanel({
                             onClick={() => set((x) => ({ ...x, aspect: a }))}
                             className={cn(
                                 'h-9 rounded-md border text-xs',
-                                p.aspect === a ? 'bg-primary text-primary-foreground border-primary' : 'hover:bg-muted',
+                                p.aspect === a ? 'border-foreground bg-muted font-semibold' : 'hover:bg-muted',
                             )}
                         >
                             {a}

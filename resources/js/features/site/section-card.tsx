@@ -859,7 +859,7 @@ export function SectionCard({
                                     onClick={() => setLocale(l)}
                                     className={cn(
                                         'h-7 min-w-10 rounded px-2.5 text-sm',
-                                        locale === l ? 'bg-primary text-primary-foreground font-semibold' : 'text-muted-foreground',
+                                        locale === l ? 'bg-muted font-semibold' : 'text-muted-foreground',
                                     )}
                                 >
                                     {l === 'ar' ? 'ع' : 'EN'}
