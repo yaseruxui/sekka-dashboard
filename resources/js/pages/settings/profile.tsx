@@ -1,5 +1,4 @@
 import { type BreadcrumbItem, type SharedData } from '@/types';
-import { Transition } from '@headlessui/react';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { Trash2, Upload } from 'lucide-react';
 import { FormEventHandler, useRef, useState } from 'react';
@@ -86,7 +85,7 @@ function AvatarSection() {
 export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
     const { auth } = usePage<SharedData>().props;
 
-    const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
+    const { data, setData, patch, errors, processing } = useForm({
         name: auth.user.name,
         email: auth.user.email,
     });
@@ -165,16 +164,6 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
 
                         <div className="flex items-center gap-4">
                             <Button disabled={processing}>حفظ</Button>
-
-                            <Transition
-                                show={recentlySuccessful}
-                                enter="transition ease-in-out"
-                                enterFrom="opacity-0"
-                                leave="transition ease-in-out"
-                                leaveTo="opacity-0"
-                            >
-                                <p className="text-muted-foreground text-sm">تم الحفظ</p>
-                            </Transition>
                         </div>
                     </form>
                 </div>

@@ -10,6 +10,7 @@ import { api, HttpError } from '@/lib/http';
 import { cn } from '@/lib/utils';
 import { Link2, Link2Off } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import * as z from 'zod/mini';
 import { slugify, type WorkingProject } from './model';
 
@@ -44,6 +45,7 @@ function CategoryPicker({
             const res = await api('/categories', { schema: categorySchema, method: 'POST', body: { name } });
             onCategories(res.categories);
             onChange(res.name);
+            toast.success(`تمت إضافة المجال «${res.name}».`);
             setAdding(false);
             setName('');
         } catch (e) {

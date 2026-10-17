@@ -28,13 +28,24 @@ export function NotificationBell({ className }: { className?: string }) {
 
     // Keeps polling in background tabs too, so the chime still plays while
     // you work elsewhere; coming back to the tab checks straight away.
+    // Skipped while a visit is running: a poll landing between a save and its
+    // redirect would age the session flash, and that save's toast would be lost.
     useEffect(() => {
-        const check = () => router.reload({ only: ['notifications', 'unreadMessages'] });
+        let busy = false;
+        const offStart = router.on('start', (e) => {
+            if (!e.detail.visit.only.length) busy = true;
+        });
+        const offFinish = router.on('finish', (e) => {
+            if (!e.detail.visit.only.length) busy = false;
+        });
+        const check = () => !busy && router.reload({ only: ['notifications', 'unreadMessages'] });
         const t = setInterval(check, POLL_MS);
         const onVisible = () => document.visibilityState === 'visible' && check();
         document.addEventListener('visibilitychange', onVisible);
         return () => {
             clearInterval(t);
+            offStart();
+            offFinish();
             document.removeEventListener('visibilitychange', onVisible);
         };
     }, []);
