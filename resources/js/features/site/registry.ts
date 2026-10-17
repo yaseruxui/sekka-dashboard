@@ -128,8 +128,7 @@ export const SITE_PAGES: SitePage[] = [
                 title: 'التعريف وشعارات العملاء',
                 description: 'جملة التعريف وشعارات العملاء المتحركة وسرعتها.',
                 fields: [
-                    t('home.introTitle', 'جملة التعريف (ديسكتوب)', { html: true, multiline: true }),
-                    t('home.introTitleMobile', 'جملة التعريف (جوال)', { html: true, multiline: true }),
+                    t('home.introTitle', 'جملة التعريف', { html: true, multiline: true }),
                     {
                         kind: 'list',
                         label: 'شعارات العملاء',
@@ -533,9 +532,12 @@ export const SITE_PAGES: SitePage[] = [
     },
 ];
 
+/** Texts the site no longer reads: kept out of the leftovers card. */
+const RETIRED = ['home.introTitleMobile'];
+
 /** Every text key a section shows (for working out the leftovers). */
 export function usedTextKeys(): Set<string> {
-    const keys = new Set<string>();
+    const keys = new Set<string>(RETIRED);
     for (const page of SITE_PAGES)
         for (const s of page.sections)
             for (const f of s.fields) {
