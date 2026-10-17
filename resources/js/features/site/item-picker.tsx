@@ -6,15 +6,15 @@ import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } 
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
 
-export interface ServiceOption {
+export interface PickOption {
     id: number;
     title: string;
-    video: string;
+    thumb: string;
 }
 
 const plain = (html: string) => html.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, '');
 
-function Row({ s, number, on, onToggle }: { s: ServiceOption; number: number | null; on: boolean; onToggle: (on: boolean) => void }) {
+function Row({ s, number, on, onToggle }: { s: PickOption; number: number | null; on: boolean; onToggle: (on: boolean) => void }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: s.id });
     return (
         <li
@@ -32,7 +32,7 @@ function Row({ s, number, on, onToggle }: { s: ServiceOption; number: number | n
                 <GripVertical className="size-4" />
             </button>
             <span className="text-muted-foreground w-6 text-center text-xs tabular-nums">{number ? String(number).padStart(2, '0') : '–'}</span>
-            <MediaThumb src={s.video} className={cn('h-9 w-14 shrink-0 rounded', !on && 'opacity-40')} />
+            <MediaThumb src={s.thumb} className={cn('h-9 w-14 shrink-0 rounded', !on && 'opacity-40')} />
             <span className={cn('min-w-0 flex-1 truncate text-sm', !on && 'text-muted-foreground')}>{plain(s.title)}</span>
             <Switch
                 checked={on}
@@ -44,16 +44,27 @@ function Row({ s, number, on, onToggle }: { s: ServiceOption; number: number | n
 }
 
 /**
- * The home page's services: every service with a switch (on = shown on the
- * site), dragged into order. Stored as the ids switched on, in list order.
+ * Pick and order from a list (home services, work reel): every item with a
+ * switch (on = shown on the site), dragged into order. Stored as the ids
+ * switched on, in list order.
  */
-export function ServicesPicker({ value, options, onChange }: { value: number[]; options: ServiceOption[]; onChange: (ids: number[]) => void }) {
+export function ItemPicker({
+    value,
+    options,
+    onChange,
+    empty,
+}: {
+    value: number[];
+    options: PickOption[];
+    onChange: (ids: number[]) => void;
+    empty: string;
+}) {
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
     const byId = new Map(options.map((o) => [o.id, o]));
     // Shown ones first, in their order; the rest after.
-    const list = [...value.map((id) => byId.get(id)).filter((s): s is ServiceOption => !!s), ...options.filter((o) => !value.includes(o.id))];
+    const list = [...value.map((id) => byId.get(id)).filter((s): s is PickOption => !!s), ...options.filter((o) => !value.includes(o.id))];
     const on = new Set(value);
-    const save = (order: ServiceOption[], shown: Set<number>) => onChange(order.map((s) => s.id).filter((id) => shown.has(id)));
+    const save = (order: PickOption[], shown: Set<number>) => onChange(order.map((s) => s.id).filter((id) => shown.has(id)));
 
     const onDragEnd = ({ active, over }: DragEndEvent) => {
         if (!over || active.id === over.id) return;
@@ -65,9 +76,7 @@ export function ServicesPicker({ value, options, onChange }: { value: number[]; 
     return (
         <div className="grid gap-3">
             {list.length === 0 ? (
-                <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">
-                    ما فيه خدمات للحين. أضفها من صفحة الخدمات.
-                </p>
+                <p className="text-muted-foreground rounded-lg border border-dashed p-6 text-center text-sm">{empty}</p>
             ) : (
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
                     <SortableContext items={list.map((s) => s.id)} strategy={verticalListSortingStrategy}>

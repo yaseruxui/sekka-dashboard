@@ -17,10 +17,10 @@ import { ChevronDown, GripVertical, LoaderCircle, Plus, RotateCcw, Trash2 } from
 import { useEffect, useMemo, useState } from 'react';
 import * as z from 'zod/mini';
 import { HighlightText } from './highlight-text';
+import { ItemPicker } from './item-picker';
 import { clone, getPath, leafKeys } from './paths';
 import { type Field, type ItemText, type ListField, type Section, type TextField, usedTextKeys } from './registry';
 import { RichText } from './rich-text';
-import { type ServiceOption, ServicesPicker } from './services-picker';
 
 export type Locale = 'ar' | 'en';
 type Policy = { updated: string; title: string; html: string };
@@ -31,7 +31,9 @@ export interface SiteContentProps {
     policy: { ar: Policy; en: Policy | null } | null;
     messages: Messages;
     /** All services, for the home page's services picker. */
-    services?: ServiceOption[];
+    services?: { id: number; title: string; video: string }[];
+    /** Published projects, for the home page's work reel picker. */
+    projects?: { id: number; title: string; cover: string | null }[];
 }
 
 interface CardState {
@@ -87,10 +89,10 @@ function initialState(section: Section, content: SiteContentProps, defaults: Mes
                         (getPath(content.messages[l], f.texts.key) ?? getPath(defaults[l], f.texts.key) ?? []) as unknown[],
                     );
             if (f.data) data[dataKey(f.data.doc, f.data.path)] = clone((getPath(content[f.data.doc], f.data.path) ?? []) as unknown[]);
-        } else if (f.kind === 'services') {
-            // Never picked yet: the site shows every service, so start from that.
+        } else if (f.kind === 'pick') {
+            // Services never picked: the site shows every one, so start from that. The reel starts empty.
             const ids = getPath(content.home, f.path);
-            data[dataKey(f.doc, f.path)] = Array.isArray(ids) ? ids : (content.services ?? []).map((o) => o.id);
+            data[dataKey(f.doc, f.path)] = Array.isArray(ids) ? ids : f.source === 'services' ? (content.services ?? []).map((o) => o.id) : [];
         } else if ('doc' in f) {
             data[dataKey(f.doc, f.path)] = getPath(content[f.doc], f.path) ?? '';
         } else if (f.kind === 'policy') {
@@ -670,12 +672,17 @@ export function SectionCard({
                         <Switch checked={!!state.data[dataKey(f.doc, f.path)]} onCheckedChange={(v) => setData(f.doc, f.path, v)} />
                     </label>
                 );
-            case 'services':
+            case 'pick':
                 return (
                     <FieldShell key={i} label={f.label} error={err(f.doc, f.path)}>
-                        <ServicesPicker
+                        <ItemPicker
                             value={(state.data[dataKey(f.doc, f.path)] as number[]) ?? []}
-                            options={content.services ?? []}
+                            options={
+                                f.source === 'services'
+                                    ? (content.services ?? []).map((o) => ({ id: o.id, title: o.title, thumb: o.video }))
+                                    : (content.projects ?? []).map((o) => ({ id: o.id, title: o.title, thumb: o.cover ?? '' }))
+                            }
+                            empty={f.source === 'services' ? 'ما فيه خدمات للحين. أضفها من صفحة الخدمات.' : 'ما فيه مشاريع منشورة للحين.'}
                             onChange={(ids) => setData(f.doc, f.path, ids)}
                         />
                     </FieldShell>

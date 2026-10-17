@@ -53,7 +53,8 @@ export type PolicyFieldDef = { kind: 'policy' };
 /** Any texts of these namespaces no section shows (so nothing is out of reach). */
 export type LeftoversField = { kind: 'leftovers'; namespaces: string[] };
 /** The home page's services: pick and order from the services list. */
-export type ServicesField = { kind: 'services'; doc: 'home'; path: 'serviceIds'; label: string };
+/** Pick and order items for a home section: services, or projects for the work reel. */
+export type PickField = { kind: 'pick'; doc: 'home'; path: 'serviceIds' | 'workReelIds'; label: string; source: 'services' | 'projects' };
 
 export type Field =
     | TextField
@@ -65,7 +66,7 @@ export type Field =
     | ListField
     | PolicyFieldDef
     | LeftoversField
-    | ServicesField;
+    | PickField;
 
 export interface Section {
     id: string;
@@ -210,7 +211,7 @@ export const SITE_PAGES: SitePage[] = [
                 fields: [
                     t('home.caseList.cta', 'نص الزر'),
                     t('home.caseList.whatsapp', 'رسالة واتساب', { hint: '{service} يتغيّر لاسم الخدمة.' }),
-                    { kind: 'services', doc: 'home', path: 'serviceIds', label: 'الخدمات الظاهرة' },
+                    { kind: 'pick', doc: 'home', path: 'serviceIds', label: 'الخدمات الظاهرة', source: 'services' },
                 ],
             },
             {
@@ -253,26 +254,10 @@ export const SITE_PAGES: SitePage[] = [
             {
                 id: 'workReel',
                 title: 'شريط الأعمال',
-                description: 'صور الأعمال وعناوينها وروابطها.',
+                description: 'أي مشاريع تظهر في الشريط وبأي ترتيب.',
                 fields: [
                     t('home.workReel.title', 'عنوان القسم'),
-                    {
-                        kind: 'list',
-                        label: 'الأعمال',
-                        itemLabel: (i, text) => String(text || `عمل ${i + 1}`),
-                        addLabel: 'إضافة عمل',
-                        thumb: 'src',
-                        texts: { key: 'home.workReel.tiles', fields: null, blank: '' },
-                        data: {
-                            doc: 'home',
-                            path: 'workReel',
-                            fields: [
-                                { kind: 'media', name: 'src', label: 'الصورة', accept: 'image' },
-                                { kind: 'value', name: 'href', label: 'الرابط', ltr: true, hint: 'مثل /work/chaos-campaign' },
-                            ],
-                            blank: { src: '', href: '/work' },
-                        },
-                    },
+                    { kind: 'pick', doc: 'home', path: 'workReelIds', label: 'المشاريع الظاهرة', source: 'projects' },
                 ],
             },
             {
@@ -548,7 +533,7 @@ export const SITE_PAGES: SitePage[] = [
 ];
 
 /** Texts the site no longer reads: kept out of the leftovers card. */
-const RETIRED = ['home.introTitleMobile', 'home.caseList.items'];
+const RETIRED = ['home.introTitleMobile', 'home.caseList.items', 'home.workReel.tiles'];
 
 /** Every text key a section shows (for working out the leftovers). */
 export function usedTextKeys(): Set<string> {

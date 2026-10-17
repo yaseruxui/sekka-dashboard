@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Project;
 use App\Models\Service;
 use App\Models\Setting;
 use App\Support\ContentRules;
@@ -37,6 +38,8 @@ class SiteController extends Controller
                 'messages' => SiteContent::get('messages') ?? ($defaults['messages'] ?? ['ar' => [], 'en' => []]),
                 // For the home page's services picker.
                 'services' => Service::orderBy('id')->get(['id', 'title', 'video']),
+                // For the home page's work reel picker: published projects only.
+                'projects' => Project::where('published', true)->ordered()->get(['id', 'title', 'cover']),
             ],
             'defaults' => ['messages' => $defaults['messages'] ?? ['ar' => [], 'en' => []]],
             'meta' => Setting::getValue('section_meta', []),

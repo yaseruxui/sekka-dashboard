@@ -6,6 +6,7 @@ use App\Http\Requests\ProjectRequest;
 use App\Models\Category;
 use App\Models\Project;
 use App\Support\Blocks;
+use App\Support\SiteContent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -179,6 +180,12 @@ class ProjectController extends Controller
     {
         $wasLive = $project->published;
         $project->delete();
+        // Out of the home work reel too, or the next home save would fail on a missing id.
+        $home = SiteContent::get('home');
+        if ($home !== null && isset($home['workReelIds'])) {
+            $home['workReelIds'] = array_values(array_diff($home['workReelIds'], [$project->id]));
+            SiteContent::put('home', $home);
+        }
         $redirect = to_route('projects.index');
 
         return $wasLive ? $this->savedAndRevalidated($redirect, 'تم حذف المشروع.') : $redirect->with('success', 'تم حذف المشروع.');

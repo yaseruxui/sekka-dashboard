@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Project;
 use App\Models\Service;
 use App\Models\User;
 use App\Support\SiteContent;
@@ -73,5 +74,23 @@ class ServicesTest extends TestCase
     public function test_only_site_editors_reach_services(): void
     {
         $this->actingAs(User::factory()->create(['permissions' => ['projects']]))->get('/services')->assertForbidden();
+    }
+
+    public function test_the_work_reel_comes_from_picked_published_projects(): void
+    {
+        $a = \App\Models\Project::create(['slug' => 'a', 'title' => 'أ', 'title_en' => 'A', 'cover' => '/media/a.jpg', 'published' => true, 'summary' => '', 'blocks' => []]);
+        $b = \App\Models\Project::create(['slug' => 'b', 'title' => 'ب', 'cover' => '/media/b.jpg', 'published' => true, 'summary' => '', 'blocks' => []]);
+        $hidden = \App\Models\Project::create(['slug' => 'c', 'title' => 'ج', 'cover' => '/media/c.jpg', 'published' => false, 'summary' => '', 'blocks' => []]);
+        SiteContent::put('home', ['workReelIds' => [$b->id, $hidden->id, $a->id]]);
+
+        $this->getJson('/api/public/content')
+            ->assertJsonCount(2, 'workReel')
+            ->assertJsonPath('workReel.0.href', '/work/b')
+            ->assertJsonPath('workReel.0.title.en', 'ب')
+            ->assertJsonPath('workReel.1.title.en', 'A')
+            ->assertJsonPath('workReel.1.src', '/media/a.jpg');
+
+        $this->actingAs(User::factory()->create())->delete("/projects/{$b->id}")->assertRedirect();
+        $this->assertSame([$hidden->id, $a->id], SiteContent::get('home')['workReelIds']);
     }
 }
