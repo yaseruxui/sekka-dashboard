@@ -13,9 +13,10 @@ import { closestCenter, DndContext, type DragEndEvent, PointerSensor, useSensor,
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { router } from '@inertiajs/react';
-import { ChevronDown, GripVertical, Highlighter, LoaderCircle, Plus, RotateCcw, Trash2, WrapText } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronDown, GripVertical, LoaderCircle, Plus, RotateCcw, Trash2 } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import * as z from 'zod/mini';
+import { HighlightText } from './highlight-text';
 import { clone, getPath, leafKeys } from './paths';
 import { type Field, type ItemText, type ListField, type Section, type TextField, usedTextKeys } from './registry';
 import { RichText } from './rich-text';
@@ -40,20 +41,6 @@ const policySchema = z.object({ updated: z.string(), title: z.string(), html: z.
 const recordSchema = z.record(z.string(), z.unknown());
 
 /** Unsaved edits kept in localStorage: only restored if they still look like a CardState. */
-/**
- * A text's highlight markup for the preview: other tags are dropped, and only
- * bare <em>, <strong> and <br> come back as HTML. One with attributes (e.g.
- * <em onmouseover=…>) stays visible as text instead of running.
- */
-function previewHtml(text: string): string {
-    return text
-        .replace(/<(?!\/?(em|br|strong)\b)[^>]*>/gi, '')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/&lt;(\/?)(em|strong)&gt;/gi, '<$1$2>')
-        .replace(/&lt;br\s*\/?&gt;/gi, '<br>');
-}
-
 const localDraftSchema = z.object({
     base: z.string(),
     state: z.object({
@@ -157,70 +144,6 @@ function FieldShell({
     );
 }
 
-/** Texts with <em> / <br>: buttons to mark the selection and break the line, plus a rendered preview. */
-function HtmlText({
-    value,
-    onChange,
-    placeholder,
-    dir,
-    id,
-}: {
-    value: string;
-    onChange: (v: string) => void;
-    placeholder?: string;
-    dir: 'rtl' | 'ltr';
-    id: string;
-}) {
-    const area = useRef<HTMLTextAreaElement>(null);
-    const wrap = (before: string, after = '') => {
-        const el = area.current;
-        if (!el) return;
-        const { selectionStart: s, selectionEnd: e } = el;
-        const next = value.slice(0, s) + before + value.slice(s, e) + after + value.slice(e);
-        onChange(next);
-        requestAnimationFrame(() => {
-            el.focus();
-            el.setSelectionRange(s + before.length, e + before.length);
-        });
-    };
-    const preview = previewHtml(value || placeholder || '');
-    return (
-        <div className="grid gap-1.5">
-            <div className="flex gap-1">
-                <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-xs"
-                    onClick={() => wrap('<em>', '</em>')}
-                    title="يلوّن الكلمات المحددة بلون سكة المميّز"
-                >
-                    <Highlighter className="size-3.5" /> تمييز المحدد
-                </Button>
-                <Button type="button" size="sm" variant="outline" className="h-7 text-xs" onClick={() => wrap('<br>')}>
-                    <WrapText className="size-3.5" /> سطر جديد
-                </Button>
-            </div>
-            <Textarea
-                id={id}
-                ref={area}
-                dir={dir}
-                rows={2}
-                value={value}
-                placeholder={placeholder}
-                onChange={(e) => onChange(e.target.value)}
-                className="text-sm leading-7"
-            />
-            <div
-                dir={dir}
-                className="bg-muted/50 rounded-md px-3 py-2 text-sm leading-7 [&_em]:font-semibold [&_em]:text-[#5f9a2f] [&_em]:not-italic"
-                aria-label="معاينة"
-                dangerouslySetInnerHTML={{ __html: preview }}
-            />
-        </div>
-    );
-}
-
 function TextInput({
     f,
     value,
@@ -247,7 +170,7 @@ function TextInput({
             counter={f.max ? `${(value || placeholder).length} / ${f.max}` : undefined}
         >
             {f.html ? (
-                <HtmlText id={id} value={value} onChange={onChange} placeholder={placeholder} dir={dir} />
+                <HighlightText id={id} value={value} onChange={onChange} placeholder={placeholder} dir={dir} />
             ) : f.multiline ? (
                 <Textarea id={id} dir={dir} rows={3} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
             ) : (
@@ -553,7 +476,7 @@ function ItemTextInput({ tf, value, locale, onChange }: { tf: ItemText; value: u
     return (
         <FieldShell label={tf.label}>
             {tf.html ? (
-                <HtmlText id={`it-${tf.name}`} value={v} onChange={onChange} dir={dir} />
+                <HighlightText id={`it-${tf.name}`} value={v} onChange={onChange} dir={dir} />
             ) : (
                 <Input dir={dir} value={v} onChange={(e) => onChange(e.target.value)} />
             )}
