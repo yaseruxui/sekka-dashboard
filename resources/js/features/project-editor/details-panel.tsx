@@ -133,7 +133,6 @@ export function DetailsPanel({
 
             <div className="grid grid-cols-1 gap-1.5">
                 <Label htmlFor="p-title-en">الاسم بالإنجليزي</Label>
-                <p className="text-muted-foreground -mt-1 text-xs">لا يظهر في الموقع؛ منه يتكوّن رابط المشروع.</p>
                 <Input
                     id="p-title-en"
                     dir="ltr"
@@ -144,6 +143,7 @@ export function DetailsPanel({
                     }}
                     placeholder="Chaos Campaign"
                 />
+                <p className="text-muted-foreground text-xs">لا يظهر في الموقع؛ منه يتكوّن رابط المشروع.</p>
             </div>
 
             <div className="grid grid-cols-1 gap-1.5">
@@ -185,8 +185,8 @@ export function DetailsPanel({
 
             <div className="grid grid-cols-1 gap-1.5">
                 <Label htmlFor="p-summary">الملخص</Label>
-                <p className="text-muted-foreground -mt-1 text-xs">يظهر في البطاقة وأعلى صفحة المشروع ونتائج البحث.</p>
                 <Textarea id="p-summary" rows={3} value={p.summary} onChange={(e) => field('summary')(e.target.value)} />
+                <p className="text-muted-foreground text-xs">يظهر في البطاقة وأعلى صفحة المشروع ونتائج البحث.</p>
                 <InputError message={errors.summary} />
             </div>
 
@@ -229,20 +229,20 @@ export function DetailsPanel({
 
             <div className="grid grid-cols-1 gap-1.5">
                 <Label>صورة الغلاف</Label>
-                <p className="text-muted-foreground -mt-1 text-xs">للبطاقة، ومشاركة الرابط، وبانر «المشروع التالي».</p>
                 <MediaField
                     value={p.cover}
                     accept="image"
                     invalid={!!errors.cover}
                     onChange={(item) => item && set((x) => ({ ...x, cover: item.url }))}
                 />
+                <p className="text-muted-foreground text-xs">للبطاقة، ومشاركة الرابط، وبانر «المشروع التالي».</p>
                 <InputError message={errors.cover} />
             </div>
 
             <div className="grid grid-cols-1 gap-1.5">
                 <Label>فيديو المعاينة</Label>
-                <p className="text-muted-foreground -mt-1 text-xs">اختياري: يتحرك في البطاقة ويملأ رأس صفحة المشروع.</p>
                 <MediaField value={p.preview} accept="video" clearable onChange={(item) => set((x) => ({ ...x, preview: item?.url ?? null }))} />
+                <p className="text-muted-foreground text-xs">اختياري: يتحرك في البطاقة ويملأ رأس صفحة المشروع.</p>
             </div>
         </div>
     );

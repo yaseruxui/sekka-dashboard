@@ -26,6 +26,7 @@ import {
     Menu,
     PanelRightClose,
     ShieldCheck,
+    Sparkles,
     Users,
 } from 'lucide-react';
 import AppLogo from './app-logo';
@@ -36,6 +37,7 @@ const navGroups: NavGroup[] = [
         items: [
             { title: 'الرئيسية', url: '/dashboard', icon: LayoutDashboard },
             { title: 'المشاريع', url: '/projects', icon: FolderKanban, permission: 'projects' },
+            { title: 'الخدمات', url: '/services', icon: Sparkles, permission: 'site' },
             { title: 'طلبات التواصل', url: '/inbox', icon: Inbox, permission: 'inbox' },
             { title: 'المستخدمون', url: '/users', icon: Users, permission: 'users' },
         ],

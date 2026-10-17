@@ -20,6 +20,7 @@ import { HighlightText } from './highlight-text';
 import { clone, getPath, leafKeys } from './paths';
 import { type Field, type ItemText, type ListField, type Section, type TextField, usedTextKeys } from './registry';
 import { RichText } from './rich-text';
+import { type ServiceOption, ServicesPicker } from './services-picker';
 
 export type Locale = 'ar' | 'en';
 type Policy = { updated: string; title: string; html: string };
@@ -29,6 +30,8 @@ export interface SiteContentProps {
     contact: Record<string, unknown> | null;
     policy: { ar: Policy; en: Policy | null } | null;
     messages: Messages;
+    /** All services, for the home page's services picker. */
+    services?: ServiceOption[];
 }
 
 interface CardState {
@@ -84,6 +87,10 @@ function initialState(section: Section, content: SiteContentProps, defaults: Mes
                         (getPath(content.messages[l], f.texts.key) ?? getPath(defaults[l], f.texts.key) ?? []) as unknown[],
                     );
             if (f.data) data[dataKey(f.data.doc, f.data.path)] = clone((getPath(content[f.data.doc], f.data.path) ?? []) as unknown[]);
+        } else if (f.kind === 'services') {
+            // Never picked yet: the site shows every service, so start from that.
+            const ids = getPath(content.home, f.path);
+            data[dataKey(f.doc, f.path)] = Array.isArray(ids) ? ids : (content.services ?? []).map((o) => o.id);
         } else if ('doc' in f) {
             data[dataKey(f.doc, f.path)] = getPath(content[f.doc], f.path) ?? '';
         } else if (f.kind === 'policy') {
@@ -134,13 +141,13 @@ function FieldShell({
     className?: string;
 }) {
     return (
-        <div className={cn('grid grid-cols-1 gap-1.5', className)}>
+        <div className={cn('grid grid-cols-1 content-start gap-1.5', className)}>
             <div className="flex items-baseline justify-between gap-2">
                 <Label htmlFor={htmlFor}>{label}</Label>
                 {counter && <span className="text-muted-foreground text-xs tabular-nums">{counter}</span>}
             </div>
-            {hint && <p className="text-muted-foreground -mt-1 text-xs">{hint}</p>}
             {children}
+            {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
             <InputError message={error} />
         </div>
     );
@@ -663,6 +670,16 @@ export function SectionCard({
                         <Switch checked={!!state.data[dataKey(f.doc, f.path)]} onCheckedChange={(v) => setData(f.doc, f.path, v)} />
                     </label>
                 );
+            case 'services':
+                return (
+                    <FieldShell key={i} label={f.label} error={err(f.doc, f.path)}>
+                        <ServicesPicker
+                            value={(state.data[dataKey(f.doc, f.path)] as number[]) ?? []}
+                            options={content.services ?? []}
+                            onChange={(ids) => setData(f.doc, f.path, ids)}
+                        />
+                    </FieldShell>
+                );
             case 'list':
                 return <ListEditor key={i} f={f} state={state} setState={setState} locale={locale} errors={errors} />;
             case 'policy': {
@@ -790,7 +807,6 @@ export function SectionCard({
                             {dirty && <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-normal text-orange-900">غير محفوظ</span>}
                             {hasErrors && <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-normal text-red-900">به أخطاء</span>}
                         </strong>
-                        <span className="text-muted-foreground block truncate text-xs">{section.description}</span>
                     </span>
                 </button>
                 <div className="flex items-center gap-2">

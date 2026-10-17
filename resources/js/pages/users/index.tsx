@@ -377,7 +377,7 @@ export default function Users({ users, permissions: all }: { users: Member[]; pe
                     <AlertDialogHeader>
                         <AlertDialogTitle>{deleting?.invitedAt ? `إلغاء دعوة «${deleting?.name}»؟` : `حذف «${deleting?.name}»؟`}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {deleting?.invitedAt ? 'رابط الدعوة ما عاد يشتغل.' : 'ما عاد يقدر يدخل اللوحة. التعديلات اللي عملها تبقى كما هي.'}
+                            {deleting?.invitedAt ? 'رابط الدعوة يصير غير صالح.' : 'ما يقدر يدخل اللوحة بعدها. التعديلات اللي سوّاها تبقى كما هي.'}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

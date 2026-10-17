@@ -110,15 +110,13 @@ function Details({ item, onClose }: { item: MediaItem | null; onClose: () => voi
                     }}
                 >
                     <Label htmlFor="m-alt">الوصف البديل</Label>
-                    <p className="text-muted-foreground -mt-1 text-xs">
-                        وصف قصير يقرأه قارئ الشاشة ومحركات البحث. يُستخدم مبدئياً عند إضافة الملف لبلوك.
-                    </p>
                     <div className="flex gap-2">
                         <Input id="m-alt" value={alt} onChange={(e) => setAlt(e.target.value)} />
                         <Button type="submit" variant="outline" disabled={alt === item.alt}>
                             حفظ
                         </Button>
                     </div>
+                    <p className="text-muted-foreground text-xs">وصف قصير يقرأه قارئ الشاشة ومحركات البحث. يُستخدم مبدئياً عند إضافة الملف لبلوك.</p>
                 </form>
 
                 <div className="grid gap-2">

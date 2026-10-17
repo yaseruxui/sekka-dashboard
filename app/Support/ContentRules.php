@@ -50,6 +50,8 @@ class ContentRules
             "{$p}storyVideo" => $src,
             "{$p}notFoundVideo" => $src,
             "{$p}notFoundHref" => ['nullable', 'string', 'starts_with:/', 'max:200'],
+            "{$p}serviceIds" => ['nullable', 'array'],
+            "{$p}serviceIds.*" => ['integer', 'distinct', 'exists:services,id'],
         ];
     }
 
@@ -80,6 +82,7 @@ class ContentRules
             'storyVideo' => $h['storyVideo'],
             'notFoundVideo' => $h['notFoundVideo'],
             'notFoundHref' => $h['notFoundHref'] ?? '/',
+            ...(isset($h['serviceIds']) ? ['serviceIds' => array_map('intval', array_values($h['serviceIds']))] : []),
         ];
     }
 

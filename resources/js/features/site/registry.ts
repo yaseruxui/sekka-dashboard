@@ -52,8 +52,20 @@ export type ListField = {
 export type PolicyFieldDef = { kind: 'policy' };
 /** Any texts of these namespaces no section shows (so nothing is out of reach). */
 export type LeftoversField = { kind: 'leftovers'; namespaces: string[] };
+/** The home page's services: pick and order from the services list. */
+export type ServicesField = { kind: 'services'; doc: 'home'; path: 'serviceIds'; label: string };
 
-export type Field = TextField | ValueField | NumberField | MediaField | SelectField | SwitchField | ListField | PolicyFieldDef | LeftoversField;
+export type Field =
+    | TextField
+    | ValueField
+    | NumberField
+    | MediaField
+    | SelectField
+    | SwitchField
+    | ListField
+    | PolicyFieldDef
+    | LeftoversField
+    | ServicesField;
 
 export interface Section {
     id: string;
@@ -128,7 +140,7 @@ export const SITE_PAGES: SitePage[] = [
                 title: 'الواجهة',
                 description: 'أول ما يشوفه الزائر: فيديو بملء الشاشة وسطر تعريفي.',
                 fields: [
-                    t('home.heroEyebrow', 'السطر الصغير', { hint: 'يظهر فوق الفيديو أسفل الشاشة.' }),
+                    t('home.heroEyebrow', 'السطر الصغير'),
                     t('home.heroSubtitle', 'وصف الموقع', { hint: 'يظهر في نتائج البحث وعند مشاركة الرابط.', multiline: true, max: 160 }),
                     media('home', 'heroVideo', 'فيديو الخلفية', 'video'),
                     t('common.scrollDown', 'نص «مرّر للأسفل»'),
@@ -166,13 +178,12 @@ export const SITE_PAGES: SitePage[] = [
                 description: 'فيديو كبير وثلاث أعمدة من الصور والفيديوهات.',
                 fields: [
                     t('home.galleryTitle', 'عنوان المعرض', { html: true, multiline: true }),
-                    media('home', 'gallery.big.src', 'الفيديو الكبير', 'any', 'يبدأ بعرض الشاشة، ومع النزول يصغر ويستقر أعلى العمود الأوسط.'),
+                    media('home', 'gallery.big.src', 'الفيديو الكبير', 'any'),
                     {
                         kind: 'select',
                         doc: 'home',
                         path: 'gallery.big.fit',
                         label: 'طريقة عرض الفيديو الكبير',
-                        hint: 'ملء الإطار: يغطي المساحة ويقص الأطراف. داخل الإطار: يظهر كاملاً. خلفية: نسخة مموّهة من الفيديو تملأ المساحة وهو فوقها.',
                         options: FITS,
                     },
                     {
@@ -180,7 +191,6 @@ export const SITE_PAGES: SitePage[] = [
                         doc: 'home',
                         path: 'gallery.big.tint',
                         label: 'تظليل الفيديو الكبير',
-                        hint: 'طبقة داكنة خفيفة فوق الفيديو، تهدّي الألوان الفاقعة.',
                     },
                     galleryColumn('gallery.start', 'العمود الأول'),
                     galleryColumn('gallery.mid', 'العمود الأوسط'),
@@ -196,36 +206,11 @@ export const SITE_PAGES: SitePage[] = [
             {
                 id: 'services',
                 title: 'الخدمات',
-                description: 'قائمة الخدمات، لكل خدمة فيديو. الضغط عليها يفتح واتساب باسم الخدمة.',
+                description: 'أي خدمات تظهر بالرئيسية وبأي ترتيب. الضغط على خدمة يفتح واتساب باسمها.',
                 fields: [
                     t('home.caseList.cta', 'نص الزر'),
-                    t('home.caseList.whatsapp', 'رسالة واتساب', { hint: '{service} يُستبدل باسم الخدمة.' }),
-                    {
-                        kind: 'list',
-                        label: 'الخدمات',
-                        itemLabel: (i, text) =>
-                            `${(text as { eyebrow?: string })?.eyebrow ?? String(i + 1).padStart(2, '0')} · ${strip((text as { title?: string })?.title) || 'خدمة جديدة'}`,
-                        addLabel: 'إضافة خدمة',
-                        thumb: 'video',
-                        texts: {
-                            key: 'home.caseList.items',
-                            fields: [
-                                { name: 'eyebrow', label: 'الرقم' },
-                                { name: 'title', label: 'العنوان', html: true },
-                                { name: 'subtitle', label: 'الوصف' },
-                            ],
-                            blank: { eyebrow: '', title: '', subtitle: '' },
-                        },
-                        data: {
-                            doc: 'home',
-                            path: 'caseList',
-                            fields: [
-                                { kind: 'media', name: 'video', label: 'الفيديو', accept: 'video' },
-                                { kind: 'select', name: 'fit', label: 'طريقة عرض الفيديو', options: FITS },
-                            ],
-                            blank: { video: '', fit: 'backdrop', gradient: '0, 0, 0' },
-                        },
-                    },
+                    t('home.caseList.whatsapp', 'رسالة واتساب', { hint: '{service} يتغيّر لاسم الخدمة.' }),
+                    { kind: 'services', doc: 'home', path: 'serviceIds', label: 'الخدمات الظاهرة' },
                 ],
             },
             {
@@ -312,15 +297,15 @@ export const SITE_PAGES: SitePage[] = [
                     t('work.kicker', 'العنوان الصغير'),
                     t('work.title', 'العنوان'),
                     t('work.sub', 'الوصف', { multiline: true }),
-                    t('work.statProjects', 'عدد المشاريع', { hint: '{count} يُستبدل بالعدد.' }),
-                    t('work.statFields', 'عدد المجالات', { hint: '{count} يُستبدل بالعدد.' }),
+                    t('work.statProjects', 'عدد المشاريع', { hint: '{count} يتغيّر للعدد.' }),
+                    t('work.statFields', 'عدد المجالات', { hint: '{count} يتغيّر للعدد.' }),
                     t('work.filterAll', 'فلتر «الكل»'),
                 ],
             },
             {
                 id: 'ask',
                 title: 'دعوة التواصل',
-                description: 'الصندوق الذي يدعو للتواصل عبر واتساب.',
+                description: 'الصندوق اللي يدعو للتواصل عبر واتساب.',
                 fields: [
                     t('work.askCta', 'نص الزر'),
                     t('work.indexAsk.line', 'العنوان في صفحة الأعمال'),
@@ -328,7 +313,7 @@ export const SITE_PAGES: SitePage[] = [
                     t('work.indexAsk.message', 'رسالة واتساب من صفحة الأعمال', { multiline: true }),
                     t('work.caseAsk.line', 'العنوان في صفحة المشروع'),
                     t('work.caseAsk.note', 'الوصف في صفحة المشروع', { multiline: true }),
-                    t('work.caseAsk.message', 'رسالة واتساب من صفحة المشروع', { multiline: true, hint: '{title} يُستبدل باسم المشروع.' }),
+                    t('work.caseAsk.message', 'رسالة واتساب من صفحة المشروع', { multiline: true, hint: '{title} يتغيّر لاسم المشروع.' }),
                 ],
             },
             {
@@ -444,7 +429,7 @@ export const SITE_PAGES: SitePage[] = [
                     t('contact.form.submit', 'زر الإرسال'),
                     t('contact.form.thx', 'رسالة الشكر'),
                     t('contact.form.invalid', 'رسالة بيانات ناقصة'),
-                    t('contact.form.failed', 'رسالة فشل الإرسال', { hint: '{email} يُستبدل بالبريد.' }),
+                    t('contact.form.failed', 'رسالة فشل الإرسال', { hint: '{email} يتغيّر للبريد الإلكتروني.' }),
                 ],
             },
             {
@@ -477,7 +462,7 @@ export const SITE_PAGES: SitePage[] = [
     {
         id: 'not-found',
         title: 'صفحة 404',
-        description: 'لما الزائر يفتح رابط مش موجود.',
+        description: 'لما الزائر يفتح رابط غير موجود.',
         path: '/404',
         sections: [
             {
@@ -540,7 +525,7 @@ export const SITE_PAGES: SitePage[] = [
                 fields: [
                     t('footer.text', 'الجملة', { html: true, multiline: true }),
                     t('footer.cta', 'نص الزر'),
-                    t('footer.copyright', 'حقوق النشر', { hint: '{year} يُستبدل بالسنة.' }),
+                    t('footer.copyright', 'حقوق النشر', { hint: '{year} يتغيّر للسنة الحالية.' }),
                 ],
             },
             {
@@ -563,7 +548,7 @@ export const SITE_PAGES: SitePage[] = [
 ];
 
 /** Texts the site no longer reads: kept out of the leftovers card. */
-const RETIRED = ['home.introTitleMobile'];
+const RETIRED = ['home.introTitleMobile', 'home.caseList.items'];
 
 /** Every text key a section shows (for working out the leftovers). */
 export function usedTextKeys(): Set<string> {

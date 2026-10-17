@@ -26,10 +26,10 @@ type Errors = Record<string, string>;
 
 function Field({ label, hint, error, children }: { label: string; hint?: string; error?: string; children: React.ReactNode }) {
     return (
-        <div className="grid grid-cols-1 gap-1.5">
+        <div className="grid grid-cols-1 content-start gap-1.5">
             <Label>{label}</Label>
-            {hint && <p className="text-muted-foreground -mt-1 text-xs">{hint}</p>}
             {children}
+            {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
             <InputError message={error} />
         </div>
     );

@@ -78,7 +78,7 @@ class UserController extends Controller
             return back()->with('error', 'لا يمكنك إزالة صلاحية «المستخدمون» عن نفسك.');
         }
         if ($user->hasPermission('users') && ! in_array('users', $permissions, true) && $this->managers() <= 1) {
-            return back()->with('error', 'لازم يبقى مستخدم واحد على الأقل يقدر يدير المستخدمين.');
+            return back()->with('error', 'لازم يكون فيه مستخدم واحد على الأقل يقدر يدير المستخدمين.');
         }
 
         $user->update(['permissions' => $permissions]);
@@ -92,7 +92,7 @@ class UserController extends Controller
             return back()->with('error', 'لا يمكنك حذف حسابك أنت.');
         }
         if ($user->hasPermission('users') && $this->managers() <= 1) {
-            return back()->with('error', 'لازم يبقى مستخدم واحد على الأقل يقدر يدير المستخدمين.');
+            return back()->with('error', 'لازم يكون فيه مستخدم واحد على الأقل يقدر يدير المستخدمين.');
         }
 
         $user->delete();

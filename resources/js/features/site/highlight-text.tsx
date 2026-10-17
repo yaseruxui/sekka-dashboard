@@ -139,10 +139,7 @@ export function HighlightText({
             />
             {hasWords && (
                 <div className="grid gap-1.5">
-                    <p className="text-muted-foreground text-xs">
-                        اضغط على الكلمات اللي بدك تلوّنها بالأخضر. Enter لسطر جديد. للكشيدة اكتب ـ داخل الكلمة (Shift + J بالكيبورد العربي)، مثل:
-                        سكـــة.
-                    </p>
+                    <p className="text-muted-foreground text-xs">اختر الكلمات اللي تبيها تظهر باللون الأخضر في الموقع:</p>
                     <div dir={dir} className="flex flex-wrap items-center gap-1.5" role="group" aria-label="تلوين الكلمات">
                         {chipLines.flatMap((ws, li) => [
                             // A faint mark where the line breaks, so the chips can share one row.

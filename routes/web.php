@@ -6,6 +6,7 @@ use App\Http\Controllers\InboxController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -50,6 +51,10 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('permission:site')->group(function () {
         Route::get('site/{page}', [SiteController::class, 'show'])->whereIn('page', SiteController::PAGES)->name('site.show');
         Route::put('site', [SiteController::class, 'update'])->name('site.update');
+        Route::get('services', [ServiceController::class, 'index'])->name('services.index');
+        Route::post('services', [ServiceController::class, 'store'])->name('services.store');
+        Route::put('services/{service}', [ServiceController::class, 'update'])->name('services.update');
+        Route::delete('services/{service}', [ServiceController::class, 'destroy'])->name('services.destroy');
     });
 
     Route::middleware('permission:users')->controller(UserController::class)->group(function () {

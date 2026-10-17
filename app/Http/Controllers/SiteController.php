@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Service;
 use App\Models\Setting;
 use App\Support\ContentRules;
 use App\Support\SiteContent;
@@ -34,6 +35,8 @@ class SiteController extends Controller
                 'contact' => SiteContent::get('contact') ?? ($defaults['contact'] ?? null),
                 'policy' => SiteContent::get('policy') ?? ($defaults['policy'] ?? null),
                 'messages' => SiteContent::get('messages') ?? ($defaults['messages'] ?? ['ar' => [], 'en' => []]),
+                // For the home page's services picker.
+                'services' => Service::orderBy('id')->get(['id', 'title', 'video']),
             ],
             'defaults' => ['messages' => $defaults['messages'] ?? ['ar' => [], 'en' => []]],
             'meta' => Setting::getValue('section_meta', []),
