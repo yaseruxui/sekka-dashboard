@@ -116,7 +116,7 @@ class SiteSectionsTest extends TestCase
     public function test_pages_render_with_content_and_defaults(): void
     {
         $this->withoutVite();
-        foreach (['home', 'work', 'contact', 'policy', 'menu'] as $page) {
+        foreach (['home', 'work', 'contact', 'policy', 'not-found', 'menu'] as $page) {
             $this->actingAs($this->user)->get("/site/{$page}")->assertOk()->assertInertia(fn ($p) => $p
                 ->component('site/page', false)
                 ->where('page', $page)

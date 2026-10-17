@@ -42,6 +42,8 @@ export const homeMediaSchema = z.object({
     about: z.object({ region: src, peopleFlag: src, studio: src, impact: src }),
     storyVideo: src,
     notFoundVideo: src,
+    /** Where the 404 page's button goes. */
+    notFoundHref: z.optional(z.string()),
 });
 
 export const contactInfoSchema = z.object({

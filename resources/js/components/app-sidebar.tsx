@@ -14,7 +14,20 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavGroup, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { Briefcase, FolderKanban, Home, Images, Inbox, LayoutDashboard, Mail, Menu, PanelRightClose, ShieldCheck, Users } from 'lucide-react';
+import {
+    Briefcase,
+    FileQuestion,
+    FolderKanban,
+    Home,
+    Images,
+    Inbox,
+    LayoutDashboard,
+    Mail,
+    Menu,
+    PanelRightClose,
+    ShieldCheck,
+    Users,
+} from 'lucide-react';
 import AppLogo from './app-logo';
 
 const navGroups: NavGroup[] = [
@@ -34,6 +47,7 @@ const navGroups: NavGroup[] = [
             { title: 'أعمالنا', url: '/site/work', icon: Briefcase, permission: 'site' },
             { title: 'تواصل معنا', url: '/site/contact', icon: Mail, permission: 'site' },
             { title: 'سياسة الخصوصية', url: '/site/policy', icon: ShieldCheck, permission: 'site' },
+            { title: 'صفحة 404', url: '/site/not-found', icon: FileQuestion, permission: 'site' },
             { title: 'القائمة والفوتر', url: '/site/menu', icon: Menu, permission: 'site' },
         ],
     },

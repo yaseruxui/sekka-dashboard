@@ -139,31 +139,33 @@ export function HighlightText({
             />
             {hasWords && (
                 <div className="grid gap-1.5">
-                    <p className="text-muted-foreground text-xs">اضغط على الكلمات اللي بدك تلوّنها بالأخضر. Enter لسطر جديد.</p>
-                    <div dir={dir} className="grid gap-1.5" role="group" aria-label="تلوين الكلمات">
-                        {chipLines.map(
-                            (ws, li) =>
-                                ws.length > 0 && (
-                                    <div key={li} className="flex flex-wrap gap-1.5">
-                                        {ws.map((w, wi) => (
-                                            <button
-                                                key={wi}
-                                                type="button"
-                                                aria-pressed={w.on}
-                                                onClick={() => toggle(li, wi)}
-                                                className={cn(
-                                                    'rounded-full border px-3 py-1 text-sm transition-colors',
-                                                    w.on
-                                                        ? 'border-brand bg-brand font-medium text-neutral-950'
-                                                        : 'bg-card text-foreground hover:bg-muted border-input',
-                                                )}
-                                            >
-                                                {w.text}
-                                            </button>
-                                        ))}
-                                    </div>
-                                ),
-                        )}
+                    <p className="text-muted-foreground text-xs">
+                        اضغط على الكلمات اللي بدك تلوّنها بالأخضر. Enter لسطر جديد. للكشيدة اكتب ـ داخل الكلمة (Shift + J بالكيبورد العربي)، مثل:
+                        سكـــة.
+                    </p>
+                    <div dir={dir} className="flex flex-wrap items-center gap-1.5" role="group" aria-label="تلوين الكلمات">
+                        {chipLines.flatMap((ws, li) => [
+                            // A faint mark where the line breaks, so the chips can share one row.
+                            ...(li > 0 && ws.length > 0 && chipLines.slice(0, li).some((p) => p.length > 0)
+                                ? [<span key={`br-${li}`} className="bg-border mx-1 h-5 w-px" aria-hidden="true" />]
+                                : []),
+                            ...ws.map((w, wi) => (
+                                <button
+                                    key={`${li}-${wi}`}
+                                    type="button"
+                                    aria-pressed={w.on}
+                                    onClick={() => toggle(li, wi)}
+                                    className={cn(
+                                        'rounded-full border px-3 py-1 text-sm transition-colors',
+                                        w.on
+                                            ? 'border-brand bg-card text-brand-ink font-semibold'
+                                            : 'bg-card text-foreground hover:bg-muted border-input',
+                                    )}
+                                >
+                                    {w.text}
+                                </button>
+                            )),
+                        ])}
                     </div>
                 </div>
             )}

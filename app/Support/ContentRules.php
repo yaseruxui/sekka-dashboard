@@ -49,6 +49,7 @@ class ContentRules
             "{$p}about.impact" => $src,
             "{$p}storyVideo" => $src,
             "{$p}notFoundVideo" => $src,
+            "{$p}notFoundHref" => ['nullable', 'string', 'starts_with:/', 'max:200'],
         ];
     }
 
@@ -78,6 +79,7 @@ class ContentRules
             ],
             'storyVideo' => $h['storyVideo'],
             'notFoundVideo' => $h['notFoundVideo'],
+            'notFoundHref' => $h['notFoundHref'] ?? '/',
         ];
     }
 

@@ -20,7 +20,7 @@ export type TextField = { kind: 'text'; key: string; label: string; hint?: strin
 export type ValueField = { kind: 'value'; doc: Doc; path: string; label: string; hint?: string; ltr?: boolean; type?: 'email' | 'url' | 'tel' };
 export type NumberField = { kind: 'number'; doc: Doc; path: string; label: string; hint?: string; min: number; max: number; step: number };
 export type MediaField = { kind: 'media'; doc: Doc; path: string; label: string; hint?: string; accept: Accept };
-export type SelectField = { kind: 'select'; doc: Doc; path: string; label: string; options: [string, string][] };
+export type SelectField = { kind: 'select'; doc: Doc; path: string; label: string; hint?: string; options: [string, string][] };
 export type SwitchField = { kind: 'switch'; doc: Doc; path: string; label: string; hint?: string };
 
 /** Fields of one item in a list. */
@@ -60,10 +60,12 @@ export interface Section {
     title: string;
     description: string;
     fields: Field[];
+    /** Indexes of fields shown side by side with the field after them. */
+    pairs?: number[];
 }
 
 export interface SitePage {
-    id: 'home' | 'work' | 'contact' | 'policy' | 'menu';
+    id: 'home' | 'work' | 'contact' | 'policy' | 'not-found' | 'menu';
     title: string;
     description: string;
     path: string;
@@ -97,11 +99,20 @@ const galleryColumn = (path: string, label: string): ListField => ({
         path,
         fields: [
             { kind: 'media', name: 'src', label: 'الصورة أو الفيديو', accept: 'any' },
-            { kind: 'value', name: 'aspect', label: 'نسبة الارتفاع للعرض', ltr: true, hint: 'مثل 128.5% (أطول) أو 75% (أعرض).' },
+            {
+                kind: 'select',
+                name: 'aspect',
+                label: 'شكل الإطار',
+                options: [
+                    // The capture's exact portrait value, so existing tiles keep matching it.
+                    ['128.53470437017995%', 'طولي'],
+                    ['56.25%', 'عرضي (16:9)'],
+                ],
+            },
             { kind: 'select', name: 'fit', label: 'طريقة العرض', options: FITS },
             { kind: 'switch', name: 'tint', label: 'تظليل' },
         ],
-        blank: { src: '', aspect: '100%', fit: 'cover', tint: true },
+        blank: { src: '', aspect: '128.53470437017995%', fit: 'cover', tint: true },
     },
 });
 
@@ -155,9 +166,22 @@ export const SITE_PAGES: SitePage[] = [
                 description: 'فيديو كبير وثلاث أعمدة من الصور والفيديوهات.',
                 fields: [
                     t('home.galleryTitle', 'عنوان المعرض', { html: true, multiline: true }),
-                    media('home', 'gallery.big.src', 'الفيديو الكبير', 'any'),
-                    { kind: 'select', doc: 'home', path: 'gallery.big.fit', label: 'طريقة عرض الفيديو الكبير', options: FITS },
-                    { kind: 'switch', doc: 'home', path: 'gallery.big.tint', label: 'تظليل الفيديو الكبير' },
+                    media('home', 'gallery.big.src', 'الفيديو الكبير', 'any', 'يبدأ بعرض الشاشة، ومع النزول يصغر ويستقر أعلى العمود الأوسط.'),
+                    {
+                        kind: 'select',
+                        doc: 'home',
+                        path: 'gallery.big.fit',
+                        label: 'طريقة عرض الفيديو الكبير',
+                        hint: 'ملء الإطار: يغطي المساحة ويقص الأطراف. داخل الإطار: يظهر كاملاً. خلفية: نسخة مموّهة من الفيديو تملأ المساحة وهو فوقها.',
+                        options: FITS,
+                    },
+                    {
+                        kind: 'switch',
+                        doc: 'home',
+                        path: 'gallery.big.tint',
+                        label: 'تظليل الفيديو الكبير',
+                        hint: 'طبقة داكنة خفيفة فوق الفيديو، تهدّي الألوان الفاقعة.',
+                    },
                     galleryColumn('gallery.start', 'العمود الأول'),
                     galleryColumn('gallery.mid', 'العمود الأوسط'),
                     galleryColumn('gallery.end', 'العمود الأخير'),
@@ -198,7 +222,6 @@ export const SITE_PAGES: SitePage[] = [
                             fields: [
                                 { kind: 'media', name: 'video', label: 'الفيديو', accept: 'video' },
                                 { kind: 'select', name: 'fit', label: 'طريقة عرض الفيديو', options: FITS },
-                                { kind: 'value', name: 'gradient', label: 'لون التدرّج', ltr: true, hint: 'RGB مثل 0, 0, 0' },
                             ],
                             blank: { video: '', fit: 'backdrop', gradient: '0, 0, 0' },
                         },
@@ -273,23 +296,6 @@ export const SITE_PAGES: SitePage[] = [
                 description: 'عنوان القسم وفيديو الخلفية.',
                 fields: [t('home.storyTitle', 'العنوان', { html: true }), media('home', 'storyVideo', 'فيديو الخلفية', 'video')],
             },
-            {
-                id: 'notFound',
-                title: 'صفحة 404',
-                description: 'لما الزائر يفتح رابط مش موجود.',
-                fields: [
-                    media('home', 'notFoundVideo', 'الفيديو', 'video'),
-                    t('common.notFound.eyebrow', 'السطر الصغير'),
-                    t('common.notFound.title', 'العنوان'),
-                    t('common.notFound.cta', 'نص زر الرجوع'),
-                ],
-            },
-            {
-                id: 'more',
-                title: 'نصوص إضافية',
-                description: 'نصوص أخرى في الصفحة (وصف للقارئ الصوتي وغيرها).',
-                fields: [{ kind: 'leftovers', namespaces: ['home'] }],
-            },
         ],
     },
     {
@@ -355,7 +361,6 @@ export const SITE_PAGES: SitePage[] = [
                 description: 'عنوان الصفحة ووصفها في نتائج البحث.',
                 fields: [t('work.metaTitle', 'عنوان الصفحة'), t('work.description', 'الوصف', { multiline: true, max: 160 })],
             },
-            { id: 'more', title: 'نصوص إضافية', description: 'نصوص أخرى في الصفحة.', fields: [{ kind: 'leftovers', namespaces: ['work'] }] },
         ],
     },
     {
@@ -448,7 +453,6 @@ export const SITE_PAGES: SitePage[] = [
                 description: 'عنوان الصفحة ووصفها في نتائج البحث.',
                 fields: [t('contact.metaTitle', 'عنوان الصفحة'), t('contact.metaDescription', 'الوصف', { multiline: true, max: 160 })],
             },
-            { id: 'more', title: 'نصوص إضافية', description: 'نصوص أخرى في الصفحة.', fields: [{ kind: 'leftovers', namespaces: ['contact'] }] },
         ],
     },
     {
@@ -466,6 +470,38 @@ export const SITE_PAGES: SitePage[] = [
                     t('policy.title', 'عنوان الصفحة'),
                     t('policy.metaTitle', 'العنوان في نتائج البحث'),
                     t('policy.metaDescription', 'الوصف', { multiline: true, max: 160 }),
+                ],
+            },
+        ],
+    },
+    {
+        id: 'not-found',
+        title: 'صفحة 404',
+        description: 'لما الزائر يفتح رابط مش موجود.',
+        path: '/404',
+        sections: [
+            {
+                id: 'page',
+                title: 'صفحة 404',
+                description: 'الفيديو والنصوص.',
+                pairs: [3],
+                fields: [
+                    media('home', 'notFoundVideo', 'الفيديو', 'video'),
+                    t('common.notFound.eyebrow', 'السطر الصغير'),
+                    t('common.notFound.title', 'العنوان'),
+                    t('common.notFound.cta', 'نص زر الرجوع'),
+                    {
+                        kind: 'select',
+                        doc: 'home',
+                        path: 'notFoundHref',
+                        label: 'رابط زر الرجوع',
+                        options: [
+                            ['/', 'الصفحة الرئيسية'],
+                            ['/work', 'أعمالنا'],
+                            ['/contact', 'تواصل معنا'],
+                            ['/policy', 'سياسة الخصوصية'],
+                        ],
+                    },
                 ],
             },
         ],
@@ -521,12 +557,6 @@ export const SITE_PAGES: SitePage[] = [
                     t('common.cursor.findUs', 'المؤشر: الخريطة'),
                     t('common.cursor.visit', 'المؤشر: زيارة'),
                 ],
-            },
-            {
-                id: 'more',
-                title: 'نصوص إضافية',
-                description: 'نصوص أخرى عامة.',
-                fields: [{ kind: 'leftovers', namespaces: ['navigation', 'footer', 'common'] }],
             },
         ],
     },

@@ -123,6 +123,7 @@ function FieldShell({
     counter,
     children,
     htmlFor,
+    className,
 }: {
     label: string;
     hint?: string;
@@ -130,9 +131,10 @@ function FieldShell({
     counter?: string;
     children: React.ReactNode;
     htmlFor?: string;
+    className?: string;
 }) {
     return (
-        <div className="grid grid-cols-1 gap-1.5">
+        <div className={cn('grid grid-cols-1 gap-1.5', className)}>
             <div className="flex items-baseline justify-between gap-2">
                 <Label htmlFor={htmlFor}>{label}</Label>
                 {counter && <span className="text-muted-foreground text-xs tabular-nums">{counter}</span>}
@@ -232,7 +234,7 @@ function SortableItem({
                     <Trash2 className="size-4" />
                 </Button>
             </div>
-            {open && <div className="grid grid-cols-1 gap-3 px-3 pb-4 sm:grid-cols-2 [&>*]:min-w-0">{children}</div>}
+            {open && <div className="grid grid-cols-1 gap-x-5 gap-y-6 border-t px-4 pt-5 pb-6 sm:grid-cols-2 [&>*]:min-w-0">{children}</div>}
         </li>
     );
 }
@@ -297,7 +299,7 @@ function ListEditor({
     const itemError = (i: number) => (f.data ? Object.keys(errors).some((k) => k.startsWith(`${f.data!.doc}.${f.data!.path}.${i}.`)) : false);
 
     return (
-        <div className="grid gap-2 sm:col-span-2">
+        <div className="grid gap-3">
             <div className="flex items-center justify-between">
                 <Label>
                     {f.label} <span className="text-muted-foreground font-normal">({count})</span>
@@ -633,9 +635,12 @@ export function SectionCard({
                 );
             case 'select':
                 return (
-                    <FieldShell key={i} label={f.label} error={err(f.doc, f.path)}>
-                        <Select value={String(state.data[dataKey(f.doc, f.path)] ?? '')} onValueChange={(v) => setData(f.doc, f.path, v)}>
-                            <SelectTrigger className="w-56">
+                    <FieldShell key={i} label={f.label} hint={f.hint} error={err(f.doc, f.path)}>
+                        <Select
+                            value={String(state.data[dataKey(f.doc, f.path)] || f.options[0]![0])}
+                            onValueChange={(v) => setData(f.doc, f.path, v)}
+                        >
+                            <SelectTrigger className="w-full">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -650,8 +655,11 @@ export function SectionCard({
                 );
             case 'switch':
                 return (
-                    <label key={i} className="flex items-center justify-between gap-2 rounded-md border px-3 py-2.5">
-                        <span className="text-sm font-medium">{f.label}</span>
+                    <label key={i} className="flex items-center justify-between gap-3 self-end rounded-md border px-3 py-2.5">
+                        <span className="grid gap-0.5">
+                            <span className="text-sm font-medium">{f.label}</span>
+                            {f.hint && <span className="text-muted-foreground text-xs">{f.hint}</span>}
+                        </span>
                         <Switch checked={!!state.data[dataKey(f.doc, f.path)]} onCheckedChange={(v) => setData(f.doc, f.path, v)} />
                     </label>
                 );
@@ -711,7 +719,7 @@ export function SectionCard({
         }
     };
 
-    const fieldOrder = section.fields.map((f, i) =>
+    const rendered = section.fields.map((f, i) =>
         f.kind === 'text' ? (
             <TextInput
                 key={`${f.key}-${locale}`}
@@ -741,6 +749,20 @@ export function SectionCard({
         ) : (
             renderField(f, i)
         ),
+    );
+
+    // Fields the section pairs up share a row; everything else is full width.
+    const fieldOrder = rendered.flatMap((node, i) =>
+        section.pairs?.includes(i - 1)
+            ? []
+            : section.pairs?.includes(i)
+              ? [
+                    <div key={`pair-${i}`} className="grid items-start gap-x-5 gap-y-7 sm:grid-cols-2 [&>*]:min-w-0">
+                        {node}
+                        {rendered[i + 1]}
+                    </div>,
+                ]
+              : [node],
     );
 
     return (
@@ -815,7 +837,7 @@ export function SectionCard({
                     {errors['texts.ar'] || errors['texts.en'] ? (
                         <p className="text-destructive border-b px-4 py-2 text-sm">{errors['texts.ar'] || errors['texts.en']}</p>
                     ) : null}
-                    <div className="grid grid-cols-1 gap-5 p-4 sm:p-5 [&>*]:min-w-0">{fieldOrder}</div>
+                    <div className="grid grid-cols-1 gap-7 p-4 sm:p-6 [&>*]:min-w-0">{fieldOrder}</div>
                     <div className="bg-muted/40 flex flex-wrap items-center justify-between gap-2 border-t px-4 py-3">
                         <span className="text-muted-foreground text-xs">
                             {meta ? `آخر تحديث ${timeAgo(meta.at)} · ${meta.by}` : 'لم يُعدَّل من اللوحة بعد'} · Ctrl + S
