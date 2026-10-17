@@ -17,7 +17,7 @@ import SettingsLayout from '@/layouts/settings/layout';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'الحساب',
+        title: 'الملف الشخصي',
         href: '/settings/profile',
     },
 ];
@@ -99,7 +99,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="الحساب" />
+            <Head title="الملف الشخصي" />
 
             <SettingsLayout>
                 <AvatarSection />

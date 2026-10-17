@@ -6,22 +6,22 @@ import { Link, usePage } from '@inertiajs/react';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'الحساب',
+        title: 'الملف الشخصي',
         url: '/settings/profile',
         icon: null,
     },
     {
-        title: 'كلمة المرور',
+        title: 'تغيير كلمة المرور',
         url: '/settings/password',
         icon: null,
     },
     {
-        title: 'المظهر',
-        url: '/settings/appearance',
+        title: 'إعدادات اللوحة',
+        url: '/settings/dashboard',
         icon: null,
     },
     {
-        title: 'البريد الإلكتروني',
+        title: 'ربط البريد الإلكتروني',
         url: '/settings/mail',
         icon: null,
         permission: 'users',
@@ -35,7 +35,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
     return (
         <div className="px-4 py-6">
-            <Heading title="الإعدادات" description="حسابك وكلمة المرور والمظهر والبريد" />
+            <Heading title="الإعدادات" description="ملفك الشخصي وكلمة المرور وإعدادات اللوحة والبريد" />
 
             <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
                 <aside className="w-full max-w-xl shrink-0 lg:w-52">

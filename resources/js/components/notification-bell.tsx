@@ -2,6 +2,7 @@ import { timeAgo } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { readDisplayPrefs } from '@/hooks/use-display-prefs';
+import { playNotificationSound } from '@/lib/notification-sound';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
@@ -9,29 +10,47 @@ import { Bell, CheckCheck } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 
-const POLL_MS = 30_000;
+const POLL_MS = 10_000;
 
 /**
  * Sidebar bell: unread count, the latest notifications, and a toast when a
  * new one arrives (unless turned off in Settings → Appearance). Refreshes the
- * shared `notifications` prop every 30s while the tab is visible.
+ * shared `notifications` prop every 10s.
  */
 export function NotificationBell({ className }: { className?: string }) {
-    const { notifications } = usePage<SharedData>().props;
+    const {
+        props: { notifications },
+        url,
+    } = usePage<SharedData>();
     const unread = notifications?.unread ?? 0;
     const items = notifications?.items ?? [];
     const seen = useRef(unread);
 
+    // Keeps polling in background tabs too, so the chime still plays while
+    // you work elsewhere; coming back to the tab checks straight away.
     useEffect(() => {
-        const t = setInterval(() => {
-            if (document.visibilityState === 'visible') router.reload({ only: ['notifications', 'unreadMessages'] });
-        }, POLL_MS);
-        return () => clearInterval(t);
+        const check = () => router.reload({ only: ['notifications', 'unreadMessages'] });
+        const t = setInterval(check, POLL_MS);
+        const onVisible = () => document.visibilityState === 'visible' && check();
+        document.addEventListener('visibilitychange', onVisible);
+        return () => {
+            clearInterval(t);
+            document.removeEventListener('visibilitychange', onVisible);
+        };
     }, []);
 
+    // The unread count in the tab title, visible from other tabs.
     useEffect(() => {
-        if (unread > seen.current && items[0] && !items[0].read && readDisplayPrefs().notificationToasts)
-            toast(items[0].title, { description: items[0].body || undefined });
+        const base = document.title.replace(/^\(\d+\+?\) /, '');
+        document.title = unread > 0 ? `(${unread > 9 ? '9+' : unread}) ${base}` : base;
+    }, [unread, url]);
+
+    useEffect(() => {
+        if (unread > seen.current && items[0] && !items[0].read) {
+            const prefs = readDisplayPrefs();
+            if (prefs.notificationToasts) toast(items[0].title, { description: items[0].body || undefined });
+            if (prefs.notificationSound) playNotificationSound();
+        }
         seen.current = unread;
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [unread]);

@@ -11,10 +11,11 @@ export interface DisplayPrefs {
     fontSize: FontSize;
     reduceMotion: boolean;
     notificationToasts: boolean;
+    notificationSound: boolean;
 }
 
 const KEY = 'display-prefs';
-const DEFAULTS: DisplayPrefs = { fontSize: 'md', reduceMotion: false, notificationToasts: true };
+const DEFAULTS: DisplayPrefs = { fontSize: 'md', reduceMotion: false, notificationToasts: true, notificationSound: true };
 export const FONT_SIZES: Record<FontSize, string> = { sm: '15px', md: '16px', lg: '17.5px' };
 
 export function readDisplayPrefs(): DisplayPrefs {
@@ -24,6 +25,7 @@ export function readDisplayPrefs(): DisplayPrefs {
             fontSize: saved.fontSize in FONT_SIZES ? saved.fontSize : DEFAULTS.fontSize,
             reduceMotion: typeof saved.reduceMotion === 'boolean' ? saved.reduceMotion : DEFAULTS.reduceMotion,
             notificationToasts: typeof saved.notificationToasts === 'boolean' ? saved.notificationToasts : DEFAULTS.notificationToasts,
+            notificationSound: typeof saved.notificationSound === 'boolean' ? saved.notificationSound : DEFAULTS.notificationSound,
         };
     } catch {
         return DEFAULTS;

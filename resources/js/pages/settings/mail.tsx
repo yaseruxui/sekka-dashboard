@@ -24,7 +24,7 @@ interface Settings {
     from_name: string;
 }
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'البريد الإلكتروني', href: '/settings/mail' }];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'ربط البريد الإلكتروني', href: '/settings/mail' }];
 
 /** Settings → Email: the SMTP server for invitations and new-enquiry emails. */
 export default function Mail({ settings }: { settings: Settings }) {
@@ -61,7 +61,7 @@ export default function Mail({ settings }: { settings: Settings }) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="البريد الإلكتروني" />
+            <Head title="ربط البريد الإلكتروني" />
 
             <SettingsLayout>
                 <div className="space-y-6">
