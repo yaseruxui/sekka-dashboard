@@ -24,3 +24,14 @@ Artisan::command('sekka:admin {email} {--name=} {--password=}', function (string
 
     $this->info(($user->wasRecentlyCreated ? 'Created' : 'Updated')." admin {$email}.");
 })->purpose('Create an admin account, or reset its password');
+
+Artisan::command('sekka:deploy', function () {
+    $connection = config('database.default');
+    if (! config("database.connections.{$connection}.url")) {
+        $this->warn("No database URL for [{$connection}]: skipping migrations.");
+
+        return 0;
+    }
+
+    return $this->call('migrate', ['--force' => true]) ?: $this->call('db:seed', ['--force' => true]);
+})->purpose('Run on each Vercel build: migrate, then create the first admin if missing');

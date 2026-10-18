@@ -20,7 +20,8 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        User::updateOrCreate(
+        // Never overwrite an existing account (it runs on every deploy); reset with `sekka:admin`.
+        User::firstOrCreate(
             ['email' => $admin['email']],
             ['name' => $admin['name'], 'password' => Hash::make($admin['password']), 'email_verified_at' => now()],
         );
