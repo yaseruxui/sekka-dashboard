@@ -13,6 +13,9 @@ return [
     /* Shared with the site's REVALIDATE_SECRET (header x-revalidate-secret). */
     'revalidate_secret' => env('SITE_REVALIDATE_SECRET', ''),
 
+    /* The site's Vercel "Protection Bypass for Automation" secret, when the site is behind Deployment Protection. */
+    'site_protection_bypass' => env('SITE_PROTECTION_BYPASS', ''),
+
     /* The site posts its contact form to /api/contact?key=<this>. */
     'contact_webhook_key' => env('CONTACT_WEBHOOK_KEY', ''),
 
