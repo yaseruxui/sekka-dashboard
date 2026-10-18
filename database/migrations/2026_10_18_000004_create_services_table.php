@@ -1,10 +1,8 @@
 <?php
 
-use App\Models\Setting;
-use App\Support\SiteContent;
+use App\Support\HomeCarryOver;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -27,33 +25,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        $defaults = Setting::getValue('defaults', []);
-        $home = SiteContent::get('home') ?? ($defaults['home'] ?? []);
-        $messages = SiteContent::get('messages') ?? ($defaults['messages'] ?? []);
-        $ar = data_get($messages, 'ar.home.caseList.items') ?? data_get($defaults, 'messages.ar.home.caseList.items') ?? [];
-        $en = data_get($messages, 'en.home.caseList.items') ?? data_get($defaults, 'messages.en.home.caseList.items') ?? [];
-        $clips = $home['caseList'] ?? [];
-
-        $ids = [];
-        foreach ($ar as $i => $item) {
-            if (! isset($clips[$i])) {
-                break;
-            }
-            $ids[] = DB::table('services')->insertGetId([
-                'title' => (string) ($item['title'] ?? ''),
-                'title_en' => $en[$i]['title'] ?? null,
-                'subtitle' => $item['subtitle'] ?? null,
-                'subtitle_en' => $en[$i]['subtitle'] ?? null,
-                'video' => (string) ($clips[$i]['video'] ?? ''),
-                'fit' => (string) ($clips[$i]['fit'] ?? 'cover'),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-
-        if ($ids && SiteContent::get('home') !== null) {
-            SiteContent::put('home', [...SiteContent::get('home'), 'serviceIds' => $ids]);
-        }
+        HomeCarryOver::services();
     }
 
     public function down(): void

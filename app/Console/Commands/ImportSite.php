@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Project;
 use App\Models\Setting;
 use App\Support\Blocks;
+use App\Support\HomeCarryOver;
 use App\Support\SiteClient;
 use App\Support\SiteContent;
 use Illuminate\Console\Command;
@@ -86,6 +87,9 @@ class ImportSite extends Command
                 $this->line("  import project {$p['slug']}");
             }
         });
+
+        // On a fresh database the migrations that build these ran before any content existed.
+        HomeCarryOver::run();
 
         $this->info('Import done.');
 
