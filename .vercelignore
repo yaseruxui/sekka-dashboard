@@ -1,11 +1,9 @@
 .git
 .github
 node_modules
-vendor
 tests
 storage/logs/*
 storage/framework/sessions/*
-storage/framework/cache/*
 storage/pail
 .env
 .env.backup
