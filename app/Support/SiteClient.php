@@ -20,8 +20,12 @@ class SiteClient
 
     private static function http(int $timeout): PendingRequest
     {
+        $bypass = (string) config('sekka.site_protection_bypass');
+
         return Http::baseUrl(config('sekka.site_url'))
             ->withHeaders(['x-revalidate-secret' => (string) config('sekka.revalidate_secret')])
+            // Lets these calls through Vercel Deployment Protection on a private (staging) site.
+            ->when($bypass !== '', fn (PendingRequest $r) => $r->withHeaders(['x-vercel-protection-bypass' => $bypass]))
             ->acceptJson()
             ->timeout($timeout);
     }

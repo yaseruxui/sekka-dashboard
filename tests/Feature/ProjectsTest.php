@@ -190,7 +190,21 @@ class ProjectsTest extends TestCase
 
         Http::assertSent(fn (Request $r) => $r->url() === 'http://site.test/api/revalidate'
             && $r->method() === 'POST'
-            && $r->header('x-revalidate-secret') === ['s3cret']);
+            && $r->header('x-revalidate-secret') === ['s3cret']
+            && ! $r->hasHeader('x-vercel-protection-bypass'));
+    }
+
+    public function test_revalidate_passes_vercel_protection_when_a_bypass_is_set(): void
+    {
+        config(['sekka.revalidate_secret' => 's3cret', 'sekka.site_protection_bypass' => 'byp4ss']);
+        Http::fake(['site.test/api/revalidate' => Http::response(['revalidated' => true])]);
+        $user = User::factory()->create();
+        $project = $this->newProject($user);
+
+        $this->actingAs($user)->post("/projects/{$project->id}/publish", $this->payload())->assertSessionHas('success');
+
+        Http::assertSent(fn (Request $r) => $r->url() === 'http://site.test/api/revalidate'
+            && $r->header('x-vercel-protection-bypass') === ['byp4ss']);
     }
 
     public function test_failed_revalidate_still_publishes_and_flags_the_site_card(): void
