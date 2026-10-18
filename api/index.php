@@ -48,6 +48,19 @@ foreach ([
     }
 }
 
+// bootstrap/cache is read-only on Vercel; keep Laravel's generated caches in /tmp.
+foreach ([
+    'APP_PACKAGES_CACHE' => 'packages.php',
+    'APP_SERVICES_CACHE' => 'services.php',
+    'APP_CONFIG_CACHE' => 'config.php',
+    'APP_ROUTES_CACHE' => 'routes-v7.php',
+    'APP_EVENTS_CACHE' => 'events.php',
+] as $key => $file) {
+    $value = "/tmp/$file";
+    putenv("$key=$value");
+    $_ENV[$key] = $_SERVER[$key] = $value;
+}
+
 require __DIR__ . '/../vendor/autoload.php';
 
 $app = require_once __DIR__ . '/../bootstrap/app.php';
