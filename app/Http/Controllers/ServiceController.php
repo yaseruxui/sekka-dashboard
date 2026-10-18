@@ -48,13 +48,28 @@ class ServiceController extends Controller
     public function destroy(Service $service): RedirectResponse
     {
         $service->delete();
-        $home = SiteContent::get('home');
-        if ($home !== null && isset($home['serviceIds'])) {
-            $home['serviceIds'] = array_values(array_diff($home['serviceIds'], [$service->id]));
-            SiteContent::put('home', $home);
-        }
+        $this->dropFromHome([$service->id]);
 
         return $this->savedAndRevalidated(back(), 'تم حذف الخدمة.');
+    }
+
+    /** Delete the services ticked in the list. */
+    public function bulk(Request $request): RedirectResponse
+    {
+        $ids = Service::whereIn('id', $this->bulkInput($request, ['delete'])['ids'])->pluck('id')->all();
+        Service::whereKey($ids)->delete();
+        $this->dropFromHome($ids);
+
+        return $this->savedAndRevalidated(back(), 'تم حذف '.count($ids).' خدمة.');
+    }
+
+    private function dropFromHome(array $ids): void
+    {
+        $home = SiteContent::get('home');
+        if ($home !== null && isset($home['serviceIds'])) {
+            $home['serviceIds'] = array_values(array_diff($home['serviceIds'], $ids));
+            SiteContent::put('home', $home);
+        }
     }
 
     /** @return list<int> */

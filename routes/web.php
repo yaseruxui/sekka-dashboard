@@ -24,6 +24,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('projects', 'index')->name('projects.index');
             Route::post('projects', 'store')->name('projects.store');
             Route::post('projects/reorder', 'reorder')->name('projects.reorder');
+            Route::post('projects/bulk', 'bulk')->name('projects.bulk');
             Route::get('projects/{project}/edit', 'edit')->name('projects.edit');
             Route::put('projects/{project}/draft', 'saveDraft')->name('projects.draft');
             Route::delete('projects/{project}/draft', 'discardDraft')->name('projects.draft.discard');
@@ -45,6 +46,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('permission:media')->group(function () {
         Route::get('media', [MediaController::class, 'index'])->name('media.index');
         Route::match(['put', 'patch'], 'media/{media}', [MediaController::class, 'update'])->name('media.update');
+        Route::post('media/bulk', [MediaController::class, 'bulk'])->name('media.bulk');
         Route::delete('media/{media}', [MediaController::class, 'destroy'])->name('media.destroy');
     });
 
@@ -53,6 +55,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('site', [SiteController::class, 'update'])->name('site.update');
         Route::get('services', [ServiceController::class, 'index'])->name('services.index');
         Route::post('services', [ServiceController::class, 'store'])->name('services.store');
+        Route::post('services/bulk', [ServiceController::class, 'bulk'])->name('services.bulk');
         Route::put('services/{service}', [ServiceController::class, 'update'])->name('services.update');
         Route::delete('services/{service}', [ServiceController::class, 'destroy'])->name('services.destroy');
     });
@@ -60,6 +63,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware('permission:users')->controller(UserController::class)->group(function () {
         Route::get('users', 'index')->name('users.index');
         Route::post('users', 'store')->name('users.store');
+        Route::post('users/bulk', 'bulk')->name('users.bulk');
         Route::post('users/{user}/invite', 'resend')->name('users.invite');
         Route::patch('users/{user}', 'update')->name('users.update');
         Route::delete('users/{user}', 'destroy')->name('users.destroy');
@@ -69,6 +73,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('inbox', [InboxController::class, 'index'])->name('inbox.index');
         Route::get('inbox/export', [InboxController::class, 'export'])->name('inbox.export');
         Route::patch('inbox/status', [InboxController::class, 'bulkStatus'])->name('inbox.bulk-status');
+        Route::post('inbox/bulk', [InboxController::class, 'bulkDestroy'])->name('inbox.bulk');
         Route::patch('inbox/{message}/status', [InboxController::class, 'status'])->name('inbox.status');
         Route::post('inbox/{message}/notes', [InboxController::class, 'note'])->name('inbox.notes');
         Route::patch('inbox/notes/{note}', [InboxController::class, 'updateNote'])->name('inbox.notes.update');

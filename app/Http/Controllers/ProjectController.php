@@ -180,15 +180,48 @@ class ProjectController extends Controller
     {
         $wasLive = $project->published;
         $project->delete();
-        // Out of the home work reel too, or the next home save would fail on a missing id.
-        $home = SiteContent::get('home');
-        if ($home !== null && isset($home['workReelIds'])) {
-            $home['workReelIds'] = array_values(array_diff($home['workReelIds'], [$project->id]));
-            SiteContent::put('home', $home);
-        }
+        $this->dropFromWorkReel([$project->id]);
         $redirect = to_route('projects.index');
 
         return $wasLive ? $this->savedAndRevalidated($redirect, 'تم حذف المشروع.') : $redirect->with('success', 'تم حذف المشروع.');
+    }
+
+    /** Show, hide or delete the projects ticked in the list. */
+    public function bulk(Request $request): RedirectResponse
+    {
+        ['ids' => $ids, 'action' => $action] = $this->bulkInput($request, ['show', 'hide', 'delete']);
+        $projects = Project::whereIn('id', $ids)->get();
+
+        if ($action === 'delete') {
+            $wasLive = $projects->contains('published', true);
+            Project::whereKey($projects->modelKeys())->delete();
+            $this->dropFromWorkReel($projects->modelKeys());
+            $message = "تم حذف {$projects->count()} مشروع.";
+
+            return $wasLive ? $this->savedAndRevalidated(back(), $message) : back()->with('success', $message);
+        }
+
+        $visible = $action === 'show';
+        // Same rule as the switch: a project goes live the first time from the editor's «نشر».
+        [$eligible, $neverPublished] = $visible ? $projects->partition->hasBeenPublished() : [$projects, collect()];
+        Project::whereKey($eligible->modelKeys())->update(['published' => $visible]);
+
+        $message = $visible ? "تم إظهار {$eligible->count()} مشروع على الموقع." : "تم إخفاء {$eligible->count()} مشروع عن الموقع.";
+        if ($neverPublished->isNotEmpty()) {
+            $message .= " تخطّينا {$neverPublished->count()} مسودة لم تُنشر بعد: افتحها واضغط «نشر» أول مرة.";
+        }
+
+        return $eligible->isEmpty() ? back()->with('error', $message) : $this->savedAndRevalidated(back(), $message);
+    }
+
+    /** Out of the home work reel too, or the next home save would fail on a missing id. */
+    private function dropFromWorkReel(array $ids): void
+    {
+        $home = SiteContent::get('home');
+        if ($home !== null && isset($home['workReelIds'])) {
+            $home['workReelIds'] = array_values(array_diff($home['workReelIds'], $ids));
+            SiteContent::put('home', $home);
+        }
     }
 
     /** New order from the projects table: every project id, first to last. */

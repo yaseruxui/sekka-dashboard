@@ -100,4 +100,39 @@ class UsersTest extends TestCase
         $this->actingAs($admin)->delete("/users/{$other->id}")->assertSessionHas('success');
         $this->assertNull($other->fresh());
     }
+
+    public function test_bulk_delete_never_removes_yourself(): void
+    {
+        $admin = User::factory()->create();
+        [$a, $b] = User::factory()->count(2)->create(['permissions' => ['inbox']]);
+
+        $this->actingAs($admin)->post('/users/bulk', ['ids' => [$admin->id, $a->id, $b->id], 'action' => 'delete'])
+            ->assertSessionHas('success', 'تم حذف 2 مستخدم.');
+
+        $this->assertSame([$admin->id], User::pluck('id')->all());
+    }
+
+    public function test_bulk_resend_goes_to_pending_invitations_only(): void
+    {
+        Notification::fake();
+        $admin = User::factory()->create();
+        $pending = User::factory()->create(['permissions' => ['inbox'], 'invited_at' => now()->subDay()]);
+        $active = User::factory()->create(['permissions' => ['inbox']]);
+
+        $this->actingAs($admin)->post('/users/bulk', ['ids' => [$pending->id, $active->id], 'action' => 'resend'])
+            ->assertSessionHas('success', 'تم إعادة إرسال 1 دعوة.');
+        Notification::assertSentTo($pending, Invitation::class);
+        Notification::assertNotSentTo($active, Invitation::class);
+
+        $this->post('/users/bulk', ['ids' => [$active->id], 'action' => 'resend'])->assertSessionHas('error');
+    }
+
+    public function test_bulk_actions_need_user_management(): void
+    {
+        $limited = User::factory()->create(['permissions' => ['inbox']]);
+        $other = User::factory()->create(['permissions' => ['inbox']]);
+
+        $this->actingAs($limited)->post('/users/bulk', ['ids' => [$other->id], 'action' => 'delete'])->assertForbidden();
+        $this->assertNotNull($other->fresh());
+    }
 }
