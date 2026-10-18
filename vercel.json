@@ -23,20 +23,8 @@
             }
         },
         {
-            "src": "/favicon.ico",
-            "dest": "/public/favicon.ico"
-        },
-        {
-            "src": "/brand-favicon.svg",
-            "dest": "/public/brand-favicon.svg"
-        },
-        {
-            "src": "/logo.svg",
-            "dest": "/public/logo.svg"
-        },
-        {
-            "src": "/robots.txt",
-            "dest": "/public/robots.txt"
+            "src": "/(favicon\\.ico|brand-favicon\\.svg|logo\\.svg|robots\\.txt)",
+            "dest": "/public/$1"
         },
         {
             "src": "/(.*)",
