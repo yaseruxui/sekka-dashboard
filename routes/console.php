@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Support\SiteClient;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
 
@@ -24,3 +25,23 @@ Artisan::command('sekka:admin {email} {--name=} {--password=}', function (string
 
     $this->info(($user->wasRecentlyCreated ? 'Created' : 'Updated')." admin {$email}.");
 })->purpose('Create an admin account, or reset its password');
+
+Artisan::command('sekka:deploy', function () {
+    $connection = config('database.default');
+    if (! config("database.connections.{$connection}.url")) {
+        $this->warn("No database URL for [{$connection}]: skipping migrations.");
+
+        return 0;
+    }
+
+    if ($code = $this->call('migrate', ['--force' => true]) ?: $this->call('db:seed', ['--force' => true])) {
+        return $code;
+    }
+
+    // Fills only what is still empty, so it is safe on every build; a site outage must not fail the deploy.
+    if (SiteClient::configured() && $this->call('sekka:import-site') !== 0) {
+        $this->warn('Site content import failed; continuing.');
+    }
+
+    return 0;
+})->purpose('Run on each Vercel build: migrate, create the first admin and import site content if missing');

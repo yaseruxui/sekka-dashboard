@@ -29,7 +29,7 @@ return new class extends Migration
 
         // Projects already live count as published; their fields seed the list.
         DB::table('projects')->where('published', true)->update(['published_at' => DB::raw('updated_at')]);
-        $names = DB::table('projects')->where('category', '!=', '')->orderBy('position')->distinct()->pluck('category');
+        $names = DB::table('projects')->where('category', '!=', '')->orderBy('position')->pluck('category')->unique();
         foreach ($names->values() as $i => $name) {
             DB::table('categories')->insert(['name' => $name, 'position' => $i + 1, 'created_at' => now(), 'updated_at' => now()]);
         }
