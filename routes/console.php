@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Support\SiteClient;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
 
@@ -33,5 +34,14 @@ Artisan::command('sekka:deploy', function () {
         return 0;
     }
 
-    return $this->call('migrate', ['--force' => true]) ?: $this->call('db:seed', ['--force' => true]);
-})->purpose('Run on each Vercel build: migrate, then create the first admin if missing');
+    if ($code = $this->call('migrate', ['--force' => true]) ?: $this->call('db:seed', ['--force' => true])) {
+        return $code;
+    }
+
+    // Fills only what is still empty, so it is safe on every build; a site outage must not fail the deploy.
+    if (SiteClient::configured() && $this->call('sekka:import-site') !== 0) {
+        $this->warn('Site content import failed; continuing.');
+    }
+
+    return 0;
+})->purpose('Run on each Vercel build: migrate, create the first admin and import site content if missing');
