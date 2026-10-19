@@ -74,23 +74,20 @@ class SiteSectionsTest extends TestCase
         $this->save(['home' => ['maintenance' => 'maybe']])->assertSessionHasErrors('home.maintenance');
     }
 
-    public function test_an_about_scene_saves_its_own_texts(): void
+    public function test_about_takes_a_scroll_video_and_any_number_of_scenes(): void
     {
+        $scenes = array_map(fn ($i) => ['kicker' => '', 'h' => "مشهد {$i}", 'line' => ''], range(1, 5));
         $this->save([
             'section' => 'home.about',
-            'texts' => ['ar' => [
-                'home.about.scenes.3.h' => 'نصنع الأثر.',
-                'home.about.scenes.3.facts' => [['value' => '+150', 'label' => 'مشروع', 'dummy' => false]],
-            ]],
-            'home' => ['about.impact' => 'http://localhost/storage/media/impact.mp4'],
+            'texts' => ['ar' => ['home.about.scenes' => $scenes]],
+            'home' => ['about.video' => 'http://localhost/storage/media/about.mp4'],
         ])->assertSessionHasNoErrors();
 
         $content = $this->getJson('/api/public/content')->json();
-        $scenes = $content['messages']['ar']['home']['about']['scenes'];
-        $this->assertSame('نصنع الأثر.', $scenes[3]['h']);
-        $this->assertSame([['value' => '+150', 'label' => 'مشروع', 'dummy' => false]], $scenes[3]['facts']);
-        $this->assertSame($this->site()['messages']['ar']['home']['about']['scenes'][1]['h'], $scenes[1]['h']);
-        $this->assertSame('http://localhost/storage/media/impact.mp4', $content['home']['about']['impact']);
+        $this->assertCount(5, $content['messages']['ar']['home']['about']['scenes']);
+        $this->assertSame('http://localhost/storage/media/about.mp4', $content['home']['about']['video']);
+        $this->assertArrayNotHasKey('videoMobile', $content['home']['about']);
+        $this->assertSame($this->site()['home']['about']['region'], $content['home']['about']['region']);
     }
 
     public function test_client_logos_are_one_file_each(): void
