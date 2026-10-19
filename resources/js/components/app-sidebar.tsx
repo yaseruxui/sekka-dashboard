@@ -16,6 +16,7 @@ import { type NavGroup, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import {
     Briefcase,
+    Construction,
     FileQuestion,
     FolderKanban,
     Home,
@@ -50,6 +51,7 @@ const navGroups: NavGroup[] = [
             { title: 'تواصل معنا', url: '/site/contact', icon: Mail, permission: 'site' },
             { title: 'سياسة الخصوصية', url: '/site/policy', icon: ShieldCheck, permission: 'site' },
             { title: 'صفحة 404', url: '/site/not-found', icon: FileQuestion, permission: 'site' },
+            { title: 'وضع الصيانة', url: '/site/maintenance', icon: Construction, permission: 'site' },
             { title: 'القائمة والفوتر', url: '/site/menu', icon: Menu, permission: 'site' },
         ],
     },

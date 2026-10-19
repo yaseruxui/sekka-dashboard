@@ -56,6 +56,24 @@ class SiteSectionsTest extends TestCase
         $this->assertSame('محمد', Setting::getValue('section_meta')['home.hero']['by']);
     }
 
+    public function test_maintenance_mode_switches_on_and_off(): void
+    {
+        $this->save([
+            'section' => 'maintenance.state',
+            'home' => ['maintenance' => true],
+            'texts' => ['ar' => ['common.maintenance.title' => 'نرجع بعد ساعة']],
+        ])->assertSessionHasNoErrors();
+
+        $content = $this->getJson('/api/public/content')->json();
+        $this->assertTrue($content['home']['maintenance']);
+        $this->assertSame('نرجع بعد ساعة', $content['messages']['ar']['common']['maintenance']['title']);
+
+        $this->save(['home' => ['maintenance' => false]])->assertSessionHasNoErrors();
+        $this->assertFalse(SiteContent::get('home')['maintenance']);
+
+        $this->save(['home' => ['maintenance' => 'maybe']])->assertSessionHasErrors('home.maintenance');
+    }
+
     public function test_an_empty_text_falls_back_to_the_original(): void
     {
         $this->save(['texts' => ['ar' => ['home.heroEyebrow' => '']]])->assertSessionHasNoErrors();
@@ -116,7 +134,7 @@ class SiteSectionsTest extends TestCase
     public function test_pages_render_with_content_and_defaults(): void
     {
         $this->withoutVite();
-        foreach (['home', 'work', 'contact', 'policy', 'not-found', 'menu'] as $page) {
+        foreach (['home', 'work', 'contact', 'policy', 'not-found', 'maintenance', 'menu'] as $page) {
             $this->actingAs($this->user)->get("/site/{$page}")->assertOk()->assertInertia(fn ($p) => $p
                 ->component('site/page', false)
                 ->where('page', $page)
