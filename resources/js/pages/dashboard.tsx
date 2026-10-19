@@ -96,8 +96,8 @@ export default function Dashboard({ stats, recentMessages, site }: Props) {
     const actionCls = 'group hover:bg-muted/60 flex items-center justify-between rounded-lg border px-3 py-2.5 text-start transition-colors';
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'الرئيسية', href: '/dashboard' }]}>
-            <Head title="الرئيسية" />
+        <AppLayout breadcrumbs={[{ title: 'نظرة عامة', href: '/dashboard' }]}>
+            <Head title="نظرة عامة" />
             <div className="max-w-page mx-auto flex w-full flex-col gap-6 p-4 md:p-8">
                 <PageHeader
                     title={`أهلاً ${auth.user.name.split(' ')[0]}`}
