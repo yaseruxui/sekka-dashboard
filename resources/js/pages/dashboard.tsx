@@ -11,12 +11,15 @@ import {
     ExternalLink,
     FilePen,
     FolderCheck,
+    GalleryHorizontal,
     Globe,
     ImageUp,
+    Images,
     Inbox,
     LayoutTemplate,
     Mail,
     Plus,
+    Sparkles,
     TriangleAlert,
     type LucideIcon,
 } from 'lucide-react';
@@ -100,6 +103,9 @@ const tones = {
     green: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
     amber: 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
     sky: 'bg-sky-500/10 text-sky-700 dark:text-sky-400',
+    violet: 'bg-violet-500/10 text-violet-700 dark:text-violet-400',
+    rose: 'bg-rose-500/10 text-rose-700 dark:text-rose-400',
+    slate: 'bg-slate-500/10 text-slate-700 dark:text-slate-300',
 };
 
 function Stat({
@@ -217,110 +223,108 @@ export default function Dashboard({ stats, recentMessages, messages, site, recen
                     )}
                 </div>
 
-                <div className={cn('grid gap-4 sm:grid-cols-2', can('inbox') ? 'lg:grid-cols-3' : 'lg:grid-cols-2')}>
-                    <Stat
-                        label="المشاريع المنشورة"
-                        value={stats.published}
-                        hint="تظهر الآن في صفحة أعمالنا"
-                        icon={FolderCheck}
-                        tone="green"
-                        href="/projects"
-                    />
-                    <Stat label="مسودات" value={stats.drafts} hint="مشاريع أو تعديلات لم تُنشر بعد" icon={FilePen} tone="amber" href="/projects" />
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+                    <Stat label="مشاريع منشورة" value={stats.published} hint="بصفحة أعمالنا" icon={FolderCheck} tone="green" href="/projects" />
+                    <Stat label="مسودات" value={stats.drafts} hint="لم تُنشر بعد" icon={FilePen} tone="amber" href="/projects" />
                     {can('inbox') && (
-                        <Stat
-                            label="رسائل جديدة"
-                            value={stats.unread}
-                            hint="من نموذج تواصل معنا"
-                            icon={Mail}
-                            tone="sky"
-                            href={route('inbox.index')}
-                        />
+                        <Stat label="رسائل جديدة" value={stats.unread} hint="من نموذج التواصل" icon={Mail} tone="sky" href={route('inbox.index')} />
+                    )}
+                    {can('site') && (
+                        <>
+                            <Stat
+                                label="الخدمات"
+                                value={content.services}
+                                hint={`ظاهرة بالرئيسية من ${content.servicesTotal}`}
+                                icon={Sparkles}
+                                tone="violet"
+                                href="/site/home"
+                            />
+                            <Stat
+                                label="شريط الأعمال"
+                                value={content.workReel}
+                                hint="مشاريع بالرئيسية"
+                                icon={GalleryHorizontal}
+                                tone="rose"
+                                href="/site/home"
+                            />
+                        </>
+                    )}
+                    {can('media') && (
+                        <Stat label="مكتبة الوسائط" value={content.media} hint="صور وفيديوهات" icon={Images} tone="slate" href="/media" />
                     )}
                 </div>
 
-                {messages && (
-                    <Card
-                        title="الرسائل آخر 30 يوم"
-                        action={
-                            <Link href={route('inbox.index')} className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm">
-                                صندوق الرسائل <ArrowLeft className="size-3.5" />
-                            </Link>
-                        }
-                    >
-                        <div className="flex flex-wrap items-end gap-x-8 gap-y-4 p-4">
-                            <div className="grid gap-1">
-                                <strong className="text-3xl font-bold tabular-nums">{messages.last30}</strong>
-                                <span className="text-muted-foreground text-xs">
-                                    {messages.previous30 === 0
-                                        ? 'ما في رسائل بالـ 30 يوم اللي قبلها'
-                                        : `${messages.last30 >= messages.previous30 ? '▲' : '▼'} ${Math.abs(
-                                              Math.round(((messages.last30 - messages.previous30) / messages.previous30) * 100),
-                                          )}% عن الـ 30 يوم اللي قبلها (${messages.previous30})`}
-                                </span>
-                            </div>
-                            <div className="min-w-[220px] flex-1">
-                                <DayBars days={messages.days} />
-                            </div>
-                        </div>
-                        <div className="flex flex-wrap gap-2 border-t px-4 py-3">
-                            {(Object.keys(STATUS_LABELS) as MessageStatus[]).map((s) => (
-                                <Link
-                                    key={s}
-                                    href={route('inbox.index', { filter: s })}
-                                    className={cn(
-                                        'hover:bg-muted flex items-center gap-2 rounded-full border px-3 py-1 text-sm transition-colors',
-                                        s === 'new' && messages.byStatus.new > 0 && 'border-sky-500/40',
-                                    )}
-                                >
-                                    {STATUS_LABELS[s]}
-                                    <span className="font-semibold tabular-nums">{messages.byStatus[s] ?? 0}</span>
-                                </Link>
-                            ))}
-                        </div>
-                    </Card>
-                )}
-
                 <div className="flex flex-wrap items-start gap-4">
-                    {can('site') && (
-                        <Card title="آخر التعديلات" className="flex-[2_1_420px]">
-                            {recentEdits.length === 0 ? (
-                                <p className="text-muted-foreground p-6 text-center text-sm">ما في تعديلات على الموقع للحين.</p>
-                            ) : (
-                                recentEdits.map((e) => {
-                                    const { label, href } = sectionLabel(e.section);
-                                    return (
-                                        <Link
-                                            key={e.section}
-                                            href={href}
-                                            className="hover:bg-muted/60 flex items-center gap-3 border-b px-4 py-2.5 text-sm transition-colors last:border-0"
-                                        >
-                                            <span className="min-w-0 flex-1 truncate">
-                                                <span className="font-medium">{e.by || '—'}</span>
-                                                <span className="text-muted-foreground"> عدّل </span>
-                                                {label}
-                                            </span>
-                                            <span className="text-muted-foreground shrink-0 text-xs">{timeAgo(e.at)}</span>
-                                        </Link>
-                                    );
-                                })
-                            )}
+                    {messages && (
+                        <Card
+                            title="الرسائل آخر 30 يوم"
+                            className="flex-[2_1_420px]"
+                            action={
+                                <Link
+                                    href={route('inbox.index')}
+                                    className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"
+                                >
+                                    صندوق الرسائل <ArrowLeft className="size-3.5" />
+                                </Link>
+                            }
+                        >
+                            <div className="flex flex-wrap items-end gap-x-8 gap-y-4 p-4">
+                                <div className="grid gap-1">
+                                    <strong className="text-3xl font-bold tabular-nums">{messages.last30}</strong>
+                                    <span className="text-muted-foreground text-xs">
+                                        {messages.previous30 === 0
+                                            ? 'ما في رسائل بالـ 30 يوم اللي قبلها'
+                                            : `${messages.last30 >= messages.previous30 ? '▲' : '▼'} ${Math.abs(
+                                                  Math.round(((messages.last30 - messages.previous30) / messages.previous30) * 100),
+                                              )}% عن الـ 30 يوم اللي قبلها (${messages.previous30})`}
+                                    </span>
+                                </div>
+                                <div className="min-w-[220px] flex-1">
+                                    <DayBars days={messages.days} />
+                                </div>
+                            </div>
+                            <div className="flex flex-wrap gap-2 border-t px-4 py-3">
+                                {(Object.keys(STATUS_LABELS) as MessageStatus[]).map((s) => (
+                                    <Link
+                                        key={s}
+                                        href={route('inbox.index', { filter: s })}
+                                        className={cn(
+                                            'hover:bg-muted flex items-center gap-2 rounded-full border px-3 py-1 text-sm transition-colors',
+                                            s === 'new' && messages.byStatus.new > 0 && 'border-sky-500/40',
+                                        )}
+                                    >
+                                        {STATUS_LABELS[s]}
+                                        <span className="font-semibold tabular-nums">{messages.byStatus[s] ?? 0}</span>
+                                    </Link>
+                                ))}
+                            </div>
                         </Card>
                     )}
-                    <Card title="المحتوى" className="flex-[1_1_260px]">
-                        <dl className="grid gap-3 p-4 text-sm">
-                            {[
-                                ['الخدمات بالرئيسية', `${content.services} من ${content.servicesTotal}`, '/site/home'],
-                                ['مشاريع شريط الأعمال', content.workReel, '/site/home'],
-                                ['ملفات مكتبة الوسائط', content.media, '/media'],
-                            ].map(([label, value, href]) => (
-                                <Link key={label as string} href={href as string} className="flex items-center justify-between hover:underline">
-                                    <dt className="text-muted-foreground">{label}</dt>
-                                    <dd className="font-semibold tabular-nums">{value}</dd>
+                    <section className="bg-card flex flex-[1_1_260px] flex-col gap-2.5 rounded-xl border p-4 shadow-xs">
+                        <h2 className="mb-1 font-semibold">إجراءات سريعة</h2>
+                        {actions.map((a) => {
+                            const inner = (
+                                <>
+                                    <span className="flex items-center gap-2.5">
+                                        <span className="bg-muted text-foreground/70 group-hover:bg-background flex size-8 items-center justify-center rounded-md transition-colors">
+                                            <a.icon className="size-4" />
+                                        </span>
+                                        {a.label}
+                                    </span>
+                                    <ArrowLeft className="text-muted-foreground size-4 transition-transform group-hover:-translate-x-0.5" />
+                                </>
+                            );
+                            return a.href ? (
+                                <Link key={a.label} href={a.href} className={actionCls}>
+                                    {inner}
                                 </Link>
-                            ))}
-                        </dl>
-                    </Card>
+                            ) : (
+                                <button key={a.label} type="button" onClick={a.onClick} className={actionCls}>
+                                    {inner}
+                                </button>
+                            );
+                        })}
+                    </section>
                 </div>
 
                 <div className="flex flex-wrap items-start gap-4">
@@ -371,32 +375,31 @@ export default function Dashboard({ stats, recentMessages, messages, site, recen
                             )}
                         </section>
                     )}
-
-                    <section className="bg-card flex flex-[1_1_260px] flex-col gap-2.5 rounded-xl border p-4 shadow-xs">
-                        <h2 className="mb-1 font-semibold">إجراءات سريعة</h2>
-                        {actions.map((a) => {
-                            const inner = (
-                                <>
-                                    <span className="flex items-center gap-2.5">
-                                        <span className="bg-muted text-foreground/70 group-hover:bg-background flex size-8 items-center justify-center rounded-md transition-colors">
-                                            <a.icon className="size-4" />
-                                        </span>
-                                        {a.label}
-                                    </span>
-                                    <ArrowLeft className="text-muted-foreground size-4 transition-transform group-hover:-translate-x-0.5" />
-                                </>
-                            );
-                            return a.href ? (
-                                <Link key={a.label} href={a.href} className={actionCls}>
-                                    {inner}
-                                </Link>
+                    {can('site') && (
+                        <Card title="آخر التعديلات" className="flex-[1_1_300px]">
+                            {recentEdits.length === 0 ? (
+                                <p className="text-muted-foreground p-6 text-center text-sm">ما في تعديلات على الموقع للحين.</p>
                             ) : (
-                                <button key={a.label} type="button" onClick={a.onClick} className={actionCls}>
-                                    {inner}
-                                </button>
-                            );
-                        })}
-                    </section>
+                                recentEdits.map((e) => {
+                                    const { label, href } = sectionLabel(e.section);
+                                    return (
+                                        <Link
+                                            key={e.section}
+                                            href={href}
+                                            className="hover:bg-muted/60 flex items-center gap-3 border-b px-4 py-2.5 text-sm transition-colors last:border-0"
+                                        >
+                                            <span className="min-w-0 flex-1 truncate">
+                                                <span className="font-medium">{e.by || '—'}</span>
+                                                <span className="text-muted-foreground"> عدّل </span>
+                                                {label}
+                                            </span>
+                                            <span className="text-muted-foreground shrink-0 text-xs">{timeAgo(e.at)}</span>
+                                        </Link>
+                                    );
+                                })
+                            )}
+                        </Card>
+                    )}
                 </div>
             </div>
         </AppLayout>
