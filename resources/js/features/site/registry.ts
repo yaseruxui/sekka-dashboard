@@ -294,7 +294,7 @@ export const SITE_PAGES: SitePage[] = [
             },
             {
                 id: 'ask',
-                title: 'دعوة التواصل',
+                title: 'بانر التواصل (CTA)',
                 description: 'الصندوق اللي يدعو للتواصل عبر واتساب.',
                 fields: [
                     t('work.indexAsk.line', 'العنوان في صفحة الأعمال'),
