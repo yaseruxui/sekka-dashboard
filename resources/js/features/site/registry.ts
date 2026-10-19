@@ -141,7 +141,7 @@ export const SITE_PAGES: SitePage[] = [
         sections: [
             {
                 id: 'hero',
-                title: 'الواجهة',
+                title: 'رأس الصفحة (الهيدر)',
                 description: 'أول ما يشوفه الزائر: فيديو بملء الشاشة وسطر تعريفي.',
                 fields: [
                     t('home.heroEyebrow', 'السطر الصغير'),
@@ -288,7 +288,7 @@ export const SITE_PAGES: SitePage[] = [
         sections: [
             {
                 id: 'header',
-                title: 'رأس الصفحة',
+                title: 'رأس الصفحة (الهيدر)',
                 description: 'العنوان الصغير والعنوان والوصف.',
                 fields: [t('work.kicker', 'العنوان الصغير'), t('work.title', 'العنوان'), t('work.sub', 'الوصف', { multiline: true })],
             },
