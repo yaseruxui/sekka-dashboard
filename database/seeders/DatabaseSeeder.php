@@ -9,7 +9,10 @@ use Illuminate\Support\Facades\Hash;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Creates the first admin from ADMIN_EMAIL / ADMIN_PASSWORD, if set.
+     * The admin from ADMIN_EMAIL / ADMIN_PASSWORD, if set. Runs on every deploy
+     * and keeps that account's password equal to ADMIN_PASSWORD, so the env
+     * var is the one place it is set (a change made in the dashboard is
+     * replaced on the next deploy).
      */
     public function run(): void
     {
@@ -20,10 +23,12 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        // Never overwrite an existing account (it runs on every deploy); reset with `sekka:admin`.
-        User::firstOrCreate(
+        $user = User::firstOrCreate(
             ['email' => $admin['email']],
             ['name' => $admin['name'], 'password' => Hash::make($admin['password']), 'email_verified_at' => now()],
         );
+        if (! Hash::check($admin['password'], $user->password)) {
+            $user->forceFill(['password' => Hash::make($admin['password'])])->save();
+        }
     }
 }
