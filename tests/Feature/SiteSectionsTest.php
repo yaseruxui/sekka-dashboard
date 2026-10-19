@@ -74,6 +74,25 @@ class SiteSectionsTest extends TestCase
         $this->save(['home' => ['maintenance' => 'maybe']])->assertSessionHasErrors('home.maintenance');
     }
 
+    public function test_an_about_scene_saves_its_own_texts(): void
+    {
+        $this->save([
+            'section' => 'home.about',
+            'texts' => ['ar' => [
+                'home.about.scenes.3.h' => 'نصنع الأثر.',
+                'home.about.scenes.3.facts' => [['value' => '+150', 'label' => 'مشروع', 'dummy' => false]],
+            ]],
+            'home' => ['about.impact' => 'http://localhost/storage/media/impact.mp4'],
+        ])->assertSessionHasNoErrors();
+
+        $content = $this->getJson('/api/public/content')->json();
+        $scenes = $content['messages']['ar']['home']['about']['scenes'];
+        $this->assertSame('نصنع الأثر.', $scenes[3]['h']);
+        $this->assertSame([['value' => '+150', 'label' => 'مشروع', 'dummy' => false]], $scenes[3]['facts']);
+        $this->assertSame($this->site()['messages']['ar']['home']['about']['scenes'][1]['h'], $scenes[1]['h']);
+        $this->assertSame('http://localhost/storage/media/impact.mp4', $content['home']['about']['impact']);
+    }
+
     public function test_client_logos_are_one_file_each(): void
     {
         // The defaults still carry the old cropped + padded pair.

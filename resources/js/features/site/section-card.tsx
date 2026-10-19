@@ -672,6 +672,13 @@ export function SectionCard({
                         <Switch checked={!!state.data[dataKey(f.doc, f.path)]} onCheckedChange={(v) => setData(f.doc, f.path, v)} />
                     </label>
                 );
+            case 'heading':
+                return (
+                    <div key={i} className="grid gap-0.5 border-t pt-5 first:border-t-0 first:pt-0">
+                        <h3 className="text-base font-semibold">{f.label}</h3>
+                        {f.hint && <p className="text-muted-foreground text-xs">{f.hint}</p>}
+                    </div>
+                );
             case 'pick':
                 return (
                     <FieldShell key={i} label={f.label} error={err(f.doc, f.path)}>

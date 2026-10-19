@@ -44,7 +44,8 @@ class ContentRules
             "{$p}reelStepS" => ['required', 'numeric', 'gt:0', 'max:10'],
             "{$p}about.region" => $src,
             "{$p}about.peopleFlag" => $src,
-            "{$p}about.studio" => $src,
+            // No longer shown; kept while present for sites that still read it.
+            "{$p}about.studio" => ['nullable', 'string', 'max:2048'],
             "{$p}about.impact" => $src,
             "{$p}storyVideo" => $src,
             "{$p}notFoundVideo" => $src,
@@ -94,7 +95,7 @@ class ContentRules
             'about' => [
                 'region' => $h['about']['region'],
                 'peopleFlag' => $h['about']['peopleFlag'],
-                'studio' => $h['about']['studio'],
+                ...(! empty($h['about']['studio']) ? ['studio' => $h['about']['studio']] : []),
                 'impact' => $h['about']['impact'],
             ],
             'storyVideo' => $h['storyVideo'],

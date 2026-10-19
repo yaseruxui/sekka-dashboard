@@ -39,7 +39,8 @@ export const homeMediaSchema = z.object({
     clientLogos: z.array(z.object({ name: z.string(), src })),
     /** Seconds each mark stays in the reel. */
     reelStepS: z.number().positive().max(10),
-    about: z.object({ region: src, peopleFlag: src, studio: src, impact: src }),
+    /** Scene pictures: the map (scenes 1–2), the people clip (3) and the last scene's clip. `studio` is no longer shown. */
+    about: z.object({ region: src, peopleFlag: src, studio: z.optional(src), impact: src }),
     storyVideo: src,
     notFoundVideo: src,
     /** Where the 404 page's button goes. */
