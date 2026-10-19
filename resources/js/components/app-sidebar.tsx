@@ -36,7 +36,7 @@ const navGroups: NavGroup[] = [
     {
         title: 'عام',
         items: [
-            { title: 'الرئيسية', url: '/dashboard', icon: LayoutDashboard },
+            { title: 'نظرة عامة', url: '/dashboard', icon: LayoutDashboard },
             { title: 'المشاريع', url: '/projects', icon: FolderKanban, permission: 'projects' },
             { title: 'الخدمات', url: '/services', icon: Sparkles, permission: 'site' },
             { title: 'طلبات التواصل', url: '/inbox', icon: Inbox, permission: 'inbox' },

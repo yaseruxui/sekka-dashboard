@@ -88,6 +88,12 @@ export interface SitePage {
     sections: Section[];
 }
 
+const strip = (html: unknown) =>
+    String(html ?? '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;|&mdash;/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
 const t = (key: string, label: string, extra: Partial<TextField> = {}): TextField => ({ kind: 'text', key, label, ...extra });
 const media = (doc: Doc, path: string, label: string, accept: Accept, hint?: string): MediaField => ({
     kind: 'media',
@@ -135,7 +141,7 @@ export const SITE_PAGES: SitePage[] = [
         sections: [
             {
                 id: 'hero',
-                title: 'الواجهة',
+                title: 'رأس الصفحة (الهيدر)',
                 description: 'أول ما يشوفه الزائر: فيديو بملء الشاشة وسطر تعريفي.',
                 fields: [
                     t('home.heroEyebrow', 'السطر الصغير'),
@@ -212,67 +218,49 @@ export const SITE_PAGES: SitePage[] = [
             {
                 id: 'about',
                 title: 'من نحن',
-                description: 'أربع مشاهد، كل مشهد بنصوصه والصورة أو الفيديو اللي خلفه.',
+                description: 'فيديو واحد بيتحرّك مع السكرول، والمشاهد بتظهر فوقه بالترتيب.',
                 fields: [
-                    { kind: 'heading', label: 'المشهد 1', hint: 'صورة المنطقة، والكاميرا بتقرّب على الرياض. بتضل خلف المشهد 2 كمان.' },
-                    media('home', 'about.region', 'صورة المنطقة', 'image'),
-                    t('home.about.scenes.0.h', 'العنوان', { html: true }),
-                    { kind: 'heading', label: 'المشهد 2', hint: 'على نفس صورة المنطقة.' },
-                    t('home.about.scenes.1.kicker', 'العنوان الصغير'),
-                    t('home.about.scenes.1.h', 'العنوان', { html: true }),
-                    t('home.about.scenes.1.line', 'السطر'),
+                    {
+                        kind: 'heading',
+                        label: 'فيديو السكرول',
+                        hint: 'الفيديو بيمشي مع نزول الزائر وبيرجع لما يطلع، والمشاهد بتتوزّع عليه بالتساوي.',
+                    },
+                    media('home', 'about.video', 'الفيديو', 'video'),
+                    media('home', 'about.videoMobile', 'فيديو الموبايل (عمودي)', 'video', 'اختياري. إذا فاضي بيظهر نفس الفيديو على الموبايل.'),
+                    { kind: 'heading', label: 'المشاهد' },
                     {
                         kind: 'list',
-                        label: 'الأرقام',
-                        itemLabel: (j, text) => String((text as { value?: string })?.value || `رقم ${j + 1}`),
-                        addLabel: 'إضافة رقم',
+                        label: 'المشاهد',
+                        itemLabel: (i, text) => strip((text as { h?: string })?.h) || `مشهد ${i + 1}`,
+                        addLabel: 'إضافة مشهد',
                         texts: {
-                            key: 'home.about.scenes.1.facts',
+                            key: 'home.about.scenes',
                             fields: [
-                                { name: 'value', label: 'الرقم' },
-                                { name: 'label', label: 'الوصف' },
+                                { name: 'kicker', label: 'العنوان الصغير' },
+                                { name: 'h', label: 'العنوان', html: true },
+                                { name: 'line', label: 'السطر' },
+                                {
+                                    kind: 'list',
+                                    name: 'facts',
+                                    label: 'الأرقام',
+                                    fields: [
+                                        { name: 'value', label: 'الرقم' },
+                                        { name: 'label', label: 'الوصف' },
+                                    ],
+                                    addLabel: 'إضافة رقم',
+                                },
                             ],
-                            blank: { value: '', label: '', dummy: false },
+                            blank: { kicker: '', h: '', line: '' },
                         },
                     },
-                    { kind: 'heading', label: 'المشهد 3' },
-                    media('home', 'about.peopleFlag', 'الفيديو', 'video'),
-                    t('home.about.scenes.2.kicker', 'العنوان الصغير'),
-                    t('home.about.scenes.2.h', 'العنوان', { html: true }),
-                    t('home.about.scenes.2.line', 'السطر'),
                     {
-                        kind: 'list',
-                        label: 'الأرقام',
-                        itemLabel: (j, text) => String((text as { value?: string })?.value || `رقم ${j + 1}`),
-                        addLabel: 'إضافة رقم',
-                        texts: {
-                            key: 'home.about.scenes.2.facts',
-                            fields: [
-                                { name: 'value', label: 'الرقم' },
-                                { name: 'label', label: 'الوصف' },
-                            ],
-                            blank: { value: '', label: '', dummy: false },
-                        },
+                        kind: 'heading',
+                        label: 'قبل رفع الفيديو',
+                        hint: 'لحد ما ترفع فيديو السكرول، الموقع بيعرض الحركة الحالية بأول 4 مشاهد على هالصور.',
                     },
-                    { kind: 'heading', label: 'المشهد 4', hint: 'آخر مشهد، بيضل لنهاية القسم.' },
-                    media('home', 'about.impact', 'الفيديو', 'video'),
-                    t('home.about.scenes.3.kicker', 'العنوان الصغير'),
-                    t('home.about.scenes.3.h', 'العنوان', { html: true }),
-                    t('home.about.scenes.3.line', 'السطر'),
-                    {
-                        kind: 'list',
-                        label: 'الأرقام',
-                        itemLabel: (j, text) => String((text as { value?: string })?.value || `رقم ${j + 1}`),
-                        addLabel: 'إضافة رقم',
-                        texts: {
-                            key: 'home.about.scenes.3.facts',
-                            fields: [
-                                { name: 'value', label: 'الرقم' },
-                                { name: 'label', label: 'الوصف' },
-                            ],
-                            blank: { value: '', label: '', dummy: false },
-                        },
-                    },
+                    media('home', 'about.region', 'صورة المنطقة (المشهد 1 و2)', 'image'),
+                    media('home', 'about.peopleFlag', 'فيديو المشهد 3', 'video'),
+                    media('home', 'about.impact', 'فيديو المشهد 4', 'video'),
                 ],
             },
             {
@@ -286,8 +274,8 @@ export const SITE_PAGES: SitePage[] = [
             },
             {
                 id: 'story',
-                title: 'القصة',
-                description: 'عنوان القسم وفيديو الخلفية.',
+                title: 'بانر العملاء',
+                description: 'آخر قسم قبل الفوتر: عنوان فوق فيديو، وشعارات العملاء بتتبدّل فوقه.',
                 fields: [t('home.storyTitle', 'العنوان', { html: true }), media('home', 'storyVideo', 'فيديو الخلفية', 'video')],
             },
         ],
@@ -300,13 +288,13 @@ export const SITE_PAGES: SitePage[] = [
         sections: [
             {
                 id: 'header',
-                title: 'رأس الصفحة',
+                title: 'رأس الصفحة (الهيدر)',
                 description: 'العنوان الصغير والعنوان والوصف.',
                 fields: [t('work.kicker', 'العنوان الصغير'), t('work.title', 'العنوان'), t('work.sub', 'الوصف', { multiline: true })],
             },
             {
                 id: 'ask',
-                title: 'دعوة التواصل',
+                title: 'بانر التواصل (CTA)',
                 description: 'الصندوق اللي يدعو للتواصل عبر واتساب.',
                 fields: [
                     t('work.indexAsk.line', 'العنوان في صفحة الأعمال'),

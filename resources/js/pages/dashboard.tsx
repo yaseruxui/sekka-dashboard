@@ -1,21 +1,26 @@
 import { PageHeader, timeAgo } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
+import { SITE_PAGES } from '@/features/site/registry';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { type Permission, type SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
+    Construction,
     ExternalLink,
     FilePen,
     FolderCheck,
+    Globe,
     ImageUp,
+    Images,
     Inbox,
     LayoutTemplate,
-    type LucideIcon,
     Mail,
     Plus,
+    Sparkles,
     TriangleAlert,
+    type LucideIcon,
 } from 'lucide-react';
 
 type Message = {
@@ -28,16 +33,78 @@ type Message = {
     created_at: string;
 };
 
+type MessageStatus = 'new' | 'in_progress' | 'replied' | 'closed';
+
 interface Props {
-    stats: { published: number; drafts: number; unread: number };
+    stats: { total: number; published: number; drafts: number; unread: number };
     recentMessages: Message[];
-    site: { url: string; connected: boolean; lastRefresh: string | null; failedAt: string | null };
+    messages: {
+        days: { date: string; count: number }[];
+        last30: number;
+        previous30: number;
+        byStatus: Record<MessageStatus, number>;
+    } | null;
+    site: {
+        url: string;
+        connected: boolean;
+        lastRefresh: string | null;
+        failedAt: string | null;
+        maintenance: boolean;
+        lastUpdate: string | null;
+    };
+    recentEdits: { section: string; by: string; at: string }[];
+    content: { services: number; servicesTotal: number; media: number };
+}
+
+const STATUS_LABELS: Record<MessageStatus, string> = { new: 'جديدة', in_progress: 'قيد المتابعة', replied: 'تم الرد', closed: 'مغلقة' };
+
+/** "home.hero" → page and section titles from the site editor, and where to edit it. */
+function sectionLabel(key: string): { label: string; href: string } {
+    const [pageId, sectionId] = key.split('.');
+    const page = SITE_PAGES.find((p) => p.id === pageId);
+    const section = page?.sections.find((s) => s.id === sectionId);
+    return {
+        label: page ? (section && section.title !== page.title ? `${page.title} · ${section.title}` : page.title) : key,
+        href: page ? `/site/${page.id}` : '/site/home',
+    };
+}
+
+/** Thirty bars, one per day; the tallest fills the box. */
+function DayBars({ days }: { days: { date: string; count: number }[] }) {
+    const max = Math.max(1, ...days.map((d) => d.count));
+    return (
+        <div className="flex h-16 items-end gap-[3px]" dir="ltr" aria-hidden="true">
+            {days.map((d) => (
+                <span
+                    key={d.date}
+                    title={`${d.date}: ${d.count}`}
+                    className={cn('flex-1 rounded-sm', d.count ? 'bg-sky-500/70' : 'bg-muted')}
+                    style={{ height: `${Math.max(6, (d.count / max) * 100)}%` }}
+                />
+            ))}
+        </div>
+    );
+}
+
+function Card({ title, action, children, className }: { title: string; action?: React.ReactNode; children: React.ReactNode; className?: string }) {
+    return (
+        <section className={cn('bg-card flex min-w-0 flex-col overflow-hidden rounded-xl border shadow-xs', className)}>
+            <div className="flex items-center justify-between border-b px-4 py-3">
+                <h2 className="font-semibold">{title}</h2>
+                {action}
+            </div>
+            {children}
+        </section>
+    );
 }
 
 const tones = {
     green: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
     amber: 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
     sky: 'bg-sky-500/10 text-sky-700 dark:text-sky-400',
+    violet: 'bg-violet-500/10 text-violet-700 dark:text-violet-400',
+    rose: 'bg-rose-500/10 text-rose-700 dark:text-rose-400',
+    slate: 'bg-slate-500/10 text-slate-700 dark:text-slate-300',
 };
 
 function Stat({
@@ -79,7 +146,7 @@ function Stat({
     );
 }
 
-export default function Dashboard({ stats, recentMessages, site }: Props) {
+export default function Dashboard({ stats, recentMessages, messages, site, recentEdits, content }: Props) {
     const { auth } = usePage<SharedData>().props;
     const can = (p: Permission) => auth.permissions.includes(p);
     const newProject = () => router.post(route('projects.store'));
@@ -96,8 +163,8 @@ export default function Dashboard({ stats, recentMessages, site }: Props) {
     const actionCls = 'group hover:bg-muted/60 flex items-center justify-between rounded-lg border px-3 py-2.5 text-start transition-colors';
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'الرئيسية', href: '/dashboard' }]}>
-            <Head title="الرئيسية" />
+        <AppLayout breadcrumbs={[{ title: 'نظرة عامة', href: '/dashboard' }]}>
+            <Head title="نظرة عامة" />
             <div className="max-w-page mx-auto flex w-full flex-col gap-6 p-4 md:p-8">
                 <PageHeader
                     title={`أهلاً ${auth.user.name.split(' ')[0]}`}
@@ -133,31 +200,137 @@ export default function Dashboard({ stats, recentMessages, site }: Props) {
                     </div>
                 )}
 
-                <div className={cn('grid gap-4 sm:grid-cols-2', can('inbox') ? 'lg:grid-cols-3' : 'lg:grid-cols-2')}>
+                <div
+                    className={cn(
+                        'flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border px-4 py-3 text-sm',
+                        site.maintenance ? 'border-destructive/40 bg-destructive/10' : 'bg-card',
+                    )}
+                >
+                    <span className="flex items-center gap-2 font-medium">
+                        {site.maintenance ? (
+                            <Construction className="text-destructive size-4" />
+                        ) : (
+                            <Globe className="size-4 text-emerald-600 dark:text-emerald-400" />
+                        )}
+                        {site.maintenance ? 'الموقع تحت الصيانة' : 'الموقع شغّال'}
+                    </span>
+                    {site.lastUpdate && <span className="text-muted-foreground">آخر تحديث للمحتوى {timeAgo(site.lastUpdate)}</span>}
+                    {can('site') && (
+                        <Link href="/site/maintenance" className="text-muted-foreground hover:text-foreground ms-auto flex items-center gap-1">
+                            وضع الصيانة <ArrowLeft className="size-3.5" />
+                        </Link>
+                    )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
                     <Stat
-                        label="المشاريع المنشورة"
-                        value={stats.published}
-                        hint="تظهر الآن في صفحة أعمالنا"
+                        label="إجمالي المشاريع"
+                        value={stats.total}
+                        hint={`${stats.published} منشور بصفحة أعمالنا`}
                         icon={FolderCheck}
                         tone="green"
                         href="/projects"
                     />
-                    <Stat label="مسودات" value={stats.drafts} hint="مشاريع أو تعديلات لم تُنشر بعد" icon={FilePen} tone="amber" href="/projects" />
+                    <Stat label="مسودات" value={stats.drafts} hint="مشاريع أو تعديلات لسا ما انتشرت" icon={FilePen} tone="amber" href="/projects" />
                     {can('inbox') && (
+                        <Stat label="طلبات تواصل" value={stats.unread} hint="جديدة بانتظار الرد" icon={Mail} tone="sky" href={route('inbox.index')} />
+                    )}
+                    {can('site') && (
                         <Stat
-                            label="رسائل جديدة"
-                            value={stats.unread}
-                            hint="من نموذج تواصل معنا"
-                            icon={Mail}
-                            tone="sky"
-                            href={route('inbox.index')}
+                            label="إجمالي الخدمات"
+                            value={content.servicesTotal}
+                            hint={`${content.services} ظاهرة بالرئيسية`}
+                            icon={Sparkles}
+                            tone="violet"
+                            href="/services"
                         />
+                    )}
+                    {can('media') && (
+                        <Stat label="مكتبة الوسائط" value={content.media} hint="صور وفيديوهات" icon={Images} tone="slate" href="/media" />
                     )}
                 </div>
 
-                <div className="flex flex-wrap items-start gap-4">
+                <div className="grid items-stretch gap-4 lg:grid-cols-3">
+                    {messages && (
+                        <Card
+                            title="الرسائل آخر 30 يوم"
+                            className="lg:col-span-2"
+                            action={
+                                <Link
+                                    href={route('inbox.index')}
+                                    className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"
+                                >
+                                    صندوق الرسائل <ArrowLeft className="size-3.5" />
+                                </Link>
+                            }
+                        >
+                            <div className="flex flex-1 flex-wrap items-end gap-x-8 gap-y-4 p-4">
+                                <div className="grid gap-1">
+                                    <strong className="text-3xl font-bold tabular-nums">{messages.last30}</strong>
+                                    <span className="text-muted-foreground text-xs">
+                                        {messages.previous30 === 0
+                                            ? 'ما في رسائل بالـ 30 يوم اللي قبلها'
+                                            : `${messages.last30 >= messages.previous30 ? '▲' : '▼'} ${Math.abs(
+                                                  Math.round(((messages.last30 - messages.previous30) / messages.previous30) * 100),
+                                              )}% عن الـ 30 يوم اللي قبلها (${messages.previous30})`}
+                                    </span>
+                                </div>
+                                <div className="min-w-[220px] flex-1">
+                                    <DayBars days={messages.days} />
+                                </div>
+                            </div>
+                            <div className="flex flex-wrap gap-2 border-t px-4 py-3">
+                                {(Object.keys(STATUS_LABELS) as MessageStatus[]).map((s) => (
+                                    <Link
+                                        key={s}
+                                        href={route('inbox.index', { filter: s })}
+                                        className={cn(
+                                            'hover:bg-muted flex items-center gap-2 rounded-full border px-3 py-1 text-sm transition-colors',
+                                            s === 'new' && messages.byStatus.new > 0 && 'border-sky-500/40',
+                                        )}
+                                    >
+                                        {STATUS_LABELS[s]}
+                                        <span className="font-semibold tabular-nums">{messages.byStatus[s] ?? 0}</span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </Card>
+                    )}
+                    <section className={cn('bg-card flex flex-col gap-2.5 rounded-xl border p-4 shadow-xs', !messages && 'lg:col-span-3')}>
+                        <h2 className="mb-1 font-semibold">إجراءات سريعة</h2>
+                        {actions.map((a) => {
+                            const inner = (
+                                <>
+                                    <span className="flex items-center gap-2.5">
+                                        <span className="bg-muted text-foreground/70 group-hover:bg-background flex size-8 items-center justify-center rounded-md transition-colors">
+                                            <a.icon className="size-4" />
+                                        </span>
+                                        {a.label}
+                                    </span>
+                                    <ArrowLeft className="text-muted-foreground size-4 transition-transform group-hover:-translate-x-0.5" />
+                                </>
+                            );
+                            return a.href ? (
+                                <Link key={a.label} href={a.href} className={actionCls}>
+                                    {inner}
+                                </Link>
+                            ) : (
+                                <button key={a.label} type="button" onClick={a.onClick} className={actionCls}>
+                                    {inner}
+                                </button>
+                            );
+                        })}
+                    </section>
+                </div>
+
+                <div className="grid items-stretch gap-4 lg:grid-cols-3">
                     {can('inbox') && (
-                        <section className="bg-card min-w-0 flex-[2_1_420px] overflow-hidden rounded-xl border shadow-xs">
+                        <section
+                            className={cn(
+                                'bg-card min-w-0 overflow-hidden rounded-xl border shadow-xs',
+                                can('site') ? 'lg:col-span-2' : 'lg:col-span-3',
+                            )}
+                        >
                             <div className="flex items-center justify-between border-b px-4 py-3">
                                 <h2 className="font-semibold">آخر الرسائل</h2>
                                 <Link
@@ -203,32 +376,31 @@ export default function Dashboard({ stats, recentMessages, site }: Props) {
                             )}
                         </section>
                     )}
-
-                    <section className="bg-card flex flex-[1_1_260px] flex-col gap-2.5 rounded-xl border p-4 shadow-xs">
-                        <h2 className="mb-1 font-semibold">إجراءات سريعة</h2>
-                        {actions.map((a) => {
-                            const inner = (
-                                <>
-                                    <span className="flex items-center gap-2.5">
-                                        <span className="bg-muted text-foreground/70 group-hover:bg-background flex size-8 items-center justify-center rounded-md transition-colors">
-                                            <a.icon className="size-4" />
-                                        </span>
-                                        {a.label}
-                                    </span>
-                                    <ArrowLeft className="text-muted-foreground size-4 transition-transform group-hover:-translate-x-0.5" />
-                                </>
-                            );
-                            return a.href ? (
-                                <Link key={a.label} href={a.href} className={actionCls}>
-                                    {inner}
-                                </Link>
+                    {can('site') && (
+                        <Card title="آخر التعديلات" className={cn(!can('inbox') && 'lg:col-span-3')}>
+                            {recentEdits.length === 0 ? (
+                                <p className="text-muted-foreground p-6 text-center text-sm">ما في تعديلات على الموقع للحين.</p>
                             ) : (
-                                <button key={a.label} type="button" onClick={a.onClick} className={actionCls}>
-                                    {inner}
-                                </button>
-                            );
-                        })}
-                    </section>
+                                recentEdits.map((e) => {
+                                    const { label, href } = sectionLabel(e.section);
+                                    return (
+                                        <Link
+                                            key={e.section}
+                                            href={href}
+                                            className="hover:bg-muted/60 flex items-center gap-3 border-b px-4 py-2.5 text-sm transition-colors last:border-0"
+                                        >
+                                            <span className="grid min-w-0 flex-1 gap-0.5">
+                                                <span className="truncate">{label}</span>
+                                                <span className="text-muted-foreground text-xs">
+                                                    {e.by || '—'} · {timeAgo(e.at)}
+                                                </span>
+                                            </span>
+                                        </Link>
+                                    );
+                                })
+                            )}
+                        </Card>
+                    )}
                 </div>
             </div>
         </AppLayout>

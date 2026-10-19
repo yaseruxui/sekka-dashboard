@@ -42,6 +42,8 @@ class ContentRules
             "{$p}clientLogos.*.name" => ['nullable', 'string', 'max:200'],
             "{$p}clientLogos.*.src" => $src,
             "{$p}reelStepS" => ['required', 'numeric', 'gt:0', 'max:10'],
+            "{$p}about.video" => ['nullable', 'string', 'max:2048'],
+            "{$p}about.videoMobile" => ['nullable', 'string', 'max:2048'],
             "{$p}about.region" => $src,
             "{$p}about.peopleFlag" => $src,
             // No longer shown; kept while present for sites that still read it.
@@ -93,6 +95,8 @@ class ContentRules
             'clientLogos' => array_map(fn ($l) => ['name' => (string) ($l['name'] ?? ''), 'src' => $l['src']], array_values($h['clientLogos'])),
             'reelStepS' => (float) $h['reelStepS'],
             'about' => [
+                ...(! empty($h['about']['video']) ? ['video' => $h['about']['video']] : []),
+                ...(! empty($h['about']['videoMobile']) ? ['videoMobile' => $h['about']['videoMobile']] : []),
                 'region' => $h['about']['region'],
                 'peopleFlag' => $h['about']['peopleFlag'],
                 ...(! empty($h['about']['studio']) ? ['studio' => $h['about']['studio']] : []),
