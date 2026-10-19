@@ -35,8 +35,8 @@ export const homeMediaSchema = z.object({
     caseList: z.array(z.object({ video: src, fit: fitSchema, gradient: z.string() })),
     /** Work reel stills and their links; titles are home.workReel.tiles in the texts. */
     workReel: z.array(z.object({ src, href: z.string().min(1) })),
-    /** Client marks: `tight` for the small intro reel, `full` for the story reel. */
-    clientLogos: z.array(z.object({ name: z.string(), tight: src, full: src })),
+    /** Client marks, one file each (cropped to the mark), shown in both reels. */
+    clientLogos: z.array(z.object({ name: z.string(), src })),
     /** Seconds each mark stays in the reel. */
     reelStepS: z.number().positive().max(10),
     about: z.object({ region: src, peopleFlag: src, studio: src, impact: src }),

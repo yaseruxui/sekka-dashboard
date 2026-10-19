@@ -155,18 +155,18 @@ export const SITE_PAGES: SitePage[] = [
                     {
                         kind: 'list',
                         label: 'شعارات العملاء',
+                        hint: 'ارفع كل شعار مقصوص على حدوده بدون فراغ حواليه، والموقع بيضبط حجمه بشريط التعريف وشريط القصة.',
                         itemLabel: (i, _t, d) => String(d?.name || `شعار ${i + 1}`),
                         addLabel: 'إضافة شعار',
-                        thumb: 'full',
+                        thumb: 'src',
                         data: {
                             doc: 'home',
                             path: 'clientLogos',
                             fields: [
-                                { kind: 'value', name: 'name', label: 'اسم العميل' },
-                                { kind: 'media', name: 'tight', label: 'الشعار في شريط التعريف', accept: 'image' },
-                                { kind: 'media', name: 'full', label: 'الشعار في شريط القصة', accept: 'image' },
+                                { kind: 'value', name: 'name', label: 'اسم العميل', hint: 'للتعرّف عليه في اللوحة فقط، ما بيظهر بالموقع.' },
+                                { kind: 'media', name: 'src', label: 'الشعار', accept: 'image' },
                             ],
-                            blank: { name: '', tight: '', full: '' },
+                            blank: { name: '', src: '' },
                         },
                     },
                     { kind: 'number', doc: 'home', path: 'reelStepS', label: 'مدة ظهور كل شعار (ثوانٍ)', min: 0.5, max: 10, step: 0.5 },

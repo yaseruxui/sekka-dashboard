@@ -74,6 +74,22 @@ class SiteSectionsTest extends TestCase
         $this->save(['home' => ['maintenance' => 'maybe']])->assertSessionHasErrors('home.maintenance');
     }
 
+    public function test_client_logos_are_one_file_each(): void
+    {
+        // The defaults still carry the old cropped + padded pair.
+        $this->withoutVite();
+        $this->actingAs($this->user)->get('/site/home')->assertInertia(fn ($p) => $p
+            ->where('content.home.clientLogos.0', ['name' => 'AlMajdouie', 'src' => '/media/work/logos-tight/AlMajdouie_Logo_RGB.svg']));
+
+        $this->save(['home' => ['reelStepS' => 1]])->assertSessionHasNoErrors();
+        $this->assertSame(
+            ['name' => 'Aqwas', 'src' => '/media/work/logos-tight/Aqwas-01.svg'],
+            SiteContent::get('home')['clientLogos'][1],
+        );
+
+        $this->save(['home' => ['clientLogos' => [['name' => 'جديد', 'src' => '']]]])->assertSessionHasErrors('home.clientLogos.0.src');
+    }
+
     public function test_every_page_knows_when_maintenance_is_on(): void
     {
         $this->withoutVite();
