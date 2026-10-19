@@ -1,3 +1,4 @@
+import { BulkBar, BulkDeleteButton, runBulk, SelectAllCheckbox, SelectCheckbox, useSelection } from '@/components/bulk-actions';
 import { MediaThumb } from '@/components/media-thumb';
 import { PageHeader, timeAgo } from '@/components/page-header';
 import {
@@ -31,7 +32,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Copy, ExternalLink, GripVertical, LayoutGrid, MoreVertical, Pencil, Plus, Rows3, Search, Trash2 } from 'lucide-react';
+import { Copy, ExternalLink, Eye, EyeOff, GripVertical, LayoutGrid, MoreVertical, Pencil, Plus, Rows3, Search, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 export interface ProjectRow {
@@ -200,6 +201,8 @@ export default function ProjectsIndex({ projects, categories }: { projects: Proj
         [order, q, status, category],
     );
 
+    const selection = useSelection(visible.map((p) => p.id));
+
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
         useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -305,6 +308,23 @@ export default function ProjectsIndex({ projects, categories }: { projects: Proj
                     </div>
                 </div>
 
+                <BulkBar selection={selection}>
+                    <Button size="sm" variant="outline" onClick={() => runBulk('projects.bulk', selection, 'show')}>
+                        <Eye /> إظهار على الموقع
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => runBulk('projects.bulk', selection, 'hide')}>
+                        <EyeOff /> إخفاء
+                    </Button>
+                    <BulkDeleteButton
+                        selection={selection}
+                        title={`حذف ${selection.count} مشروع؟`}
+                        description="تنحذف المشاريع مع كل بلوكاتها، واللي منها ظاهر يختفي من الموقع. لا يمكن التراجع عن هذا. الملفات تبقى في مكتبة الوسائط."
+                        onConfirm={() => runBulk('projects.bulk', selection, 'delete')}
+                    >
+                        <Trash2 /> حذف
+                    </BulkDeleteButton>
+                </BulkBar>
+
                 {visible.length === 0 ? (
                     <div className="text-muted-foreground rounded-xl border border-dashed p-12 text-center">
                         {order.length === 0 ? 'لا توجد مشاريع بعد. اضغط «مشروع جديد» للبدء.' : 'لا توجد مشاريع تطابق البحث.'}
@@ -323,6 +343,9 @@ export default function ProjectsIndex({ projects, categories }: { projects: Proj
                                                 <TableHead className="w-10">
                                                     <span className="sr-only">ترتيب</span>
                                                 </TableHead>
+                                                <TableHead className="w-10 px-0">
+                                                    <SelectAllCheckbox selection={selection} label="تحديد كل المشاريع الظاهرة" />
+                                                </TableHead>
                                                 <TableHead>المشروع</TableHead>
                                                 <TableHead>المجال</TableHead>
                                                 <TableHead>السنة</TableHead>
@@ -338,6 +361,9 @@ export default function ProjectsIndex({ projects, categories }: { projects: Proj
                                         <TableBody>
                                             {visible.map((p) => (
                                                 <SortableRow key={p.id} p={p} sortable={!filtering}>
+                                                    <TableCell className="px-0">
+                                                        <SelectCheckbox selection={selection} id={p.id} label={p.title} />
+                                                    </TableCell>
                                                     <TableCell>
                                                         <Link href={route('projects.edit', p.id)} className="flex items-center gap-3">
                                                             <MediaThumb src={p.cover} className="h-10 w-14 shrink-0 rounded-md" />
@@ -381,6 +407,9 @@ export default function ProjectsIndex({ projects, categories }: { projects: Proj
                                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                                     {visible.map((p) => (
                                         <SortableCard key={p.id} p={p} sortable={!filtering}>
+                                            <span className="bg-background/90 absolute end-2 top-2 z-10 flex size-8 items-center justify-center rounded-md border">
+                                                <SelectCheckbox selection={selection} id={p.id} label={p.title} />
+                                            </span>
                                             <Link href={route('projects.edit', p.id)}>
                                                 <MediaThumb src={p.cover} className="aspect-[4/3] w-full" />
                                             </Link>

@@ -119,6 +119,14 @@ class InboxController extends Controller
         return back()->with('success', 'تم حذف الرسالة.');
     }
 
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()->hasPermission('users'), 403, 'الحذف للمسؤولين فقط. أغلق الطلب أو علّمه كمزعج.');
+        $count = ContactMessage::whereIn('id', $this->bulkInput($request, ['delete'])['ids'])->delete();
+
+        return back()->with('success', "تم حذف {$count} رسالة.");
+    }
+
     /** CSV (UTF-8 with BOM, so Excel shows Arabic correctly) of the filtered list. */
     public function export(Request $request): StreamedResponse
     {

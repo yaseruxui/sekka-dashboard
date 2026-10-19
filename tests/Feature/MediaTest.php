@@ -112,4 +112,25 @@ class MediaTest extends TestCase
 
         $this->actingAs($user)->getJson('/media/list?kind=video')->assertJsonCount(1, 'data')->assertJsonPath('data.0.kind', 'video');
     }
+
+    public function test_bulk_delete_skips_files_in_use(): void
+    {
+        $user = User::factory()->create();
+        foreach (['free', 'draft', 'live'] as $name) {
+            $this->actingAs($user)->postJson('/media', ['file' => UploadedFile::fake()->createWithContent("{$name}.svg", '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"></svg>')]);
+        }
+        [$free, $inDraft, $live] = Media::orderBy('id')->get();
+        Project::create(['slug' => 'd', 'title' => 'D', 'summary' => '', 'published' => false, 'cover' => $inDraft->url, 'blocks' => []]);
+        Project::create(['slug' => 'l', 'title' => 'L', 'summary' => '', 'published' => true, 'cover' => $live->url, 'blocks' => []]);
+
+        $this->actingAs($user)->post('/media/bulk', ['ids' => [$free->id, $inDraft->id, $live->id], 'action' => 'delete'])
+            ->assertSessionHas('success', fn ($m) => str_contains($m, 'تم حذف 1 ملف') && str_contains($m, 'تخطّينا 2'));
+
+        $this->assertModelMissing($free);
+        Storage::disk('public')->assertMissing($free->path);
+        $this->assertModelExists($inDraft);
+        $this->assertModelExists($live);
+
+        $this->post('/media/bulk', ['ids' => [$live->id], 'action' => 'delete'])->assertSessionHas('error');
+    }
 }

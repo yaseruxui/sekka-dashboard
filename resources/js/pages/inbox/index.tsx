@@ -1,3 +1,4 @@
+import { BulkBar, BulkDeleteButton, SelectAllCheckbox, SelectCheckbox, useSelection } from '@/components/bulk-actions';
 import { EmptyState } from '@/components/empty-state';
 import { formatDate, PageHeader, timeAgo } from '@/components/page-header';
 import {
@@ -11,7 +12,6 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -22,7 +22,7 @@ import { pageLabel } from '@/lib/pagination';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
-import { ChevronDown, Copy, Download, Inbox as InboxIcon, Mail, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
+import { ChevronDown, Copy, Download, Inbox as InboxIcon, Mail, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { type ReactNode, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -213,7 +213,7 @@ function describe(e: Event): string {
 
 export default function Inbox({ messages, opened, filters, counts, canDelete }: Props) {
     const me = usePage<SharedData>().props.auth.user.id;
-    const [selected, setSelected] = useState<number[]>([]);
+    const selection = useSelection(messages.data.map((m) => m.id));
     const [q, setQ] = useState(filters.q ?? '');
     const [note, setNote] = useState('');
     const [noteOpen, setNoteOpen] = useState(false);
@@ -225,14 +225,8 @@ export default function Inbox({ messages, opened, filters, counts, canDelete }: 
     const filter: Filter = (FILTERS as readonly string[]).includes(filters.filter ?? '') ? (filters.filter as Filter) : 'all';
     const open = messages.data.find((m) => m.id === openId) ?? (opened?.id === openId ? opened : null);
 
-    // Selection only covers rows on screen: drop ids that left the page.
-    useEffect(() => {
-        setSelected((s) => s.filter((id) => messages.data.some((m) => m.id === id)));
-    }, [messages.data]);
-    const allSelected = messages.data.length > 0 && selected.length === messages.data.length;
-    const toggle = (id: number) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
     const bulkStatus = (status: Status) =>
-        router.patch(route('inbox.bulk-status'), { ids: selected, status }, { ...RELOAD, onSuccess: () => setSelected([]) });
+        router.patch(route('inbox.bulk-status'), { ids: selection.selected, status }, { ...RELOAD, onSuccess: selection.clear });
 
     const params = (extra: Record<string, string | undefined> = {}) => ({
         q: q || undefined,
@@ -311,39 +305,45 @@ export default function Inbox({ messages, opened, filters, counts, canDelete }: 
                     />
                 ) : (
                     <div className="bg-card overflow-hidden rounded-xl border shadow-xs">
-                        {selected.length > 0 && (
-                            <div className="bg-muted/60 flex items-center gap-2 border-b px-3 py-2 text-sm">
-                                <span className="font-medium">تم تحديد {selected.length}</span>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button size="sm" variant="outline">
-                                            تغيير الحالة <ChevronDown className="opacity-60" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="start">
-                                        <DropdownMenuRadioGroup value="" onValueChange={(v) => bulkStatus(v as Status)}>
-                                            {STATUS_KEYS.map((k) => (
-                                                <DropdownMenuRadioItem key={k} value={k}>
-                                                    {STATUSES[k].label}
-                                                </DropdownMenuRadioItem>
-                                            ))}
-                                        </DropdownMenuRadioGroup>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                                <Button size="sm" variant="ghost" className="ms-auto" onClick={() => setSelected([])}>
-                                    <X /> إلغاء التحديد
-                                </Button>
-                            </div>
-                        )}
+                        <BulkBar selection={selection} className="rounded-none border-0 border-b">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button size="sm" variant="outline">
+                                        تغيير الحالة <ChevronDown className="opacity-60" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start">
+                                    <DropdownMenuRadioGroup value="" onValueChange={(v) => bulkStatus(v as Status)}>
+                                        {STATUS_KEYS.map((k) => (
+                                            <DropdownMenuRadioItem key={k} value={k}>
+                                                {STATUSES[k].label}
+                                            </DropdownMenuRadioItem>
+                                        ))}
+                                    </DropdownMenuRadioGroup>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            {canDelete && (
+                                <BulkDeleteButton
+                                    selection={selection}
+                                    title={`حذف ${selection.count} رسالة؟`}
+                                    description="تنحذف الرسائل مع ملاحظاتها وسجلها نهائياً. لو تبي تخفيها بس، غيّر حالتها لـ«مغلق»."
+                                    onConfirm={() =>
+                                        router.post(
+                                            route('inbox.bulk'),
+                                            { ids: selection.selected, action: 'delete' },
+                                            { ...RELOAD, onSuccess: selection.clear },
+                                        )
+                                    }
+                                >
+                                    <Trash2 /> حذف
+                                </BulkDeleteButton>
+                            )}
+                        </BulkBar>
                         <Table className="min-w-[760px]">
                             <TableHeader className="bg-muted/40">
                                 <TableRow>
                                     <TableHead className="w-10">
-                                        <Checkbox
-                                            checked={allSelected ? true : selected.length > 0 ? 'indeterminate' : false}
-                                            onCheckedChange={() => setSelected(allSelected ? [] : messages.data.map((m) => m.id))}
-                                            aria-label="تحديد الكل"
-                                        />
+                                        <SelectAllCheckbox selection={selection} />
                                     </TableHead>
                                     <TableHead>الاسم</TableHead>
                                     <TableHead>الشركة</TableHead>
@@ -361,11 +361,7 @@ export default function Inbox({ messages, opened, filters, counts, canDelete }: 
                                         className={cn('cursor-pointer', m.status === 'new' && 'font-semibold', openId === m.id && 'bg-muted')}
                                     >
                                         <TableCell onClick={(e) => e.stopPropagation()}>
-                                            <Checkbox
-                                                checked={selected.includes(m.id)}
-                                                onCheckedChange={() => toggle(m.id)}
-                                                aria-label={`تحديد ${m.name}`}
-                                            />
+                                            <SelectCheckbox selection={selection} id={m.id} label={m.name} />
                                         </TableCell>
                                         <TableCell>
                                             <button type="button" onClick={() => setOpenId(m.id)} className="text-start">

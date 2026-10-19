@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Project;
 use App\Models\User;
+use App\Support\SiteContent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -249,5 +250,31 @@ class ProjectsTest extends TestCase
         $this->actingAs($user)->putJson("/projects/{$project->id}/draft", $this->payload(['title' => 'Changed']))->assertJsonPath('hasDraft', true);
         $this->actingAs($user)->putJson("/projects/{$project->id}/draft", $this->payload())->assertJsonPath('hasDraft', false);
         $this->assertNull($project->fresh()->draft);
+    }
+
+    public function test_bulk_shows_hides_and_deletes_projects(): void
+    {
+        Http::fake();
+        $user = User::factory()->create();
+        $live = Project::create(['slug' => 'a', 'title' => 'A', 'summary' => '', 'blocks' => [], 'published' => false, 'published_at' => now()]);
+        $hidden = Project::create(['slug' => 'b', 'title' => 'B', 'summary' => '', 'blocks' => [], 'published' => false, 'published_at' => now()]);
+        $draft = Project::create(['slug' => 'c', 'title' => 'C', 'summary' => '', 'blocks' => [], 'published' => false]);
+        SiteContent::put('home', ['workReelIds' => [$live->id, $hidden->id, $draft->id]]);
+
+        // Never-published drafts stay hidden: they go live from the editor first.
+        $this->actingAs($user)->post('/projects/bulk', ['ids' => [$live->id, $hidden->id, $draft->id], 'action' => 'show'])
+            ->assertSessionHas('success', fn ($m) => str_contains($m, 'تم إظهار 2') && str_contains($m, '1 مسودة'));
+        $this->assertSame([true, true, false], [$live->fresh()->published, $hidden->fresh()->published, $draft->fresh()->published]);
+
+        $this->post('/projects/bulk', ['ids' => [$draft->id], 'action' => 'show'])->assertSessionHas('error');
+
+        $this->post('/projects/bulk', ['ids' => [$hidden->id], 'action' => 'hide'])->assertSessionHas('success');
+        $this->assertFalse($hidden->fresh()->published);
+
+        $this->post('/projects/bulk', ['ids' => [$live->id, $draft->id], 'action' => 'delete'])->assertSessionHas('success', 'تم حذف 2 مشروع.');
+        $this->assertSame([$hidden->id], Project::pluck('id')->all());
+        $this->assertSame([$hidden->id], SiteContent::get('home')['workReelIds']);
+
+        $this->post('/projects/bulk', ['ids' => [$hidden->id], 'action' => 'archive'])->assertSessionHasErrors('action');
     }
 }

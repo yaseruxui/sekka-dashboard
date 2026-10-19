@@ -195,4 +195,21 @@ class InboxTest extends TestCase
 
         $this->assertStringContainsString("'=HYPERLINK", $csv);
     }
+
+    public function test_bulk_delete_is_for_admins(): void
+    {
+        $this->postJson('/api/contact?key=test-contact-key', $this->submission());
+        $this->postJson('/api/contact?key=test-contact-key', $this->submission(['name' => 'Omar']));
+        [$a, $b] = ContactMessage::orderBy('id')->get();
+        $a->notes()->create(['body' => 'متابعة']);
+
+        $staff = User::factory()->create(['permissions' => ['inbox']]);
+        $this->actingAs($staff)->post('/inbox/bulk', ['ids' => [$a->id, $b->id], 'action' => 'delete'])->assertForbidden();
+        $this->assertSame(2, ContactMessage::count());
+
+        $this->actingAs(User::factory()->create())->post('/inbox/bulk', ['ids' => [$a->id, $b->id], 'action' => 'delete'])
+            ->assertSessionHas('success', 'تم حذف 2 رسالة.');
+        $this->assertSame(0, ContactMessage::count());
+        $this->assertSame(0, ContactMessageNote::count());
+    }
 }

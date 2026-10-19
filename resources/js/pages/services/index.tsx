@@ -1,3 +1,4 @@
+import { BulkBar, BulkDeleteButton, runBulk, SelectAllCheckbox, SelectCheckbox, useSelection } from '@/components/bulk-actions';
 import InputError from '@/components/input-error';
 import { MediaField } from '@/components/media-field';
 import { MediaThumb } from '@/components/media-thumb';
@@ -163,6 +164,7 @@ export default function Services({ services }: { services: Service[] }) {
     const [deleting, setDeleting] = useState<Service | null>(null);
     const [q, setQ] = useState('');
     const shown = services.filter((s) => [s.title, s.title_en, s.subtitle].some((t) => plain(t).toLowerCase().includes(q.trim().toLowerCase())));
+    const selection = useSelection(shown.map((s) => s.id));
     const [savedView, setView] = useState<View>('table');
     // Phones always get cards, like the projects and users pages.
     const isMobile = useIsMobile();
@@ -233,6 +235,17 @@ export default function Services({ services }: { services: Service[] }) {
                     </div>
                 </div>
 
+                <BulkBar selection={selection}>
+                    <BulkDeleteButton
+                        selection={selection}
+                        title={`حذف ${selection.count} خدمة؟`}
+                        description="اللي منها ظاهر في الرئيسية ينشال منها بعد. لا يمكن التراجع عن هذا."
+                        onConfirm={() => runBulk('services.bulk', selection, 'delete')}
+                    >
+                        <Trash2 /> حذف
+                    </BulkDeleteButton>
+                </BulkBar>
+
                 {services.length === 0 ? (
                     <p className="text-muted-foreground rounded-xl border border-dashed p-10 text-center">لا توجد خدمات بعد.</p>
                 ) : shown.length === 0 ? (
@@ -242,6 +255,9 @@ export default function Services({ services }: { services: Service[] }) {
                         <Table>
                             <TableHeader>
                                 <TableRow>
+                                    <TableHead className="w-10">
+                                        <SelectAllCheckbox selection={selection} label="تحديد كل الخدمات الظاهرة" />
+                                    </TableHead>
                                     <TableHead>الخدمة</TableHead>
                                     <TableHead>الوصف</TableHead>
                                     <TableHead className="w-0" />
@@ -250,6 +266,9 @@ export default function Services({ services }: { services: Service[] }) {
                             <TableBody>
                                 {shown.map((s) => (
                                     <TableRow key={s.id}>
+                                        <TableCell>
+                                            <SelectCheckbox selection={selection} id={s.id} label={plain(s.title)} />
+                                        </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-3">
                                                 <MediaThumb src={s.video} className="h-10 w-16 shrink-0 rounded" />
@@ -286,7 +305,10 @@ export default function Services({ services }: { services: Service[] }) {
                 ) : (
                     <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                         {shown.map((s) => (
-                            <li key={s.id} className="bg-card flex flex-col overflow-hidden rounded-xl border">
+                            <li key={s.id} className="bg-card relative flex flex-col overflow-hidden rounded-xl border">
+                                <span className="bg-background/90 absolute end-2 top-2 z-10 flex size-8 items-center justify-center rounded-md border">
+                                    <SelectCheckbox selection={selection} id={s.id} label={plain(s.title)} />
+                                </span>
                                 <MediaThumb src={s.video} className="aspect-video w-full" />
                                 <div className="flex flex-1 flex-col gap-1.5 p-4">
                                     <div className="flex items-start justify-between gap-2">

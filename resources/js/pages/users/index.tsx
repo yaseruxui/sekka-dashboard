@@ -1,3 +1,4 @@
+import { BulkBar, BulkDeleteButton, runBulk, SelectAllCheckbox, SelectCheckbox, useSelection } from '@/components/bulk-actions';
 import InputError from '@/components/input-error';
 import { PageHeader, timeAgo } from '@/components/page-header';
 import {
@@ -276,6 +277,9 @@ export default function Users({ users, permissions: all }: { users: Member[]; pe
             /* private mode */
         }
     };
+    // Never yourself: the list offers no way to delete your own account.
+    const selection = useSelection(users.filter((u) => !u.isMe).map((u) => u.id));
+    const pendingSelected = users.some((u) => u.invitedAt && selection.has(u.id));
     const [inviting, setInviting] = useState(false);
     const [editing, setEditing] = useState<Member | null>(null);
     const [deleting, setDeleting] = useState<Member | null>(null);
@@ -318,11 +322,30 @@ export default function Users({ users, permissions: all }: { users: Member[]; pe
                     ))}
                 </div>
 
+                <BulkBar selection={selection}>
+                    {pendingSelected && (
+                        <Button size="sm" variant="outline" onClick={() => runBulk('users.bulk', selection, 'resend')}>
+                            <Send /> إعادة إرسال الدعوات
+                        </Button>
+                    )}
+                    <BulkDeleteButton
+                        selection={selection}
+                        title={`حذف ${selection.count} مستخدم؟`}
+                        description="ما يقدرون يدخلون اللوحة بعدها، والدعوات المعلّقة تصير روابطها غير صالحة. التعديلات اللي سوّوها تبقى كما هي."
+                        onConfirm={() => runBulk('users.bulk', selection, 'delete')}
+                    >
+                        <Trash2 /> حذف
+                    </BulkDeleteButton>
+                </BulkBar>
+
                 {view === 'table' ? (
                     <div className="bg-card overflow-hidden rounded-xl border shadow-xs">
                         <Table className="min-w-[860px]">
                             <TableHeader className="bg-muted/40">
                                 <TableRow>
+                                    <TableHead className="w-10">
+                                        <SelectAllCheckbox selection={selection} label="تحديد كل المستخدمين" />
+                                    </TableHead>
                                     <TableHead className="w-12">#</TableHead>
                                     <TableHead>المستخدم</TableHead>
                                     <TableHead>الصلاحيات</TableHead>
@@ -335,6 +358,7 @@ export default function Users({ users, permissions: all }: { users: Member[]; pe
                             <TableBody>
                                 {users.map((u, i) => (
                                     <TableRow key={u.id}>
+                                        <TableCell>{!u.isMe && <SelectCheckbox selection={selection} id={u.id} label={u.name} />}</TableCell>
                                         <TableCell className="text-muted-foreground tabular-nums">{i + 1}</TableCell>
                                         <TableCell>
                                             <Identity member={u} />
@@ -356,7 +380,8 @@ export default function Users({ users, permissions: all }: { users: Member[]; pe
                 ) : (
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                         {users.map((u) => (
-                            <article key={u.id} className="bg-card flex flex-col gap-4 rounded-xl border p-4 shadow-xs">
+                            <article key={u.id} className="bg-card relative flex flex-col gap-4 rounded-xl border p-4 shadow-xs">
+                                {!u.isMe && <SelectCheckbox selection={selection} id={u.id} label={u.name} className="absolute end-4 top-4" />}
                                 <Identity member={u} />
                                 <PermissionChips member={u} />
                                 <div className="mt-auto flex items-center justify-between gap-2 border-t pt-3">

@@ -109,6 +109,23 @@ class MediaController extends Controller
         return back()->with('success', 'تم حذف '.$media->name.'.');
     }
 
+    /** Delete the files ticked in the library; any file still in use (live or in a draft) is skipped. */
+    public function bulk(Request $request): RedirectResponse
+    {
+        $files = Media::whereIn('id', $this->bulkInput($request, ['delete'])['ids'])->get();
+        [$inUse, $free] = $files->partition(fn (Media $m) => $this->usages($m->url) !== []);
+
+        Storage::disk('public')->delete($free->pluck('path')->all());
+        Media::whereKey($free->modelKeys())->delete();
+
+        $message = "تم حذف {$free->count()} ملف.";
+        if ($inUse->isNotEmpty()) {
+            $message .= " تخطّينا {$inUse->count()} مستخدم في الموقع أو في مسودة: ".$inUse->pluck('name')->take(5)->implode('، ').($inUse->count() > 5 ? '…' : '');
+        }
+
+        return back()->with($free->isEmpty() ? 'error' : 'success', $message);
+    }
+
     private function query(Request $request)
     {
         return Media::query()

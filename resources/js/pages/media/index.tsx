@@ -1,3 +1,4 @@
+import { BulkBar, BulkDeleteButton, runBulk, SelectAllCheckbox, SelectCheckbox, useSelection } from '@/components/bulk-actions';
 import { DropZone } from '@/components/drop-zone';
 import { EmptyState } from '@/components/empty-state';
 import { MediaThumb } from '@/components/media-thumb';
@@ -208,6 +209,7 @@ export default function MediaIndex({ media, filters }: { media: Paginated; filte
     const { upload, busy } = useUpload();
     const input = useRef<HTMLInputElement>(null);
     const kind = filters.kind ?? 'all';
+    const selection = useSelection(media.data.map((m) => m.id));
 
     useEffect(() => {
         try {
@@ -325,6 +327,17 @@ export default function MediaIndex({ media, filters }: { media: Paginated; filte
                         </div>
                     </div>
 
+                    <BulkBar selection={selection}>
+                        <BulkDeleteButton
+                            selection={selection}
+                            title={`حذف ${selection.count} ملف؟`}
+                            description="الملفات المستخدمة في الموقع أو في مسودة مشروع ما تنحذف وتبقى في المكتبة. الباقي ينحذف نهائياً."
+                            onConfirm={() => runBulk('media.bulk', selection, 'delete')}
+                        >
+                            <Trash2 /> حذف
+                        </BulkDeleteButton>
+                    </BulkBar>
+
                     {media.data.length === 0 ? (
                         <EmptyState
                             icon={filters.q || filters.kind ? Search : Upload}
@@ -338,21 +351,30 @@ export default function MediaIndex({ media, filters }: { media: Paginated; filte
                     ) : view === 'grid' ? (
                         <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 2xl:grid-cols-10">
                             {media.data.map((m) => (
-                                <button
-                                    key={m.id}
-                                    type="button"
-                                    onClick={() => setSelected(m)}
-                                    title={m.name}
-                                    className={cn(
-                                        'group focus-visible:ring-ring relative overflow-hidden rounded-md border outline-none focus-visible:ring-2',
-                                        selected?.id === m.id && 'ring-primary ring-2',
-                                    )}
-                                >
-                                    <MediaThumb src={m.url} className="aspect-square w-full" alt={m.alt} />
-                                    {m.kind === 'video' && (
-                                        <span className="absolute start-1 top-1 rounded bg-black/70 px-1 text-[10px] text-white">فيديو</span>
-                                    )}
-                                </button>
+                                <div key={m.id} className="group relative">
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelected(m)}
+                                        title={m.name}
+                                        className={cn(
+                                            'focus-visible:ring-ring relative block w-full overflow-hidden rounded-md border outline-none focus-visible:ring-2',
+                                            (selected?.id === m.id || selection.has(m.id)) && 'ring-primary ring-2',
+                                        )}
+                                    >
+                                        <MediaThumb src={m.url} className="aspect-square w-full" alt={m.alt} />
+                                        {m.kind === 'video' && (
+                                            <span className="absolute start-1 top-1 rounded bg-black/70 px-1 text-[10px] text-white">فيديو</span>
+                                        )}
+                                    </button>
+                                    <span
+                                        className={cn(
+                                            'bg-background/90 absolute end-1 top-1 flex size-6 items-center justify-center rounded transition-opacity',
+                                            selection.count === 0 && 'opacity-0 group-hover:opacity-100 focus-within:opacity-100',
+                                        )}
+                                    >
+                                        <SelectCheckbox selection={selection} id={m.id} label={m.name} />
+                                    </span>
+                                </div>
                             ))}
                         </div>
                     ) : (
@@ -360,6 +382,9 @@ export default function MediaIndex({ media, filters }: { media: Paginated; filte
                             <Table className="min-w-[640px]">
                                 <TableHeader className="bg-muted/40">
                                     <TableRow>
+                                        <TableHead className="w-10">
+                                            <SelectAllCheckbox selection={selection} label="تحديد كل الملفات في الصفحة" />
+                                        </TableHead>
                                         <TableHead>الاسم</TableHead>
                                         <TableHead>النوع</TableHead>
                                         <TableHead>المقاس</TableHead>
@@ -374,6 +399,9 @@ export default function MediaIndex({ media, filters }: { media: Paginated; filte
                                             onClick={() => setSelected(m)}
                                             className={cn('cursor-pointer', selected?.id === m.id && 'bg-muted')}
                                         >
+                                            <TableCell onClick={(e) => e.stopPropagation()}>
+                                                <SelectCheckbox selection={selection} id={m.id} label={m.name} />
+                                            </TableCell>
                                             <TableCell>
                                                 <button type="button" className="flex items-center gap-3 text-start" onClick={() => setSelected(m)}>
                                                     <MediaThumb src={m.url} className="h-9 w-12 shrink-0 rounded" />

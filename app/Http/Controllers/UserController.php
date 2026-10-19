@@ -100,6 +100,29 @@ class UserController extends Controller
         return back()->with('success', $user->invited_at ? "تم إلغاء دعوة {$user->email}." : "تم حذف {$user->name}.");
     }
 
+    /** Delete, or resend the invitation to, the users ticked in the list. */
+    public function bulk(Request $request): RedirectResponse
+    {
+        ['ids' => $ids, 'action' => $action] = $this->bulkInput($request, ['delete', 'resend']);
+        $me = $request->user();
+        // Never yourself, whichever action: the list does not offer it either.
+        $users = User::whereIn('id', $ids)->whereKeyNot($me->id)->get();
+
+        if ($action === 'resend') {
+            $pending = $users->whereNotNull('invited_at');
+            $pending->each(fn (User $u) => $this->invite($u, $me));
+
+            return $pending->isEmpty()
+                ? back()->with('error', 'ما فيه دعوات معلّقة بين المحددين.')
+                : back()->with('success', "تم إعادة إرسال {$pending->count()} دعوة.");
+        }
+
+        // You stay, and you can manage users (this page needs it), so a manager always remains.
+        User::whereKey($users->modelKeys())->delete();
+
+        return back()->with('success', "تم حذف {$users->count()} مستخدم.");
+    }
+
     private function invite(User $user, User $by): void
     {
         $user->forceFill(['invited_at' => now()])->save();
