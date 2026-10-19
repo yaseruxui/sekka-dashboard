@@ -4,6 +4,7 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { AppSidebarHeader } from '@/components/app-sidebar-header';
 import { ErrorBoundary, PageError } from '@/components/error-boundary';
 import { FlashToasts } from '@/components/flash-toasts';
+import { MaintenanceBanner } from '@/components/maintenance-banner';
 import { type BreadcrumbItem } from '@/types';
 import { usePage } from '@inertiajs/react';
 
@@ -15,6 +16,7 @@ export default function AppSidebarLayout({ children, breadcrumbs = [] }: { child
             <AppSidebar />
             <AppContent variant="sidebar">
                 <AppSidebarHeader breadcrumbs={breadcrumbs} />
+                <MaintenanceBanner />
                 <ErrorBoundary fallback={PageError} resetKey={url}>
                     {children}
                 </ErrorBoundary>

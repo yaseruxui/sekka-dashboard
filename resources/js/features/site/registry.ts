@@ -390,8 +390,12 @@ export const SITE_PAGES: SitePage[] = [
             {
                 id: 'page',
                 title: 'صفحة 404',
-                description: 'الفيديو والعنوان.',
-                fields: [media('home', 'notFoundVideo', 'الفيديو', 'video'), t('common.notFound.title', 'العنوان')],
+                description: 'الفيديو والعنوان والوصف.',
+                fields: [
+                    media('home', 'notFoundVideo', 'الفيديو', 'video'),
+                    t('common.notFound.title', 'العنوان'),
+                    t('common.notFound.body', 'الوصف', { multiline: true }),
+                ],
             },
         ],
     },
@@ -418,8 +422,12 @@ export const SITE_PAGES: SitePage[] = [
             {
                 id: 'page',
                 title: 'شاشة الصيانة',
-                description: 'بنفس تصميم صفحة 404 وفيديوها.',
-                fields: [t('common.maintenance.title', 'العنوان'), t('common.maintenance.body', 'النص', { multiline: true })],
+                description: 'بنفس تصميم صفحة 404: الفيديو والعنوان والنص.',
+                fields: [
+                    media('home', 'maintenanceVideo', 'الفيديو', 'video'),
+                    t('common.maintenance.title', 'العنوان'),
+                    t('common.maintenance.body', 'النص', { multiline: true }),
+                ],
             },
         ],
     },

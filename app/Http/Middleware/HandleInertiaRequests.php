@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\ContactMessage;
+use App\Support\SiteContent;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -48,6 +49,8 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
+            // The red banner over every page while the site shows its maintenance screen.
+            'maintenance' => fn () => $request->user() !== null && (bool) (SiteContent::get('home')['maintenance'] ?? false),
             'unreadMessages' => fn () => $request->user()?->hasPermission('inbox') ? ContactMessage::where('status', 'new')->count() : 0,
             // The bell: unread count and the latest few (the sidebar polls this prop).
             'notifications' => fn () => ! $request->user() ? null : [
