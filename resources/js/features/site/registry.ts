@@ -163,7 +163,7 @@ export const SITE_PAGES: SitePage[] = [
                             doc: 'home',
                             path: 'clientLogos',
                             fields: [
-                                { kind: 'value', name: 'name', label: 'اسم العميل', hint: 'للتعرّف عليه في اللوحة فقط، ما بيظهر بالموقع.' },
+                                { kind: 'value', name: 'name', label: 'اسم العميل' },
                                 { kind: 'media', name: 'src', label: 'الشعار', accept: 'image' },
                             ],
                             blank: { name: '', src: '' },
