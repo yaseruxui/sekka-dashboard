@@ -144,7 +144,6 @@ export const SITE_PAGES: SitePage[] = [
                     t('home.heroEyebrow', 'السطر الصغير'),
                     t('home.heroSubtitle', 'وصف الموقع', { hint: 'يظهر في نتائج البحث وعند مشاركة الرابط.', multiline: true, max: 160 }),
                     media('home', 'heroVideo', 'فيديو الخلفية', 'video'),
-                    t('common.scrollDown', 'نص «مرّر للأسفل»'),
                 ],
             },
             {
@@ -497,7 +496,6 @@ export const SITE_PAGES: SitePage[] = [
                     t('navigation.contact', 'رابط تواصل معنا'),
                     t('navigation.privacy', 'رابط الخصوصية'),
                     t('navigation.openMenu', 'زر فتح القائمة'),
-                    t('navigation.closeMenu', 'زر إغلاق القائمة'),
                     t('navigation.menuPrompt', 'سؤال في القائمة'),
                     t('navigation.menuPromptLink', 'رابط السؤال'),
                     t('navigation.whatsappGreeting', 'رسالة واتساب من القائمة', { multiline: true }),
