@@ -22,7 +22,7 @@ use Inertia\Response;
  */
 class SiteController extends Controller
 {
-    public const PAGES = ['home', 'work', 'contact', 'policy', 'not-found', 'menu'];
+    public const PAGES = ['home', 'work', 'contact', 'policy', 'not-found', 'maintenance', 'menu'];
 
     public function show(string $page): Response
     {

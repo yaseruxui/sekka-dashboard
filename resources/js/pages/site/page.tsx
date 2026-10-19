@@ -7,10 +7,10 @@ import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
-import { Briefcase, ExternalLink, FileQuestion, Home, Mail, Menu, ShieldCheck } from 'lucide-react';
+import { Briefcase, Construction, ExternalLink, FileQuestion, Home, Mail, Menu, ShieldCheck } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
-const ICONS = { home: Home, work: Briefcase, contact: Mail, policy: ShieldCheck, 'not-found': FileQuestion, menu: Menu };
+const ICONS = { home: Home, work: Briefcase, contact: Mail, policy: ShieldCheck, 'not-found': FileQuestion, maintenance: Construction, menu: Menu };
 const DOT: Record<CardStatus, string> = { saved: 'bg-green-700', dirty: 'bg-orange-600', error: 'bg-red-600' };
 
 interface Props {

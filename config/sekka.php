@@ -19,7 +19,7 @@ return [
     /* The site posts its contact form to /api/contact?key=<this>. */
     'contact_webhook_key' => env('CONTACT_WEBHOOK_KEY', ''),
 
-    /* Used by `php artisan db:seed` to create the first admin. */
+    /* Used by `php artisan db:seed` (every deploy): creates the admin and keeps its password equal to ADMIN_PASSWORD. */
     'admin' => [
         'name' => env('ADMIN_NAME', 'Sekka Admin'),
         'email' => env('ADMIN_EMAIL'),

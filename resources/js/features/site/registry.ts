@@ -78,7 +78,7 @@ export interface Section {
 }
 
 export interface SitePage {
-    id: 'home' | 'work' | 'contact' | 'policy' | 'not-found' | 'menu';
+    id: 'home' | 'work' | 'contact' | 'policy' | 'not-found' | 'maintenance' | 'menu';
     title: string;
     description: string;
     path: string;
@@ -392,6 +392,34 @@ export const SITE_PAGES: SitePage[] = [
                 title: 'صفحة 404',
                 description: 'الفيديو والعنوان.',
                 fields: [media('home', 'notFoundVideo', 'الفيديو', 'video'), t('common.notFound.title', 'العنوان')],
+            },
+        ],
+    },
+    {
+        id: 'maintenance',
+        title: 'وضع الصيانة',
+        description: 'لما يكون شغّال، كل صفحات الموقع بتعرض شاشة الصيانة بدل محتواها.',
+        path: '/',
+        sections: [
+            {
+                id: 'state',
+                title: 'التشغيل',
+                description: 'يظهر على الموقع خلال دقائق من الحفظ.',
+                fields: [
+                    {
+                        kind: 'switch',
+                        doc: 'home',
+                        path: 'maintenance',
+                        label: 'تشغيل وضع الصيانة',
+                        hint: 'الزوار بيشوفوا شاشة الصيانة بس، ومحركات البحث ما بتأرشفها.',
+                    },
+                ],
+            },
+            {
+                id: 'page',
+                title: 'شاشة الصيانة',
+                description: 'بنفس تصميم صفحة 404 وفيديوها.',
+                fields: [t('common.maintenance.title', 'العنوان'), t('common.maintenance.body', 'النص', { multiline: true })],
             },
         ],
     },
