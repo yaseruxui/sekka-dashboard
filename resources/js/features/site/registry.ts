@@ -274,8 +274,8 @@ export const SITE_PAGES: SitePage[] = [
             },
             {
                 id: 'story',
-                title: 'القصة',
-                description: 'عنوان القسم وفيديو الخلفية.',
+                title: 'ختام الصفحة',
+                description: 'آخر قسم قبل الفوتر: عنوان فوق فيديو، وشعارات العملاء بتتبدّل فوقه.',
                 fields: [t('home.storyTitle', 'العنوان', { html: true }), media('home', 'storyVideo', 'فيديو الخلفية', 'video')],
             },
         ],
