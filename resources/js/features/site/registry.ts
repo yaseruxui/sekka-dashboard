@@ -52,6 +52,8 @@ export type ListField = {
 export type PolicyFieldDef = { kind: 'policy' };
 /** Any texts of these namespaces no section shows (so nothing is out of reach). */
 export type LeftoversField = { kind: 'leftovers'; namespaces: string[] };
+/** A sub-heading inside a section, to group the fields after it. */
+export type HeadingField = { kind: 'heading'; label: string; hint?: string };
 /** The home page's services: pick and order from the services list. */
 /** Pick and order items for a home section: services, or projects for the work reel. */
 export type PickField = { kind: 'pick'; doc: 'home'; path: 'serviceIds' | 'workReelIds'; label: string; source: 'services' | 'projects' };
@@ -66,7 +68,8 @@ export type Field =
     | ListField
     | PolicyFieldDef
     | LeftoversField
-    | PickField;
+    | PickField
+    | HeadingField;
 
 export interface Section {
     id: string;
@@ -85,12 +88,6 @@ export interface SitePage {
     sections: Section[];
 }
 
-const strip = (html: unknown) =>
-    String(html ?? '')
-        .replace(/<[^>]+>/g, ' ')
-        .replace(/&nbsp;|&mdash;/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
 const t = (key: string, label: string, extra: Partial<TextField> = {}): TextField => ({ kind: 'text', key, label, ...extra });
 const media = (doc: Doc, path: string, label: string, accept: Accept, hint?: string): MediaField => ({
     kind: 'media',
@@ -155,18 +152,18 @@ export const SITE_PAGES: SitePage[] = [
                     {
                         kind: 'list',
                         label: 'شعارات العملاء',
+                        hint: 'ارفع كل شعار مقصوص على حدوده بدون فراغ حواليه، والموقع بيضبط حجمه بشريط التعريف وشريط القصة.',
                         itemLabel: (i, _t, d) => String(d?.name || `شعار ${i + 1}`),
                         addLabel: 'إضافة شعار',
-                        thumb: 'full',
+                        thumb: 'src',
                         data: {
                             doc: 'home',
                             path: 'clientLogos',
                             fields: [
                                 { kind: 'value', name: 'name', label: 'اسم العميل' },
-                                { kind: 'media', name: 'tight', label: 'الشعار في شريط التعريف', accept: 'image' },
-                                { kind: 'media', name: 'full', label: 'الشعار في شريط القصة', accept: 'image' },
+                                { kind: 'media', name: 'src', label: 'الشعار', accept: 'image' },
                             ],
-                            blank: { name: '', tight: '', full: '' },
+                            blank: { name: '', src: '' },
                         },
                     },
                     { kind: 'number', doc: 'home', path: 'reelStepS', label: 'مدة ظهور كل شعار (ثوانٍ)', min: 0.5, max: 10, step: 0.5 },
@@ -215,38 +212,67 @@ export const SITE_PAGES: SitePage[] = [
             {
                 id: 'about',
                 title: 'من نحن',
-                description: 'مشاهد التعريف والأرقام والصور.',
+                description: 'أربع مشاهد، كل مشهد بنصوصه والصورة أو الفيديو اللي خلفه.',
                 fields: [
+                    { kind: 'heading', label: 'المشهد 1', hint: 'صورة المنطقة، والكاميرا بتقرّب على الرياض. بتضل خلف المشهد 2 كمان.' },
+                    media('home', 'about.region', 'صورة المنطقة', 'image'),
+                    t('home.about.scenes.0.h', 'العنوان', { html: true }),
+                    { kind: 'heading', label: 'المشهد 2', hint: 'على نفس صورة المنطقة.' },
+                    t('home.about.scenes.1.kicker', 'العنوان الصغير'),
+                    t('home.about.scenes.1.h', 'العنوان', { html: true }),
+                    t('home.about.scenes.1.line', 'السطر'),
                     {
                         kind: 'list',
-                        label: 'المشاهد',
-                        itemLabel: (i, text) => strip((text as { h?: string })?.h) || `مشهد ${i + 1}`,
-                        addLabel: 'إضافة مشهد',
+                        label: 'الأرقام',
+                        itemLabel: (j, text) => String((text as { value?: string })?.value || `رقم ${j + 1}`),
+                        addLabel: 'إضافة رقم',
                         texts: {
-                            key: 'home.about.scenes',
+                            key: 'home.about.scenes.1.facts',
                             fields: [
-                                { name: 'kicker', label: 'العنوان الصغير' },
-                                { name: 'h', label: 'العنوان', html: true },
-                                { name: 'line', label: 'السطر' },
-                                {
-                                    kind: 'list',
-                                    name: 'facts',
-                                    label: 'الأرقام',
-                                    fields: [
-                                        { name: 'value', label: 'الرقم' },
-                                        { name: 'label', label: 'الوصف' },
-                                    ],
-                                    addLabel: 'إضافة رقم',
-                                },
+                                { name: 'value', label: 'الرقم' },
+                                { name: 'label', label: 'الوصف' },
                             ],
-                            blank: { kicker: '', h: '', line: '' },
+                            blank: { value: '', label: '', dummy: false },
                         },
                     },
-                    t('home.about.closing', 'الجملة الختامية', { html: true, multiline: true }),
-                    media('home', 'about.region', 'صورة المنطقة', 'image'),
-                    media('home', 'about.peopleFlag', 'فيديو الجمهور', 'video'),
-                    media('home', 'about.studio', 'فيديو الفريق', 'video'),
-                    media('home', 'about.impact', 'فيديو الأثر', 'video'),
+                    { kind: 'heading', label: 'المشهد 3' },
+                    media('home', 'about.peopleFlag', 'الفيديو', 'video'),
+                    t('home.about.scenes.2.kicker', 'العنوان الصغير'),
+                    t('home.about.scenes.2.h', 'العنوان', { html: true }),
+                    t('home.about.scenes.2.line', 'السطر'),
+                    {
+                        kind: 'list',
+                        label: 'الأرقام',
+                        itemLabel: (j, text) => String((text as { value?: string })?.value || `رقم ${j + 1}`),
+                        addLabel: 'إضافة رقم',
+                        texts: {
+                            key: 'home.about.scenes.2.facts',
+                            fields: [
+                                { name: 'value', label: 'الرقم' },
+                                { name: 'label', label: 'الوصف' },
+                            ],
+                            blank: { value: '', label: '', dummy: false },
+                        },
+                    },
+                    { kind: 'heading', label: 'المشهد 4', hint: 'آخر مشهد، بيضل لنهاية القسم.' },
+                    media('home', 'about.impact', 'الفيديو', 'video'),
+                    t('home.about.scenes.3.kicker', 'العنوان الصغير'),
+                    t('home.about.scenes.3.h', 'العنوان', { html: true }),
+                    t('home.about.scenes.3.line', 'السطر'),
+                    {
+                        kind: 'list',
+                        label: 'الأرقام',
+                        itemLabel: (j, text) => String((text as { value?: string })?.value || `رقم ${j + 1}`),
+                        addLabel: 'إضافة رقم',
+                        texts: {
+                            key: 'home.about.scenes.3.facts',
+                            fields: [
+                                { name: 'value', label: 'الرقم' },
+                                { name: 'label', label: 'الوصف' },
+                            ],
+                            blank: { value: '', label: '', dummy: false },
+                        },
+                    },
                 ],
             },
             {
@@ -463,7 +489,7 @@ export const SITE_PAGES: SitePage[] = [
 ];
 
 /** Texts the site no longer reads: kept out of the leftovers card. */
-const RETIRED = ['home.introTitleMobile', 'home.caseList.items', 'home.workReel.tiles'];
+const RETIRED = ['home.introTitleMobile', 'home.caseList.items', 'home.workReel.tiles', 'home.about.closing'];
 
 /** Every text key a section shows (for working out the leftovers). */
 export function usedTextKeys(): Set<string> {

@@ -74,6 +74,41 @@ class SiteSectionsTest extends TestCase
         $this->save(['home' => ['maintenance' => 'maybe']])->assertSessionHasErrors('home.maintenance');
     }
 
+    public function test_an_about_scene_saves_its_own_texts(): void
+    {
+        $this->save([
+            'section' => 'home.about',
+            'texts' => ['ar' => [
+                'home.about.scenes.3.h' => 'نصنع الأثر.',
+                'home.about.scenes.3.facts' => [['value' => '+150', 'label' => 'مشروع', 'dummy' => false]],
+            ]],
+            'home' => ['about.impact' => 'http://localhost/storage/media/impact.mp4'],
+        ])->assertSessionHasNoErrors();
+
+        $content = $this->getJson('/api/public/content')->json();
+        $scenes = $content['messages']['ar']['home']['about']['scenes'];
+        $this->assertSame('نصنع الأثر.', $scenes[3]['h']);
+        $this->assertSame([['value' => '+150', 'label' => 'مشروع', 'dummy' => false]], $scenes[3]['facts']);
+        $this->assertSame($this->site()['messages']['ar']['home']['about']['scenes'][1]['h'], $scenes[1]['h']);
+        $this->assertSame('http://localhost/storage/media/impact.mp4', $content['home']['about']['impact']);
+    }
+
+    public function test_client_logos_are_one_file_each(): void
+    {
+        // The defaults still carry the old cropped + padded pair.
+        $this->withoutVite();
+        $this->actingAs($this->user)->get('/site/home')->assertInertia(fn ($p) => $p
+            ->where('content.home.clientLogos.0', ['name' => 'AlMajdouie', 'src' => '/media/work/logos-tight/AlMajdouie_Logo_RGB.svg']));
+
+        $this->save(['home' => ['reelStepS' => 1]])->assertSessionHasNoErrors();
+        $this->assertSame(
+            ['name' => 'Aqwas', 'src' => '/media/work/logos-tight/Aqwas-01.svg'],
+            SiteContent::get('home')['clientLogos'][1],
+        );
+
+        $this->save(['home' => ['clientLogos' => [['name' => 'جديد', 'src' => '']]]])->assertSessionHasErrors('home.clientLogos.0.src');
+    }
+
     public function test_every_page_knows_when_maintenance_is_on(): void
     {
         $this->withoutVite();

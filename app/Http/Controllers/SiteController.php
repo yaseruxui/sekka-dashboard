@@ -32,7 +32,7 @@ class SiteController extends Controller
         return Inertia::render('site/page', [
             'page' => $page,
             'content' => [
-                'home' => SiteContent::get('home') ?? ($defaults['home'] ?? null),
+                'home' => ($home = SiteContent::get('home') ?? ($defaults['home'] ?? null)) ? ContentRules::upgradeHome($home) : null,
                 'contact' => SiteContent::get('contact') ?? ($defaults['contact'] ?? null),
                 'policy' => SiteContent::get('policy') ?? ($defaults['policy'] ?? null),
                 'messages' => SiteContent::get('messages') ?? ($defaults['messages'] ?? ['ar' => [], 'en' => []]),
@@ -93,6 +93,9 @@ class SiteController extends Controller
                 continue;
             }
             $doc = SiteContent::get($section) ?? ($defaults[$section] ?? []);
+            if ($section === 'home') {
+                $doc = ContentRules::upgradeHome($doc);
+            }
             foreach ((array) $request->input($section) as $path => $value) {
                 Arr::set($doc, $path, $value);
             }

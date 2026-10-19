@@ -40,12 +40,12 @@ class ContentRules
             "{$p}workReel.*.href" => ['required', 'string', 'min:1', 'max:2048'],
             "{$p}clientLogos" => ['present', 'array'],
             "{$p}clientLogos.*.name" => ['nullable', 'string', 'max:200'],
-            "{$p}clientLogos.*.tight" => $src,
-            "{$p}clientLogos.*.full" => $src,
+            "{$p}clientLogos.*.src" => $src,
             "{$p}reelStepS" => ['required', 'numeric', 'gt:0', 'max:10'],
             "{$p}about.region" => $src,
             "{$p}about.peopleFlag" => $src,
-            "{$p}about.studio" => $src,
+            // No longer shown; kept while present for sites that still read it.
+            "{$p}about.studio" => ['nullable', 'string', 'max:2048'],
             "{$p}about.impact" => $src,
             "{$p}storyVideo" => $src,
             "{$p}notFoundVideo" => $src,
@@ -57,6 +57,21 @@ class ContentRules
             "{$p}workReelIds" => ['nullable', 'array'],
             "{$p}workReelIds.*" => ['integer', 'distinct', 'exists:projects,id'],
         ];
+    }
+
+    /**
+     * Client logos saved before they became one file: the cropped `tight` copy
+     * is the file, the padded `full` copy is dropped.
+     */
+    public static function upgradeHome(array $h): array
+    {
+        if (isset($h['clientLogos']) && is_array($h['clientLogos'])) {
+            $h['clientLogos'] = array_map(fn ($l) => is_array($l)
+                ? ['name' => $l['name'] ?? '', 'src' => $l['src'] ?? $l['tight'] ?? '']
+                : $l, $h['clientLogos']);
+        }
+
+        return $h;
     }
 
     public static function normalizeHome(array $h): array
@@ -75,12 +90,12 @@ class ContentRules
             ],
             'caseList' => array_map(fn ($c) => ['video' => $c['video'], 'fit' => $c['fit'], 'gradient' => (string) ($c['gradient'] ?? '')], array_values($h['caseList'])),
             'workReel' => array_map(fn ($w) => ['src' => $w['src'], 'href' => $w['href']], array_values($h['workReel'])),
-            'clientLogos' => array_map(fn ($l) => ['name' => (string) ($l['name'] ?? ''), 'tight' => $l['tight'], 'full' => $l['full']], array_values($h['clientLogos'])),
+            'clientLogos' => array_map(fn ($l) => ['name' => (string) ($l['name'] ?? ''), 'src' => $l['src']], array_values($h['clientLogos'])),
             'reelStepS' => (float) $h['reelStepS'],
             'about' => [
                 'region' => $h['about']['region'],
                 'peopleFlag' => $h['about']['peopleFlag'],
-                'studio' => $h['about']['studio'],
+                ...(! empty($h['about']['studio']) ? ['studio' => $h['about']['studio']] : []),
                 'impact' => $h['about']['impact'],
             ],
             'storyVideo' => $h['storyVideo'],
