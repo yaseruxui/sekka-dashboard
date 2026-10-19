@@ -74,6 +74,20 @@ class SiteSectionsTest extends TestCase
         $this->save(['home' => ['maintenance' => 'maybe']])->assertSessionHasErrors('home.maintenance');
     }
 
+    public function test_the_maintenance_film_defaults_to_the_404_film(): void
+    {
+        $this->save(['home' => ['maintenance' => false]])->assertSessionHasNoErrors();
+        $this->assertSame($this->site()['home']['notFoundVideo'], SiteContent::get('home')['maintenanceVideo']);
+
+        $this->save([
+            'home' => ['maintenanceVideo' => 'http://localhost/storage/media/soon.mp4'],
+            'texts' => ['ar' => ['common.notFound.body' => 'الرابط قديم.']],
+        ])->assertSessionHasNoErrors();
+        $content = $this->getJson('/api/public/content')->json();
+        $this->assertSame('http://localhost/storage/media/soon.mp4', $content['home']['maintenanceVideo']);
+        $this->assertSame('الرابط قديم.', $content['messages']['ar']['common']['notFound']['body']);
+    }
+
     public function test_an_empty_text_falls_back_to_the_original(): void
     {
         $this->save(['texts' => ['ar' => ['home.heroEyebrow' => '']]])->assertSessionHasNoErrors();

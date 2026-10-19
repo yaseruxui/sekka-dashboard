@@ -44,6 +44,8 @@ export const homeMediaSchema = z.object({
     notFoundVideo: src,
     /** Where the 404 page's button goes. */
     notFoundHref: z.optional(z.string()),
+    /** Film behind the maintenance screen; the 404 film when unset. */
+    maintenanceVideo: z.optional(src),
     /** While on, every page shows the maintenance screen instead (texts: common.maintenance). */
     maintenance: z.optional(z.boolean()),
 });
