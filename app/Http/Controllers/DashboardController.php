@@ -27,6 +27,7 @@ class DashboardController extends Controller
 
         return Inertia::render('dashboard', [
             'stats' => [
+                'total' => Project::count(),
                 'published' => Project::where('published', true)->count(),
                 'drafts' => Project::where(fn ($q) => $q->where('published', false)->orWhereNotNull('draft'))->count(),
                 'unread' => ContactMessage::where('status', 'new')->count(),
@@ -50,7 +51,6 @@ class DashboardController extends Controller
                 // The site shows every service until some are picked.
                 'services' => isset($home['serviceIds']) ? count($home['serviceIds']) : Service::count(),
                 'servicesTotal' => Service::count(),
-                'workReel' => count($home['workReelIds'] ?? []),
                 'media' => Media::count(),
             ],
         ]);

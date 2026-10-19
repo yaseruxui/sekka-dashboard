@@ -11,7 +11,6 @@ import {
     ExternalLink,
     FilePen,
     FolderCheck,
-    GalleryHorizontal,
     Globe,
     ImageUp,
     Images,
@@ -37,7 +36,7 @@ type Message = {
 type MessageStatus = 'new' | 'in_progress' | 'replied' | 'closed';
 
 interface Props {
-    stats: { published: number; drafts: number; unread: number };
+    stats: { total: number; published: number; drafts: number; unread: number };
     recentMessages: Message[];
     messages: {
         days: { date: string; count: number }[];
@@ -54,7 +53,7 @@ interface Props {
         lastUpdate: string | null;
     };
     recentEdits: { section: string; by: string; at: string }[];
-    content: { services: number; servicesTotal: number; workReel: number; media: number };
+    content: { services: number; servicesTotal: number; media: number };
 }
 
 const STATUS_LABELS: Record<MessageStatus, string> = { new: 'جديدة', in_progress: 'قيد المتابعة', replied: 'تم الرد', closed: 'مغلقة' };
@@ -89,7 +88,7 @@ function DayBars({ days }: { days: { date: string; count: number }[] }) {
 
 function Card({ title, action, children, className }: { title: string; action?: React.ReactNode; children: React.ReactNode; className?: string }) {
     return (
-        <section className={cn('bg-card min-w-0 overflow-hidden rounded-xl border shadow-xs', className)}>
+        <section className={cn('bg-card flex min-w-0 flex-col overflow-hidden rounded-xl border shadow-xs', className)}>
             <div className="flex items-center justify-between border-b px-4 py-3">
                 <h2 className="font-semibold">{title}</h2>
                 {action}
@@ -223,42 +222,39 @@ export default function Dashboard({ stats, recentMessages, messages, site, recen
                     )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
-                    <Stat label="مشاريع منشورة" value={stats.published} hint="بصفحة أعمالنا" icon={FolderCheck} tone="green" href="/projects" />
-                    <Stat label="مسودات" value={stats.drafts} hint="لم تُنشر بعد" icon={FilePen} tone="amber" href="/projects" />
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+                    <Stat
+                        label="إجمالي المشاريع"
+                        value={stats.total}
+                        hint={`${stats.published} منشور بصفحة أعمالنا`}
+                        icon={FolderCheck}
+                        tone="green"
+                        href="/projects"
+                    />
+                    <Stat label="مسودات" value={stats.drafts} hint="مشاريع أو تعديلات لسا ما انتشرت" icon={FilePen} tone="amber" href="/projects" />
                     {can('inbox') && (
-                        <Stat label="رسائل جديدة" value={stats.unread} hint="من نموذج التواصل" icon={Mail} tone="sky" href={route('inbox.index')} />
+                        <Stat label="طلبات تواصل" value={stats.unread} hint="جديدة بانتظار الرد" icon={Mail} tone="sky" href={route('inbox.index')} />
                     )}
                     {can('site') && (
-                        <>
-                            <Stat
-                                label="الخدمات"
-                                value={content.services}
-                                hint={`ظاهرة بالرئيسية من ${content.servicesTotal}`}
-                                icon={Sparkles}
-                                tone="violet"
-                                href="/site/home"
-                            />
-                            <Stat
-                                label="شريط الأعمال"
-                                value={content.workReel}
-                                hint="مشاريع بالرئيسية"
-                                icon={GalleryHorizontal}
-                                tone="rose"
-                                href="/site/home"
-                            />
-                        </>
+                        <Stat
+                            label="إجمالي الخدمات"
+                            value={content.servicesTotal}
+                            hint={`${content.services} ظاهرة بالرئيسية`}
+                            icon={Sparkles}
+                            tone="violet"
+                            href="/services"
+                        />
                     )}
                     {can('media') && (
                         <Stat label="مكتبة الوسائط" value={content.media} hint="صور وفيديوهات" icon={Images} tone="slate" href="/media" />
                     )}
                 </div>
 
-                <div className="flex flex-wrap items-start gap-4">
+                <div className="grid items-stretch gap-4 lg:grid-cols-3">
                     {messages && (
                         <Card
                             title="الرسائل آخر 30 يوم"
-                            className="flex-[2_1_420px]"
+                            className="lg:col-span-2"
                             action={
                                 <Link
                                     href={route('inbox.index')}
@@ -268,7 +264,7 @@ export default function Dashboard({ stats, recentMessages, messages, site, recen
                                 </Link>
                             }
                         >
-                            <div className="flex flex-wrap items-end gap-x-8 gap-y-4 p-4">
+                            <div className="flex flex-1 flex-wrap items-end gap-x-8 gap-y-4 p-4">
                                 <div className="grid gap-1">
                                     <strong className="text-3xl font-bold tabular-nums">{messages.last30}</strong>
                                     <span className="text-muted-foreground text-xs">
@@ -300,7 +296,7 @@ export default function Dashboard({ stats, recentMessages, messages, site, recen
                             </div>
                         </Card>
                     )}
-                    <section className="bg-card flex flex-[1_1_260px] flex-col gap-2.5 rounded-xl border p-4 shadow-xs">
+                    <section className={cn('bg-card flex flex-col gap-2.5 rounded-xl border p-4 shadow-xs', !messages && 'lg:col-span-3')}>
                         <h2 className="mb-1 font-semibold">إجراءات سريعة</h2>
                         {actions.map((a) => {
                             const inner = (
@@ -327,9 +323,14 @@ export default function Dashboard({ stats, recentMessages, messages, site, recen
                     </section>
                 </div>
 
-                <div className="flex flex-wrap items-start gap-4">
+                <div className="grid items-stretch gap-4 lg:grid-cols-3">
                     {can('inbox') && (
-                        <section className="bg-card min-w-0 flex-[2_1_420px] overflow-hidden rounded-xl border shadow-xs">
+                        <section
+                            className={cn(
+                                'bg-card min-w-0 overflow-hidden rounded-xl border shadow-xs',
+                                can('site') ? 'lg:col-span-2' : 'lg:col-span-3',
+                            )}
+                        >
                             <div className="flex items-center justify-between border-b px-4 py-3">
                                 <h2 className="font-semibold">آخر الرسائل</h2>
                                 <Link
@@ -376,7 +377,7 @@ export default function Dashboard({ stats, recentMessages, messages, site, recen
                         </section>
                     )}
                     {can('site') && (
-                        <Card title="آخر التعديلات" className="flex-[1_1_300px]">
+                        <Card title="آخر التعديلات" className={cn(!can('inbox') && 'lg:col-span-3')}>
                             {recentEdits.length === 0 ? (
                                 <p className="text-muted-foreground p-6 text-center text-sm">ما في تعديلات على الموقع للحين.</p>
                             ) : (
@@ -388,12 +389,12 @@ export default function Dashboard({ stats, recentMessages, messages, site, recen
                                             href={href}
                                             className="hover:bg-muted/60 flex items-center gap-3 border-b px-4 py-2.5 text-sm transition-colors last:border-0"
                                         >
-                                            <span className="min-w-0 flex-1 truncate">
-                                                <span className="font-medium">{e.by || '—'}</span>
-                                                <span className="text-muted-foreground"> عدّل </span>
-                                                {label}
+                                            <span className="grid min-w-0 flex-1 gap-0.5">
+                                                <span className="truncate">{label}</span>
+                                                <span className="text-muted-foreground text-xs">
+                                                    {e.by || '—'} · {timeAgo(e.at)}
+                                                </span>
                                             </span>
-                                            <span className="text-muted-foreground shrink-0 text-xs">{timeAgo(e.at)}</span>
                                         </Link>
                                     );
                                 })
