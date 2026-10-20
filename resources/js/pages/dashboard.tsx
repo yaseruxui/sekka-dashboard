@@ -9,7 +9,6 @@ import {
     ArrowLeft,
     Construction,
     ExternalLink,
-    FilePen,
     FolderCheck,
     Globe,
     ImageUp,
@@ -36,7 +35,7 @@ type Message = {
 type MessageStatus = 'new' | 'in_progress' | 'replied' | 'closed';
 
 interface Props {
-    stats: { total: number; published: number; drafts: number; unread: number };
+    stats: { total: number; published: number; unread: number };
     recentMessages: Message[];
     messages: {
         days: { date: string; count: number }[];
@@ -222,7 +221,7 @@ export default function Dashboard({ stats, recentMessages, messages, site, recen
                     )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
                     <Stat
                         label="إجمالي المشاريع"
                         value={stats.total}
@@ -231,7 +230,6 @@ export default function Dashboard({ stats, recentMessages, messages, site, recen
                         tone="green"
                         href="/projects"
                     />
-                    <Stat label="مسودات" value={stats.drafts} hint="مشاريع أو تعديلات لسا ما انتشرت" icon={FilePen} tone="amber" href="/projects" />
                     {can('inbox') && (
                         <Stat label="طلبات تواصل" value={stats.unread} hint="جديدة بانتظار الرد" icon={Mail} tone="sky" href={route('inbox.index')} />
                     )}
@@ -253,7 +251,7 @@ export default function Dashboard({ stats, recentMessages, messages, site, recen
                 <div className="grid items-stretch gap-4 lg:grid-cols-3">
                     {messages && (
                         <Card
-                            title="الرسائل آخر 30 يوم"
+                            title="طلبات التواصل آخر 30 يوم"
                             className="lg:col-span-2"
                             action={
                                 <Link
@@ -332,7 +330,7 @@ export default function Dashboard({ stats, recentMessages, messages, site, recen
                             )}
                         >
                             <div className="flex items-center justify-between border-b px-4 py-3">
-                                <h2 className="font-semibold">آخر الرسائل</h2>
+                                <h2 className="font-semibold">آخر طلبات التواصل</h2>
                                 <Link
                                     href={route('inbox.index')}
                                     className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"

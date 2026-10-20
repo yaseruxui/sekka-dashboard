@@ -29,7 +29,6 @@ class DashboardController extends Controller
             'stats' => [
                 'total' => Project::count(),
                 'published' => Project::where('published', true)->count(),
-                'drafts' => Project::where(fn ($q) => $q->where('published', false)->orWhereNotNull('draft'))->count(),
                 'unread' => ContactMessage::where('status', 'new')->count(),
             ],
             'recentMessages' => ! $inbox ? [] : ContactMessage::latest('id')->limit(5)
