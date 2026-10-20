@@ -90,6 +90,15 @@ class SiteSectionsTest extends TestCase
         $this->assertSame($this->site()['home']['about']['region'], $content['home']['about']['region']);
     }
 
+    public function test_the_scroll_video_can_be_removed(): void
+    {
+        $this->save(['home' => ['about.video' => 'http://localhost/storage/media/about.mp4']])->assertSessionHasNoErrors();
+        $this->assertSame('http://localhost/storage/media/about.mp4', SiteContent::get('home')['about']['video']);
+
+        $this->save(['home' => ['about.video' => '']])->assertSessionHasNoErrors();
+        $this->assertArrayNotHasKey('video', SiteContent::get('home')['about']);
+    }
+
     public function test_client_logos_are_one_file_each(): void
     {
         // The defaults still carry the old cropped + padded pair.

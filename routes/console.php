@@ -27,6 +27,13 @@ Artisan::command('sekka:admin {email} {--name=} {--password=}', function (string
 })->purpose('Create an admin account, or reset its password');
 
 Artisan::command('sekka:deploy', function () {
+    // Preview builds share the production database: a branch must not migrate or reseed it.
+    if (env('VERCEL_ENV') === 'preview') {
+        $this->warn('Preview build: skipping migrations, seeding and import (the database is shared with production).');
+
+        return 0;
+    }
+
     $connection = config('database.default');
     if (! config("database.connections.{$connection}.url")) {
         $this->warn("No database URL for [{$connection}]: skipping migrations.");
