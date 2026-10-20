@@ -309,7 +309,7 @@ export const SITE_PAGES: SitePage[] = [
             },
             {
                 id: 'seo',
-                title: 'محركات البحث',
+                title: 'تحسين محركات البحث (SEO)',
                 description: 'عنوان الصفحة ووصفها في نتائج البحث.',
                 fields: [t('work.metaTitle', 'عنوان الصفحة'), t('work.description', 'الوصف', { multiline: true, max: 160 })],
             },
@@ -372,7 +372,7 @@ export const SITE_PAGES: SitePage[] = [
             },
             {
                 id: 'seo',
-                title: 'محركات البحث',
+                title: 'تحسين محركات البحث (SEO)',
                 description: 'عنوان الصفحة ووصفها في نتائج البحث.',
                 fields: [t('contact.metaTitle', 'عنوان الصفحة'), t('contact.metaDescription', 'الوصف', { multiline: true, max: 160 })],
             },
@@ -387,7 +387,7 @@ export const SITE_PAGES: SitePage[] = [
             { id: 'text', title: 'نص السياسة', description: 'العنوان وتاريخ التحديث والنص.', fields: [{ kind: 'policy' }] },
             {
                 id: 'seo',
-                title: 'العنوان ومحركات البحث',
+                title: 'تحسين محركات البحث (SEO)',
                 description: 'عنوان الصفحة في القائمة ونتائج البحث.',
                 fields: [
                     t('policy.title', 'عنوان الصفحة'),
