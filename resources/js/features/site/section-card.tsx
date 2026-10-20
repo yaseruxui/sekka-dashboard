@@ -390,7 +390,18 @@ function ListEditor({
                                                             <SelectContent>
                                                                 {df.options.map(([ov, ol]) => (
                                                                     <SelectItem key={ov} value={ov}>
-                                                                        {ol}
+                                                                        <span className="flex items-center gap-2">
+                                                                            {df.icons?.[ov] && (
+                                                                                <svg
+                                                                                    viewBox="0 0 24 24"
+                                                                                    className="size-4 shrink-0 fill-current"
+                                                                                    aria-hidden="true"
+                                                                                >
+                                                                                    <path d={df.icons[ov]} />
+                                                                                </svg>
+                                                                            )}
+                                                                            {ol}
+                                                                        </span>
                                                                     </SelectItem>
                                                                 ))}
                                                             </SelectContent>
