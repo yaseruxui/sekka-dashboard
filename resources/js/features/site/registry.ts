@@ -19,7 +19,8 @@ export type TextField = { kind: 'text'; key: string; label: string; hint?: strin
 /** A plain value in a document (same in both languages). */
 export type ValueField = { kind: 'value'; doc: Doc; path: string; label: string; hint?: string; ltr?: boolean; type?: 'email' | 'url' | 'tel' };
 export type NumberField = { kind: 'number'; doc: Doc; path: string; label: string; hint?: string; min: number; max: number; step: number };
-export type MediaField = { kind: 'media'; doc: Doc; path: string; label: string; hint?: string; accept: Accept };
+/** `clearable`: an optional file, with a button to remove it. */
+export type MediaField = { kind: 'media'; doc: Doc; path: string; label: string; hint?: string; accept: Accept; clearable?: boolean };
 export type SelectField = { kind: 'select'; doc: Doc; path: string; label: string; hint?: string; options: [string, string][] };
 export type SwitchField = { kind: 'switch'; doc: Doc; path: string; label: string; hint?: string };
 
@@ -95,13 +96,14 @@ const strip = (html: unknown) =>
         .replace(/\s+/g, ' ')
         .trim();
 const t = (key: string, label: string, extra: Partial<TextField> = {}): TextField => ({ kind: 'text', key, label, ...extra });
-const media = (doc: Doc, path: string, label: string, accept: Accept, hint?: string): MediaField => ({
+const media = (doc: Doc, path: string, label: string, accept: Accept, hint?: string, clearable?: boolean): MediaField => ({
     kind: 'media',
     doc,
     path,
     label,
     accept,
     hint,
+    clearable,
 });
 
 const galleryColumn = (path: string, label: string): ListField => ({
@@ -225,8 +227,8 @@ export const SITE_PAGES: SitePage[] = [
                         label: 'فيديو السكرول',
                         hint: 'الفيديو بيمشي مع نزول الزائر وبيرجع لما يطلع، والمشاهد بتتوزّع عليه بالتساوي.',
                     },
-                    media('home', 'about.video', 'الفيديو', 'video'),
-                    media('home', 'about.videoMobile', 'فيديو الموبايل (عمودي)', 'video', 'اختياري. إذا فاضي بيظهر نفس الفيديو على الموبايل.'),
+                    media('home', 'about.video', 'الفيديو', 'video', 'إذا أزلته، الموقع بيرجع للحركة الحالية.', true),
+                    media('home', 'about.videoMobile', 'فيديو الموبايل (عمودي)', 'video', 'اختياري. إذا فاضي بيظهر نفس الفيديو على الموبايل.', true),
                     { kind: 'heading', label: 'المشاهد' },
                     {
                         kind: 'list',

@@ -637,8 +637,9 @@ export function SectionCard({
                         <MediaPickerField
                             value={String(state.data[dataKey(f.doc, f.path)] ?? '')}
                             accept={f.accept}
+                            clearable={f.clearable}
                             invalid={!!err(f.doc, f.path)}
-                            onChange={(item) => item && setData(f.doc, f.path, item.url)}
+                            onChange={(item) => (item ? setData(f.doc, f.path, item.url) : f.clearable && setData(f.doc, f.path, ''))}
                         />
                     </FieldShell>
                 );
