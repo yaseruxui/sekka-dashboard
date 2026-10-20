@@ -1,3 +1,5 @@
+import { SOCIAL_PLATFORMS } from './social-platforms';
+
 /**
  * "التحكم بالموقع": every site page as the sections a visitor sees, each with
  * its fields. Texts point into the next-intl dictionaries (ar / en), media and
@@ -28,7 +30,7 @@ export type SwitchField = { kind: 'switch'; doc: Doc; path: string; label: strin
 export type ItemField =
     | { kind: 'value'; name: string; label: string; ltr?: boolean; hint?: string }
     | { kind: 'media'; name: string; label: string; accept: Accept }
-    | { kind: 'select'; name: string; label: string; options: [string, string][] }
+    | { kind: 'select'; name: string; label: string; options: [string, string][]; icons?: Record<string, string> }
     | { kind: 'switch'; name: string; label: string };
 /** Text fields of one item (ar / en); `facts`-style nested lists are one level deep. */
 export type ItemText =
@@ -355,7 +357,13 @@ export const SITE_PAGES: SitePage[] = [
                             doc: 'contact',
                             path: 'socials',
                             fields: [
-                                { kind: 'value', name: 'platform', label: 'المنصة', ltr: true, hint: 'مثل instagram أو x أو linkedin' },
+                                {
+                                    kind: 'select',
+                                    name: 'platform',
+                                    label: 'المنصة',
+                                    options: SOCIAL_PLATFORMS.map((p) => [p.value, p.label]),
+                                    icons: Object.fromEntries(SOCIAL_PLATFORMS.map((p) => [p.value, p.icon])),
+                                },
                                 { kind: 'value', name: 'url', label: 'الرابط', ltr: true },
                             ],
                             blank: { platform: '', url: '' },
