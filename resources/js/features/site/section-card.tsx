@@ -94,7 +94,8 @@ function initialState(section: Section, content: SiteContentProps, defaults: Mes
             const ids = getPath(content.home, f.path);
             data[dataKey(f.doc, f.path)] = Array.isArray(ids) ? ids : f.source === 'services' ? (content.services ?? []).map((o) => o.id) : [];
         } else if ('doc' in f) {
-            data[dataKey(f.doc, f.path)] = getPath(content[f.doc], f.path) ?? '';
+            // A switch never saved shows its default (the site applies the same one).
+            data[dataKey(f.doc, f.path)] = getPath(content[f.doc], f.path) ?? (f.kind === 'switch' ? f.default : undefined) ?? '';
         } else if (f.kind === 'policy') {
             return { texts, data, policy: clone(content.policy ?? { ar: { updated: '', title: '', html: '' }, en: null }) };
         }

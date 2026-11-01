@@ -99,6 +99,37 @@ class SiteSectionsTest extends TestCase
         $this->assertArrayNotHasKey('video', SiteContent::get('home')['about']);
     }
 
+    public function test_the_statement_and_work_hero_clips_are_optional(): void
+    {
+        $this->save(['home' => ['heroVideo' => 'http://localhost/storage/media/hero.mp4']])->assertSessionHasNoErrors();
+        $home = SiteContent::get('home');
+        $this->assertArrayNotHasKey('statementVideo', $home);
+        $this->assertArrayNotHasKey('workHeroVideo', $home);
+
+        $this->save(['home' => [
+            'statementVideo' => 'http://localhost/storage/media/statement.mp4',
+            'workHeroVideo' => 'http://localhost/storage/media/work.mp4',
+        ]])->assertSessionHasNoErrors();
+        $content = $this->getJson('/api/public/content')->json();
+        $this->assertSame('http://localhost/storage/media/statement.mp4', $content['home']['statementVideo']);
+        $this->assertSame('http://localhost/storage/media/work.mp4', $content['home']['workHeroVideo']);
+
+        $this->save(['home' => ['statementVideo' => '', 'workHeroVideo' => '']])->assertSessionHasNoErrors();
+        $this->assertArrayNotHasKey('statementVideo', SiteContent::get('home'));
+        $this->assertArrayNotHasKey('workHeroVideo', SiteContent::get('home'));
+    }
+
+    public function test_the_heading_swash_is_on_until_switched_off(): void
+    {
+        $this->save(['home' => ['heroVideo' => 'http://localhost/storage/media/hero.mp4']])->assertSessionHasNoErrors();
+        $this->assertTrue(SiteContent::get('home')['swash']);
+
+        $this->save(['section' => 'menu.type', 'home' => ['swash' => false]])->assertSessionHasNoErrors();
+        $this->assertFalse($this->getJson('/api/public/content')->json('home.swash'));
+
+        $this->save(['home' => ['swash' => 'maybe']])->assertSessionHasErrors('home.swash');
+    }
+
     public function test_client_logos_are_one_file_each(): void
     {
         // The defaults still carry the old cropped + padded pair.

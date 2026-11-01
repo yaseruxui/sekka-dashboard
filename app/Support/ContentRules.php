@@ -54,6 +54,9 @@ class ContentRules
             "{$p}notFoundHref" => ['nullable', 'string', 'starts_with:/', 'max:200'],
             "{$p}maintenanceVideo" => ['nullable', 'string', 'max:2048'],
             "{$p}maintenance" => ['nullable', 'boolean'],
+            "{$p}statementVideo" => ['nullable', 'string', 'max:2048'],
+            "{$p}workHeroVideo" => ['nullable', 'string', 'max:2048'],
+            "{$p}swash" => ['nullable', 'boolean'],
             "{$p}serviceIds" => ['nullable', 'array'],
             "{$p}serviceIds.*" => ['integer', 'distinct', 'exists:services,id'],
             "{$p}workReelIds" => ['nullable', 'array'],
@@ -107,6 +110,11 @@ class ContentRules
             'notFoundHref' => $h['notFoundHref'] ?? '/',
             'maintenanceVideo' => ($h['maintenanceVideo'] ?? null) ?: $h['notFoundVideo'],
             'maintenance' => (bool) ($h['maintenance'] ?? false),
+            // Unset clips are left out: the site has its own for them.
+            ...(! empty($h['statementVideo']) ? ['statementVideo' => $h['statementVideo']] : []),
+            ...(! empty($h['workHeroVideo']) ? ['workHeroVideo' => $h['workHeroVideo']] : []),
+            // On unless switched off.
+            'swash' => (bool) ($h['swash'] ?? true),
             ...(isset($h['serviceIds']) ? ['serviceIds' => array_map('intval', array_values($h['serviceIds']))] : []),
             ...(isset($h['workReelIds']) ? ['workReelIds' => array_map('intval', array_values($h['workReelIds']))] : []),
         ];

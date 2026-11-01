@@ -59,6 +59,12 @@ export const homeMediaSchema = z.object({
     maintenanceVideo: z.optional(src),
     /** While on, every page shows the maintenance screen instead (texts: common.maintenance). */
     maintenance: z.optional(z.boolean()),
+    /** Clip beside the home statement; the site's bundled clip when unset. */
+    statementVideo: z.optional(src),
+    /** Full-screen clip behind the /work hero; the site's bundled clip when unset. */
+    workHeroVideo: z.optional(src),
+    /** Thmanyah's long final tails on every heading; on when unset. */
+    swash: z.optional(z.boolean()),
 });
 
 export const contactInfoSchema = z.object({
