@@ -37,7 +37,7 @@ export default function AuthSimpleLayout({ children, title, description }: AuthL
                     <div className="flex flex-col gap-8">
                         <div className="flex flex-col items-center gap-4 lg:items-start">
                             <Link href={route('home')} className="flex flex-col items-center gap-2 font-medium lg:hidden">
-                                <BrandLogo className="h-14 text-[#0A55FB] dark:text-white" />
+                                <BrandLogo className="h-20" />
                                 <span className="sr-only">{title}</span>
                             </Link>
 
@@ -55,7 +55,7 @@ export default function AuthSimpleLayout({ children, title, description }: AuthL
                 <BrandShapes />
 
                 <div className="relative flex items-start justify-between">
-                    <BrandLogo className="h-12 text-white" />
+                    <BrandLogo className="h-16" />
                     <span className="text-sm text-white/50 tabular-nums">{new Date().getFullYear()}</span>
                 </div>
 

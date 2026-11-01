@@ -24,7 +24,8 @@ export type NumberField = { kind: 'number'; doc: Doc; path: string; label: strin
 /** `clearable`: an optional file, with a button to remove it. */
 export type MediaField = { kind: 'media'; doc: Doc; path: string; label: string; hint?: string; accept: Accept; clearable?: boolean };
 export type SelectField = { kind: 'select'; doc: Doc; path: string; label: string; hint?: string; options: [string, string][] };
-export type SwitchField = { kind: 'switch'; doc: Doc; path: string; label: string; hint?: string };
+/** `default`: what the switch shows while the value was never saved. */
+export type SwitchField = { kind: 'switch'; doc: Doc; path: string; label: string; hint?: string; default?: boolean };
 
 /** Fields of one item in a list. */
 export type ItemField =
@@ -207,8 +208,11 @@ export const SITE_PAGES: SitePage[] = [
             {
                 id: 'statement',
                 title: 'الجملة الافتتاحية',
-                description: 'سطر كبير يلخّص ما تقدمه سكة.',
-                fields: [t('home.statementTitle', 'الجملة', { html: true, multiline: true })],
+                description: 'سطر كبير يلخّص ما تقدمه سكة، وجنبه فيديو.',
+                fields: [
+                    t('home.statementTitle', 'الجملة', { html: true, multiline: true }),
+                    media('home', 'statementVideo', 'الفيديو', 'video', 'يظهر جنب الجملة بإطار عرضي (16:9). إذا أزلته، بيرجع الفيديو الأصلي.', true),
+                ],
             },
             {
                 id: 'services',
@@ -293,8 +297,13 @@ export const SITE_PAGES: SitePage[] = [
             {
                 id: 'header',
                 title: 'رأس الصفحة (الهيدر)',
-                description: 'العنوان الصغير والعنوان والوصف.',
-                fields: [t('work.kicker', 'العنوان الصغير'), t('work.title', 'العنوان'), t('work.sub', 'الوصف', { multiline: true })],
+                description: 'فيديو بملء الشاشة، وفوقه العنوان الصغير والعنوان والوصف.',
+                fields: [
+                    media('home', 'workHeroVideo', 'فيديو الخلفية', 'video', 'بملء الشاشة ورا العنوان. إذا أزلته، بيرجع الفيديو الأصلي.', true),
+                    t('work.kicker', 'العنوان الصغير'),
+                    t('work.title', 'العنوان'),
+                    t('work.sub', 'الوصف', { multiline: true }),
+                ],
             },
             {
                 id: 'ask',
@@ -375,8 +384,12 @@ export const SITE_PAGES: SitePage[] = [
             {
                 id: 'form',
                 title: 'نموذج التواصل',
-                description: 'عنوان النموذج ووصفه.',
-                fields: [t('contact.form.title', 'عنوان النموذج'), t('contact.form.subtitle', 'الوصف')],
+                description: 'اسم تبويبه وعنوانه ووصفه.',
+                fields: [
+                    t('contact.tabs.contact', 'اسم التبويب', { hint: 'الزر اللي بيفتح النموذج بصفحة التواصل.' }),
+                    t('contact.form.title', 'عنوان النموذج'),
+                    t('contact.form.subtitle', 'الوصف'),
+                ],
             },
             {
                 id: 'seo',
@@ -468,10 +481,30 @@ export const SITE_PAGES: SitePage[] = [
                 fields: [t('common.siteName', 'اسم الموقع'), t('common.tagline', 'الشعار النصي', { ltr: true })],
             },
             {
+                id: 'type',
+                title: 'الخط',
+                description: 'شكل العناوين في كل الموقع.',
+                fields: [
+                    {
+                        kind: 'switch',
+                        doc: 'home',
+                        path: 'swash',
+                        label: 'كشيدة آخر الحروف',
+                        hint: 'ذيل ممدود للحروف الأخيرة (ق، ي، ب، ت…) زي خط ثمانية، وبيطلع لحاله بأي عنوان. وللمدّ بنص كلمة اكتب حرف الكشيدة بالنص نفسه، مثل «الحسابـات».',
+                        default: true,
+                    },
+                ],
+            },
+            {
                 id: 'nav',
                 title: 'القائمة',
-                description: 'سؤال القائمة ورسالة واتساب.',
+                description: 'أسطر القائمة الكبيرة وسؤالها ورسالة واتساب.',
                 fields: [
+                    t('navigation.home', 'السطر الأول'),
+                    t('navigation.work', 'السطر الثاني'),
+                    t('navigation.contact', 'السطر الثالث', {
+                        hint: 'الأسطر الثلاثة بيتساووا بالعرض لحالهم: الموقع بيمدّ الأقصر بكشيدة. كل ما تقاربوا بالطول، كل ما قلّت الكشيدة.',
+                    }),
                     t('navigation.menuPrompt', 'سؤال في القائمة'),
                     t('navigation.whatsappGreeting', 'رسالة واتساب من القائمة', { multiline: true }),
                 ],
@@ -479,8 +512,8 @@ export const SITE_PAGES: SitePage[] = [
             {
                 id: 'footer',
                 title: 'الفوتر',
-                description: 'جملة آخر الصفحة.',
-                fields: [t('footer.text', 'الجملة', { html: true, multiline: true })],
+                description: 'جملة آخر الصفحة وزرّها. الإيميل والهاتف والحسابات بتنسحب من «تواصل معنا».',
+                fields: [t('footer.text', 'الجملة', { html: true, multiline: true }), t('footer.cta', 'نص الزر')],
             },
         ],
     },
