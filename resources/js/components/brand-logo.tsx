@@ -1,15 +1,19 @@
-import wordmark from '@/assets/brand/logo-wordmark.svg?raw';
-import logo from '@/assets/brand/logo.svg?raw';
+import icon from '@/assets/brand/logo-icon.svg?raw';
+import mark from '@/assets/brand/logo-mark.svg?raw';
 import { cn } from '@/lib/utils';
 
-/** Sekka's official logo (from the site's brand files). Takes its color from `currentColor`. */
-export function BrandLogo({ variant = 'full', className }: { variant?: 'full' | 'wordmark'; className?: string }) {
+/**
+ * Sekka's badge logo (the site's i18n/brand/logo-mark.svg), in its own colors.
+ * `icon` is the small version: the plates and the wordmark, square, without
+ * «Creative Hub» and ® (unreadable at sidebar size).
+ */
+export function BrandLogo({ variant = 'mark', className }: { variant?: 'mark' | 'icon'; className?: string }) {
     return (
         <span
             role="img"
             aria-label="سكة"
             className={cn('inline-block [&>svg]:block [&>svg]:h-full [&>svg]:w-auto', className)}
-            dangerouslySetInnerHTML={{ __html: variant === 'full' ? logo : wordmark }}
+            dangerouslySetInnerHTML={{ __html: variant === 'icon' ? icon : mark }}
         />
     );
 }
